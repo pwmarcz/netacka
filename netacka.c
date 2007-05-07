@@ -11,7 +11,10 @@
 #define gONEFINGER 1
 #define gTRON      2
 
+int gray_bg=0;
+
 int game_mode=gNORMAL;
+int torus=0;
 
 #define CLIENT_PLAYERS 6
 
@@ -19,8 +22,10 @@ int game_mode=gNORMAL;
 
 #define MAX_PLAYERS MAX_CLIENTS
 
-char server_name[16]="Netacka ver " VER_STRING;
+char server_name[16];
 char game_path[256];
+
+char server_passwd[7]="";
 
 int FPS=20;
 
@@ -53,7 +58,7 @@ void _escape() {escape=1;}
 
 PALETTE pal={
    {0,0,0},    //  0 black
-   {20,20,20},    //  1 dark gray
+   {20,20,20}, //  1 dark gray
    {50,50,50}, //  2 very light gray
    {42,42,42}, //  3 light gray
    {63,0,0},   //  4 red
@@ -127,8 +132,10 @@ inline int check_keys(int k)
 }
    
 struct  {
+   char name[11];
    int x,y,old_x,old_y;
    int hole,old_hole,to_change;
+   int torus_jump;
    int a,last_da,da,da_change_time;
    int playing,alive;
    int client,client_num;
@@ -137,8 +144,12 @@ struct  {
 int n_players;
 int n_alive;
 int score_limit=0;
+int one_game=0;
+int save_log=0;
+int wait_for_key=0;
 
 struct {
+   char name[11];
    int num;
    int da;
    int keys;
@@ -153,18 +164,27 @@ char lobby_addr[31];
 int using_lobby=1;
 
 void report_to_lobby(unsigned char a);
+void send_name(int whose,NET_CHANNEL *chan);
+void send_names_to_client(int who);
 
 struct {
-   NET_CHANNEL *chan;
+   //NET_CHANNEL *chan;
+   int playing;
    char addr[50];
    int ready,gotit;
 } clients[MAX_CLIENTS];
 int n_clients=0;
 
+inline void set_to_client(int client)
+{
+   net_assigntarget(chan,clients[client].addr);
+}
+
 const char *welcome[]={
    " NETACKA ver. "VER_STRING,
    "",
-   "by pafel (pafel@staszic.waw.pl)",
+   "by pafel (pafel@staszic.waw.pl,",
+   "          humpolec@gmail.com)",
    "",
    "Edit 'netacka.ini' to change configuration.",
    "",
@@ -206,7 +226,7 @@ int get_client_players()
             textout_ex(screen,font,"READY",10,10+i*30,cBLACK,-1);
          }
       }
-      if(key[KEY_SPACE] && n)
+      if(key[KEY_SPACE]/* && n*/)
       {
          int j=0;
          n_client_players=n;
@@ -216,6 +236,45 @@ int get_client_players()
                client_players[j++].keys=i;
          }
 	 while(key[KEY_SPACE]);
+         clear_keybuf();
+         /* Now get player names */
+//        DIALOG the_list[] =
+         // { d_edit_proc,       325,  260,  200,   10,  0,  0,    0,      0,       30,  0,    server_addr,            0,    NULL  },
+
+         {
+               /* (dialog proc)     (x)   (y)   (w)   (h) (fg)(bg) (key) (flags)     (d1) (d2)    (dp)                   (dp2) (dp3) */
+            DIALOG the_names[8] = {
+               { d_button_proc,     320,  150,  200,   30,  0,  0,    0,      0,       0,   0,    "Proceed",      0,    NULL  },
+            };
+            int i;
+            DIALOG_PLAYER *dialog_player;
+            
+            for(i=0;i<n;i++)
+            {
+               the_names[i+1].proc=d_edit_proc;
+               the_names[i+1].x=180;
+               the_names[i+1].y=10+client_players[i].keys*30;
+               the_names[i+1].w=90;
+               the_names[i+1].h=10;
+               the_names[i+1].d1=10;
+               the_names[i+1].dp=client_players[i].name;
+            }
+            the_names[i+1].proc=0;
+            set_dialog_color(the_names,gui_fg_color,/*gui_bg_color*/cGRAY);
+            dialog_player=init_dialog(the_names,0);
+            update_dialog(dialog_player);
+            show_mouse(screen);
+            for(;;)
+            {
+               update_dialog(dialog_player);
+               if(key[KEY_ESC] || escape)
+                  return 0;
+               if(the_names[0].flags & D_SELECTED)
+                  break;
+               rest(1);
+            }
+            show_mouse(NULL);
+         }
          return 1;
       }
       if(key[KEY_ESC] || escape)
@@ -226,27 +285,48 @@ int get_client_players()
 void draw_score_list(BITMAP *score_list)
 {
    int i;
+   int y;
    int best_score=0;
    
    for(i=0;i<MAX_PLAYERS;i++)
       if(players[i].playing && best_score<players[i].score)
          best_score=players[i].score;
    clear_bitmap(score_list);
-   for(i=0;i<MAX_PLAYERS;i++)
+   clear_to_color(score_list,gray_bg?cGRAY:cBLACK);
+//   line(score_list,0,0,0,screen_h-1,cWHITE);
+   y=0;
+   for(i=0;i<MAX_PLAYERS;i++,y+=25)
    {
       if(!players[i].playing) continue;
-      line(score_list,2,9+i*25,99,9+i*25,cGRAY);
-      textprintf_ex(score_list,font,2,10+i*25,
-         (players[i].score==best_score)?cWHITE:cVLIGHTGRAY,
+      //line(score_list,2,9+y,109,9+y,cGRAY);
+      if(!gray_bg)
+      {
+         if(!players[i].alive)
+            rectfill(score_list,2,9+y,109,9+y+24,cGRAY);
+      }
+      else
+      {
+         if(players[i].alive)
+            rectfill(score_list,2,9+y,109,9+y+24,cBLACK);
+      }
+      if(players[i].name[0])
+      {
+         textout_ex(score_list,font,
+            players[i].name,2,11+y,
+            (players[i].score==best_score)?cWHITE:cVLIGHTGRAY,
+            -1);
+      }
+      rectfill(score_list,82,10+y,95,19+y,player_colors[i][0]);
+      rectfill(score_list,96,10+y,108,19+y,player_colors[i][1]);
+      textprintf_ex(score_list,font,83,11+y,
+         cBLACK,
          -1,"%3d",players[i].score);
-      rectfill(score_list,80,10+i*25,89,19+i*25,player_colors[i][0]);
-      rectfill(score_list,90,10+i*25,99,19+i*25,player_colors[i][1]);
-      if(!players[i].alive)
-	line(score_list,2,14+i*25,99,14+i*25,cGRAY);
       if(players[i].client==-1)
          textout_ex(score_list,font,
             client_keys[client_players[players[i].client_num].keys].str,
-         2,20+i*25,cGREEN,-1);
+         2,22+y,cGREEN,-1);
+      if(players[i].score==best_score)
+         rect(score_list,1,9+y,108,9+y+24,cWHITE);
    }
 }
 
@@ -255,8 +335,30 @@ void draw_konec(BITMAP *bmp)
    int i,j;
    int place=0,last_score=-1;
    int order[MAX_PLAYERS];
-   int x=(screen_w-100)/2;
+   int x=(screen_w-110)/2;
+   FILE *fp=0;
    
+   unsigned char data[100]={seLOGTHIS};
+   char *s=&data[1];
+   
+   if(save_log)
+   {
+      long t=time(0);
+      char fname[256];
+      char *mode;
+      
+      sprintf(fname,"%s%ld.txt",game_path,t);
+      fp=fopen(fname,"w");
+      net_assigntarget(chan,lobby_addr);
+      switch(game_mode)
+      {
+         case gTRON: mode=", tron"; break;
+         case gONEFINGER: mode=", onefinger"; break;
+         default: mode=""; break;
+      }
+      sprintf(s,"%s%s%s",server_name,mode,torus?", torus":"");
+      net_send(chan,data,strlen(s)+2);
+   }
    clear_bitmap(bmp);
    for(i=0;i<MAX_PLAYERS;i++)
       order[i]=i;
@@ -275,13 +377,30 @@ void draw_konec(BITMAP *bmp)
          }
       tmp=order[max_j]; order[max_j]=order[i]; order[i]=tmp;
       if(players[tmp].score!=last_score)
+      {
          textprintf_ex(bmp,font,x-30,10+i*25,cGRAY,-1,"%2d.",++place);
+         if(fp)
+            fprintf(fp,"%2d. ",place);
+      }
+      else
+         if(fp)
+            fprintf(fp,"    ");
       textprintf_ex(bmp,font,x+25,10+i*25,cWHITE,
          -1,"%3d",players[tmp].score);
+      if(save_log)
+      {
+         if(fp)
+            fprintf(fp,"#%2d %10s (%3d)\n",tmp,players[tmp].name,players[tmp].score);
+         sprintf(s,"#%2d (%10s) = %3d pts",tmp,players[tmp].name,players[tmp].score);
+         net_send(chan,data,strlen(s)+2);
+      }
       rectfill(bmp,x,10+i*25,x+9,19+i*25,player_colors[tmp][0]);
       rectfill(bmp,x+10,10+i*25,x+19,19+i*25,player_colors[tmp][1]);
+      textprintf_ex(bmp,font,x+55,10+i*25,cVLIGHTGRAY,
+         -1,"%10s",players[tmp].name);
       last_score=players[tmp].score;
    }
+   if(fp) fclose(fp);
 }
 
 void send_keys()
@@ -298,18 +417,21 @@ void send_keys()
    net_send(chan,data,n_client_players*2+1);
 }
 
-int add_client(int n_pl,char *addr)
+int add_client(int n_pl,char *addr,char *passwd)
 {
    int i,j,k;
    unsigned char data[20];
    
-   if(n_clients==MAX_CLIENTS) return 0;
-   if(n_players+n_pl>MAX_PLAYERS) return 0;
+   if(n_clients==MAX_CLIENTS || n_players+n_pl>MAX_PLAYERS) return 0;
+   if(n_pl)
+      if(strcmp(server_passwd,passwd))
+         return 0;
    
-   for(i=0;clients[i].chan;i++);
-   clients[i].chan=net_openchannel(net_driver,0);
+   for(i=0;clients[i].playing;i++);
+   //clients[i].chan=net_openchannel(net_driver,0);
+   clients[i].playing=1;
    strcpy(clients[i].addr,addr);
-   net_assigntarget(clients[i].chan,addr);
+   //net_assigntarget(clients[i].chan,addr);
    
    data[0]=seHEREARESETTNGS;
    data[1]=FPS;
@@ -329,10 +451,13 @@ int add_client(int n_pl,char *addr)
       data[6+k]=j;
    }
    
-   net_send(clients[i].chan,data,6+k);
+   set_to_client(i);net_send(chan,data,6+k);
    clients[i].ready=0;
    
    n_clients++;
+   
+   send_names_to_client(i);
+   
    return n_pl;
 }
 
@@ -340,8 +465,7 @@ void remove_client(int n)
 {
    int i;
    
-   net_closechannel(clients[n].chan);
-   clients[n].chan=0;
+   clients[n].playing=0;
    n_clients--;
    for(i=0;i<MAX_PLAYERS;i++)
       if(players[i].client==n && players[i].playing)
@@ -366,7 +490,7 @@ void server_start_new_round()
       if(players[i].playing)
       {
          players[i].alive=1;
-         players[i].x=(rand()%(screen_w-100-2*DISTANCE)+DISTANCE)*256;
+         players[i].x=(rand()%(screen_w-110-2*DISTANCE)+DISTANCE)*256;
          players[i].y=(rand()%(screen_h-2*DISTANCE)+DISTANCE)*256;
          if(game_mode!=gTRON)
             players[i].a=rand()%256;
@@ -399,18 +523,58 @@ void send_players(int who)
          data[pos+7]=players[i].score>>8;
          data[pos+8]=players[i].score;
          if(players[i].alive) data[pos+6]|=128;
-         if(players[i].hole) data[pos+6]|=64;
+         if(players[i].hole || (torus && players[i].torus_jump))
+            data[pos+6]|=64;
          pos+=9;
       }
    }
    if(who==-1)
    {
       for(i=0;i<MAX_CLIENTS;i++)
-         if(clients[i].chan)
-            net_send(clients[i].chan,data,pos);
+         if(clients[i].playing)
+         { set_to_client(i); net_send(chan,data,pos); }
    }
    else
-      net_send(clients[who].chan,data,pos);
+   {
+      set_to_client(who);net_send(chan,data,pos);
+   }
+}
+
+void send_name(int whose,NET_CHANNEL *chan)
+{
+   unsigned char data[13];
+   
+   data[0]=csANAME;
+   data[1]=whose;
+   strcpy(&data[2],players[whose].name);
+   net_send(chan,data,3+strlen(players[whose].name));
+}
+
+void send_names_to_client(int who)
+{
+   int i;
+   
+   if(who==-1)
+   {
+      for(i=0;i<MAX_CLIENTS;i++)
+         if(clients[i].playing)
+            send_names_to_client(i);
+   }
+   else
+   {
+      set_to_client(who);
+      for(i=0;i<MAX_PLAYERS;i++)
+         if(players[i].client!=who)
+            send_name(i,chan);
+   }
+}
+
+void send_names_to_server()
+{
+   int i;
+   
+   for(i=0;i<n_client_players;i++)
+      send_name(client_players[i].num,chan);
 }
 
 inline int __test(BITMAP *arena,int old_x,int old_y,int x,int y)
@@ -425,9 +589,10 @@ inline int _test(BITMAP *arena,int old_x,int old_y,int x,int y,
    int half_x=(x+old_x)/512,
        half_y=(y+old_y)/512;
    x/=256; y/=256; old_x/=256; old_y/=256;
-   
-   if(x<1 || x>screen_w-101 || y<1 || y>screen_h-2)
-      return 1;
+
+   if(!torus)
+      if(x<1 || x>screen_w-111 || y<1 || y>screen_h-2)
+         return 1;
    if(hole)
       return 0;
    if(!old_hole)
@@ -462,24 +627,33 @@ void draw_players(BITMAP *arena,int i_know,int t)
          _put(arena,players[i].x/256,players[i].y/256,player_colors[i][(t/4)%2]);
    }
 }
+
+void screenshot(BITMAP *buf)
+{
+         char fname[256];
+         long t=time(0);
+         sprintf(fname,"%s%ld.pcx",game_path,t);
+         save_bitmap(fname,buf,pal);
+}
+
 #define STARTING_TIME (1.5+0.2*n_players)
 int play_round(int is_server)
 {
    BITMAP *buf=create_bitmap(screen_w,screen_h);
-   BITMAP *arena=create_sub_bitmap(buf,0,0,screen_w-100,screen_h);
-   BITMAP *score_list=create_sub_bitmap(buf,screen_w-99,0,100,screen_h);
+   BITMAP *arena=create_sub_bitmap(buf,0,0,screen_w-110,screen_h);
+   BITMAP *score_list=create_sub_bitmap(buf,screen_w-109,0,110,screen_h);
    
    int t,new_round=0,new_round_announce=0;
    int i;
    int playing=1,announcing=0,done=0;
    int i_know=0,first=0;
    int konec=0;
-   int scr_key_pressed=0;
    int next_report=time(0);
    int change_time=FPS/3;
    
+   if(!is_server) save_log=0;
    clear_bitmap(buf);
-   rect(buf,0,0,screen_w-100,screen_h-1,cWHITE);
+   rect(buf,0,0,screen_w-110,screen_h-1,cWHITE);
    ticks=t=0;
    escape=0;
    while(!key[KEY_ESC] && !escape && !done)
@@ -490,31 +664,25 @@ int play_round(int is_server)
             next_report=time(0)+10;
             report_to_lobby(seREGISTERME);
          }
-      if(key[KEY_F12])
-         scr_key_pressed=1;
-      else if(scr_key_pressed)
-      {
-         char fname[256];
-   
-         scr_key_pressed=0;
-         sprintf(fname,"%s%05d.pcx",game_path,
-            (int)(time(0)%100000));
-         save_bitmap(fname,buf,pal);
-      }
       rest(1);
-      if(n_alive<2 && playing && n_players>1) //new round
+      if(is_server && wait_for_key)
+         if(key[KEY_SPACE]) 
+            wait_for_key=0;
+      if(((n_alive<2 && n_players>1)||(n_players==1 && n_alive==0))
+         && playing && !wait_for_key) //new round
       {
          send_players(-1);
          playing=0;
          ticks=t=0;
-         
+         draw_score_list(score_list);
          if(is_server)
          {
             new_round_announce=FPS*1.5;
+            if(save_log) screenshot(buf);
          }
       }
       
-      if(!playing && !announcing && ticks>new_round_announce && is_server)
+      if(!playing && !announcing && ticks>new_round_announce && is_server && !wait_for_key)
       {
          int i;
          if(!konec)
@@ -531,6 +699,8 @@ int play_round(int is_server)
             konec=0;
             for(i=0;i<MAX_PLAYERS;i++)
                players[i].score=0;
+            if(one_game)
+               done=1;
          }
          if(konec)
          {
@@ -547,9 +717,9 @@ int play_round(int is_server)
                   j+=3;
                }
             for(i=0;i<MAX_CLIENTS;i++)
-               if(clients[i].chan)
+               if(clients[i].playing)
                {
-                  net_send(clients[i].chan,data,j);
+                  set_to_client(i);net_send(chan,data,j);
                }
             ticks=t=0;
             new_round_announce=FPS*(0.5+STARTING_TIME);
@@ -560,17 +730,17 @@ int play_round(int is_server)
             server_start_new_round();
             i_know=0;
             clear_bitmap(buf);
-            rect(buf,0,0,screen_w-100,screen_h-1,cWHITE);
+            rect(buf,0,0,screen_w-110,screen_h-1,cWHITE);
             draw_players(arena,i_know,t);
             ticks=t=0;
             new_round=FPS*STARTING_TIME;
             announcing=1;
             //broadcast NEWROUND
             for(i=0;i<MAX_CLIENTS;i++)
-               if(clients[i].chan)
+               if(clients[i].playing)
                {
                   clients[i].ready=0;
-                  send_byte(clients[i].chan,seNEWROUND);
+                  set_to_client(i);send_byte(chan,seNEWROUND);
                }
          }
       }
@@ -578,7 +748,7 @@ int play_round(int is_server)
       if(announcing && ticks>new_round && is_server)
       {
          for(i=0;i<MAX_CLIENTS;i++)
-            if(clients[i].chan && !clients[i].ready)
+            if(clients[i].playing && !clients[i].ready)
             {
                remove_client(i);
             }
@@ -604,6 +774,10 @@ int play_round(int is_server)
                   client_players[i].da=check_keys(k);
                }
          }
+
+      if(t<=ticks && !is_server)
+         send_keys();
+
       while(t<=ticks)
       {
          t++;
@@ -682,6 +856,24 @@ int play_round(int is_server)
                   y=players[i].y-768*dy;
                }
                
+               if(torus)
+               {
+                  players[i].torus_jump=0;
+                  if(x<4<<8)
+                  { x+=(screen_w-110)<<8; players[i].torus_jump=1;}
+                  if(x>(screen_w-112)<<8)
+                  { x-=(screen_w-110)<<8; players[i].torus_jump=1;}
+                  if(y<4<<8)
+                  { y+=(screen_h)<<8; players[i].torus_jump=1; }
+                  if(y>(screen_h-3)<<8)
+                  { y-=(screen_h)<<8; players[i].torus_jump=1; }
+                  if(players[i].torus_jump)
+                  {
+                     players[i].x=x; players[i].y=y;
+                  }
+               }
+               
+               
                if(_test(arena,players[i].x,players[i].y,
                   x,y,players[i].hole,players[i].old_hole))
                      collide=1;
@@ -709,8 +901,6 @@ int play_round(int is_server)
          }
       }
       
-      if(!is_server)
-         send_keys();
       while(net_query(chan))
       {
          if(is_server)
@@ -730,7 +920,7 @@ int play_round(int is_server)
             {
                case clIWANNAPLAY:
                   if(i==MAX_CLIENTS)
-                     n_players+=add_client(data[1],from);
+                     n_players+=add_client(data[1],from,&data[2]);
                   break;
                case clMYINPUT:
                   for(j=1;j<n;j+=2)
@@ -766,18 +956,31 @@ int play_round(int is_server)
                   break;
                case clKNOCKKNOCK:
                {
-                  char data2[18];
+                  char data2[19];
                   data2[0]=seMYINFO;
                   data2[1]=n_players;
-                  strcpy(&data2[2],server_name);
+                  data2[2]=server_passwd[0]?'*':' ';
+                  strcpy(&data2[3],server_name);
                   net_assigntarget(chan,from);
-                  net_send(chan,data2,18);
+                  net_send(chan,data2,19);
                   break;
                }
                case PING:
                   net_assigntarget(chan,from);
                   send_byte(chan,PONG);
                   break;
+               case csANAME:
+                  if(players[data[1]].client==i)
+                  {
+                     int k;
+                     
+                     strcpy(players[data[1]].name,&data[2]);
+                     for(k=0;k<MAX_CLIENTS;k++)
+                        if(k!=i && clients[k].playing)
+                        {
+                           set_to_client(k);send_name(data[1],chan);
+                        }
+                  }
                default:
                   break;
             }
@@ -844,15 +1047,18 @@ int play_round(int is_server)
                   i_know=0;
                   first=1;
                   clear_bitmap(buf);
-                  rect(buf,0,0,screen_w-100,screen_h-1,cWHITE);
+                  rect(buf,0,0,screen_w-110,screen_h-1,cWHITE);
                   ticks=t=0;
                   for(i=0;i<MAX_PLAYERS;i++)
                      players[i].x=players[i].y=-256;
                   send_byte(chan,clREADY);
+                  send_names_to_server();
                   break;
                case seIKICKYOU:
                   done=1;
                   break;
+               case csANAME:
+                  strcpy(players[data[1]].name,&data[2]);
                default:
                   break;
             }
@@ -862,9 +1068,9 @@ int play_round(int is_server)
    
    if(is_server)
       for(i=0;i<MAX_CLIENTS;i++)
-         if(clients[i].chan)
+         if(clients[i].playing)
          {
-            send_byte(clients[i].chan,seIKICKYOU);
+            set_to_client(i);send_byte(chan,seIKICKYOU);
             remove_client(i);
          }
    
@@ -877,11 +1083,12 @@ int play_round(int is_server)
 
 void send_client_players(NET_CHANNEL *chan)
 {
-   unsigned char data[2];
+   unsigned char data[10];
    
    data[0]=clIWANNAPLAY;
    data[1]=n_client_players;
-   net_send(chan,data,2);
+   strcpy(&data[2],server_passwd);
+   net_send(chan,data,2+strlen(server_passwd)+1);
 }
 
 
@@ -924,6 +1131,9 @@ int main()
 		     640,480,0,0)!=0)
       crash("couldn't set video mode");
    set_palette(pal);
+   gui_fg_color=cWHITE;
+   gui_bg_color=cBLACK;
+   gui_mg_color=cGRAY;
    if(set_display_switch_mode(SWITCH_BACKGROUND))
       set_display_switch_mode(SWITCH_BACKAMNESIA);
 
@@ -1014,12 +1224,13 @@ char *_getter(int index, int *list_size)
    return str;
 }
 
-#define N_RES 4
+#define N_RES 5
 const int res_list[N_RES][2]={
    {640,480},
    {800,600},
    {1024,768},
-   {1280,1024}
+   {1280,1024},
+   {1600,1200}
 };
 int def_res_x,def_res_y;
 
@@ -1065,10 +1276,21 @@ char server_addr[31],str_score_limit[4],str_fps[3],port[6];
 #define POS_ASKLOBBY        15
 #define POS_REPORT          17
 #define POS_MODE_LIST       18
+#define POS_ONEGAME         19
+#define POS_SAVELOG         20
+#define POS_WAITFORKEY      25
+#define POS_TORUS           26
+
+#define POS_SCORELIMIT      7
+#define POS_FPS             9
+
+int to_disable[]={POS_SCORELIMIT,POS_FPS,POS_WAITFORKEY,
+                  POS_SAVELOG,POS_REPORT,POS_ONEGAME,POS_RES_LIST,
+                  -1};
 DIALOG the_list[] =
 {
    /* (dialog proc)     (x)   (y)   (w)   (h) (fg)(bg) (key) (flags)     (d1) (d2)    (dp)                   (dp2) (dp3) */
-   { d_list_proc,       10,   50,   620,   200, 0,  0,    0,      0,       0,   0,    _getter,                0,    NULL  },
+   { d_list_proc,       10,   50,   620,   180, 0,  0,    0,      0,       0,   0,    _getter,                0,    NULL  },
    { d_button_proc,     10,  260,   305,   30,  0,  0,    0,      0,       0,   0,    "Try selected server",  0,    NULL  },
    { d_button_proc,     325,  10,   305,   30,  0,  0,    0,      0,       0,   0,    "Reload server list",   0,    NULL  },
    
@@ -1080,23 +1302,36 @@ DIALOG the_list[] =
    { d_edit_proc,       200,  370,  100,   10,  0,  0,    0,      0,       3,   0,    str_score_limit,        0,    NULL  },
    { d_text_proc,       10,   390,  0,     0,   0,  0,    0,      0,       0,   0,    "FPS (game speed):",    0,    NULL  },
    { d_edit_proc,       200,  390,  100,   10,  0,  0,    0,      0,       2,   0,    str_fps,                0,    NULL  },
-   { d_list_proc,       10,   410,  260,   50,  0,  0,    0,      0,       0,   0,    _res_getter,            0,    NULL  },
-   { d_text_proc,       325,  370,  0,     0,   0,  0,    0,      0,       0,   0,    "Server name:",         0,    NULL  },
-   { d_edit_proc,       455,  370,  170,   10,  0,  0,    0,      0,      15,   0,    server_name,            0,    NULL  },
-   { d_text_proc,       325,  390,  0,     0,   0,  0,    0,      0,       0,   0,    "Server port:",         0,    NULL  },
-   { d_edit_proc,       455,  390,  170,   10,  0,  0,    0,      0,       5,   0,    port,                   0,    NULL  },
+   { d_list_proc,       10,   410,  260,   55,  0,  0,    0,      0,       0,   0,    _res_getter,            0,    NULL  },
+   { d_text_proc,       325,  380,  0,     0,   0,  0,    0,      0,       0,   0,    "Server name:",         0,    NULL  },
+   { d_edit_proc,       455,  380,  170,   10,  0,  0,    0,      0,      15,   0,    server_name,            0,    NULL  },
+   { d_text_proc,       325,  395,  0,     0,   0,  0,    0,      0,       0,   0,    "Server port:",         0,    NULL  },
+   { d_edit_proc,       455,  395,  170,   10,  0,  0,    0,      0,       5,   0,    port,                   0,    NULL  },
    
    { d_radio_proc,      10,   10,   200,   10,  0,  0,    0,   D_SELECTED, 0,   0,    "Use lobby server",     0,    NULL  },
    { d_radio_proc,      10,   30,   200,   10,  0,  0,    0,      0,       0,   0,    "Search LAN",           0,    NULL  },
    
    { d_check_proc,      325,  410,  220,   10,  0,  0,    0,      0,       1,   0,    "Report to lobby server",0,    NULL  },
    
-   { d_list_proc,       10,   315,  260,   40,  0,  0,    0,      0,       0,   0,    _mode_getter,            0,    NULL  },
+   { d_list_proc,       10,   315,  260,   40,  0,  0,    0,      0,       0,   0,    _mode_getter,           0,    NULL  },
+   
+   { d_check_proc,      325,  315,  200,   10,  0,  0,    0,      0,       1,   0,    "Only one game",  0,    NULL  },
+   { d_check_proc,      325,  330,  200,   10,  0,  0,    0,      0,       1,   0,    "Save log && screenshots",0,    NULL  },
+   
+   { d_text_proc,       325,  345,  0,     0,   0,  0,    0,      0,       0,   0,    "Password:",            0,    NULL  },
+   { d_edit_proc,       455,  345,  170,   10,  0,  0,    0,      0,       6,   0,    server_passwd,          0,    NULL  },
+   
+   { d_text_proc,       10,   240,  0,     0,   0,  0,    0,      0,       0,   0,    "Password:",            0,    NULL  },
+   { d_edit_proc,       140,  240,  170,   10,  0,  0,    0,      0,       6,   0,    server_passwd,          0,    NULL  },
+   
+   { d_check_proc,      325,  360,  200,   10,  0,  0,    0,      0,       1,   0,    "Wait for key (SPACE)", 0,    NULL  },
+   
+   { d_check_proc,      10,  355,  200,   10,  0,  0,    0,      0,       1,   0,    "Torus Mode", 0,    NULL  },
    
    { 0 }
 };
 
-int try_to_connect(const char *server_addr,int wait_time);
+char *try_to_connect(const char *server_addr,int wait_time);
 
 int start_server(const char *port);
 
@@ -1131,18 +1366,36 @@ int start()
    strncpy(server_addr,get_config_string("client","server","127.0.0.1:6789"),30);
    strncpy(lobby_addr,get_config_string(0,"lobby","127.0.0.1:6790"),30);
    strncpy(port,get_config_string("server","port","6789"),5);
+   strncpy(server_name,get_config_string("server","name","Netacka ver " VER_STRING),15);
+   
    if(get_config_int("server","report_to_lobby",1))
       the_list[POS_REPORT].flags|=D_SELECTED;
+   if(get_config_int("server","one_game",0))
+      the_list[POS_ONEGAME].flags|=D_SELECTED;
+   if(get_config_int("server","save_log",0))
+      the_list[POS_SAVELOG].flags|=D_SELECTED;
+   if(get_config_int("server","wait_for_key",0))
+      the_list[POS_WAITFORKEY].flags|=D_SELECTED;
+   
+   gray_bg=get_config_int(0,"gray_bg",0);
    clear_bitmap(screen);
-   gui_fg_color=cWHITE;
-   gui_bg_color=cBLACK;
    hline(screen,0,310,639,gui_fg_color);
    set_dialog_color(the_list,gui_fg_color,gui_bg_color);
    for(i=0;the_list[i].proc;i++)
       if(the_list[i].proc==d_edit_proc)
-         the_list[i].bg=cGRAY;
+         the_list[i].bg=cDARKGRAY;
    the_list[POS_TRY_SERVER].bg=cDARKGRAY;
    the_list[POS_START_SERVER].bg=cDARKGRAY;
+      
+   if(get_config_int("server","disable_changes",0))
+   {
+      int i;
+      for(i=0;to_disable[i]!=-1;i++)
+      {
+         the_list[to_disable[i]].flags|=D_DISABLED;
+      }
+   }
+   
    dialog_player=init_dialog(the_list,0);
    update_dialog(dialog_player);
    show_mouse(screen);
@@ -1194,20 +1447,24 @@ int start()
          i=the_list[0].d1;
          if(servers[i].active)
          {
-            if(try_to_connect(servers[i].addr,FPS*2))
+            char *err;
+            
+            if(!(err=try_to_connect(servers[i].addr,FPS*2)))
             { done=1; break; }
             else
-               alert("Couldn't connect",0,0,"OK",0,0,0);
+               alert(err,0,0,"OK",0,0,0);
          }
       }
       
       if(check_button(the_list,POS_CONNECT))
       {
+         char *err;
+         
          unselect_button(the_list,POS_CONNECT);
-         if(try_to_connect(server_addr,FPS*2))
+         if(!(err=try_to_connect(server_addr,FPS*2)))
          { done=1; break; }
          else
-            alert("Couldn't connect",0,0,"OK",0,0,0);
+            alert(err,0,0,"OK",0,0,0);
       }
       if(check_button(the_list,POS_START_SERVER))
       {
@@ -1279,11 +1536,11 @@ int start()
       }
       while(net_query(chan2))
       {
-         char data[18];
+         char data[19];
          char from[50];
          int n;
             
-         n=net_receive(chan2,data,18,from);
+         n=net_receive(chan2,data,19,from);
          for(i=0;i<n_servers;i++)
          {
             if(servers[i].active)
@@ -1307,6 +1564,10 @@ int start()
          }
       }
    }
+   one_game=(the_list[POS_ONEGAME].flags & D_SELECTED)?1:0;
+   save_log=(the_list[POS_SAVELOG].flags & D_SELECTED)?1:0;
+   wait_for_key=(the_list[POS_WAITFORKEY].flags & D_SELECTED)?1:0;
+   torus=(the_list[POS_TORUS].flags & D_SELECTED)?1:0;
    show_mouse(NULL);
    shutdown_dialog(dialog_player);
    net_closechannel(chan);
@@ -1315,8 +1576,10 @@ int start()
    return done;
 }
 
-int try_to_connect(const char *server_addr,int wait_time)
+char *try_to_connect(const char *server_addr,int wait_time)
 {
+   char *err=0;
+   
    chan=net_openchannel(net_driver,0);
    net_assigntarget(chan,server_addr);
    send_client_players(chan);
@@ -1339,13 +1602,20 @@ int try_to_connect(const char *server_addr,int wait_time)
                client_players[k].num=data[6+k];
                players[data[6+k]].client=-1;
                players[data[6+k]].client_num=k;
+               strcpy(players[data[6+k]].name,client_players[k].name);
             }
-            return 1;
+            send_names_to_server();
+            return 0;
          }
+         else if(data[0]==seIMFULL)
+         { err="Server full"; break; }
+         else if(data[0]==seBADPASSWD)
+         { err="Bad password"; break; }
       }
    }
    net_closechannel(chan);
-   return 0;
+   if(err) return err;
+      else return "Couldn't connect";
 }
 
 int start_server(const char *port)
@@ -1362,6 +1632,7 @@ int start_server(const char *port)
       players[n_players].playing=1;
       players[n_players].alive=0;
       client_players[n_players].num=n_players;
+      strcpy(players[n_players].name,client_players[n_players].name);
    }
 
    return 1;

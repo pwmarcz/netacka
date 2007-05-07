@@ -1,8 +1,37 @@
+#include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include <libnet.h>
 
 #include "net.h"
+
+
+void
+writelog (FILE * log, const char *fmt, ...)
+{
+  va_list ap;
+  time_t t;
+  struct tm *loctime;
+  char buf[128];
+
+  t = time (0);
+  loctime = localtime (&t);
+  strftime (buf, 128, "%d %b %H:%M - ", loctime);
+
+  fprintf (log, buf);
+
+  va_start (ap, fmt);
+  if(log)
+    vfprintf (log, fmt, ap);
+  vprintf (fmt, ap);
+  va_end (ap);
+  if(log)
+    fflush (log);
+}
+
+
 
 #define MAX_SERVERS 16
 
@@ -29,8 +58,8 @@ void send_servers(NET_CHANNEL *chan,int n)
       data[0]=loASERVER;
       data[1]=len;
       strcpy(&data[2],servers[i].addr);
-      net_send(chan,data,len+4);
-      printf("Gave him %s\n",&data[2]);
+      net_send(chan,data,len+2);
+      //      printf("Gave him %s\n",&data[2]);
       i++;
    }
 }
@@ -40,6 +69,7 @@ int main(int argc,char *argv[])
    NET_CHANNEL *chan;
    char binding[50];
    time_t lastping;
+   FILE *log=fopen("lobby.log","a");
 
    if(argc<2)
    {
@@ -53,7 +83,7 @@ int main(int argc,char *argv[])
    if(chan=net_openchannel(net_driver,binding))
    {
       int i;
-      printf("Opened on %s\n",binding);
+      writelog(log,"Opened on %s\n",binding);
       for(i=0;i<MAX_SERVERS;i++)
          servers[i].active=0;
       lastping=time(0);
@@ -68,7 +98,7 @@ int main(int argc,char *argv[])
                   continue;
                if(servers[i].next_report<time(0))
                {
-                  printf("Deleted %s\n",servers[i].addr);
+                  writelog(log,"Deleted %s\n",servers[i].addr);
                   servers[i].active=0;
                   n_active--;
                }
@@ -76,12 +106,12 @@ int main(int argc,char *argv[])
          }
          while(net_query(chan))
          {
-            char data[2];
+            char data[100];
             char from[50];
             int n;
             int j;
             
-            n=net_receive(chan,data,2,from);
+            n=net_receive(chan,data,100,from);
             for(i=0;i<MAX_SERVERS;i++)
             {
                if(servers[i].active)
@@ -95,7 +125,7 @@ int main(int argc,char *argv[])
                   {
                      if(n_active<MAX_SERVERS)
                      {
-                        printf("Registered %s\n",from);
+                        writelog(log,"Registered %s\n",from);
                         for(i=0;servers[i].active;i++);
                         servers[i].active=1;
                         servers[i].next_report=time(0)+30;
@@ -109,15 +139,18 @@ int main(int argc,char *argv[])
                case seIMOFF:
                   if(i<MAX_SERVERS)
                   {
-                     printf("Deleted %s\n",from);
+                     writelog(log,"Deleted %s\n",from);
                      servers[i].active=0;
                      n_active--;
                   }
                   break;
                case clGIMMESERVERS:
-                  printf("%s wanted to know servers\n",from);
+		 //printf("%s wanted to know servers\n",from);
                   net_assigntarget(chan,from);
                   send_servers(chan,data[1]);
+                  break;
+               case seLOGTHIS:
+                  writelog(log,"%s sez: %s\n",from,&data[1]);
                   break;
                default:
                   break;
