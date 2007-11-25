@@ -5,20 +5,20 @@ BOTS = bot.o genialny_bot0.o
 OBJECTS_CLIENT = netacka.o net.o $(BOTS)
 
 CC = gcc
-CFLAGS = -s -O2 -Wall
+CFLAGS = -s -O2 -Wall -I.
 #CFLAGS = -g3
 
 # change these for other systems
-LIB = -lalleg -lm -lnet -lwsock32
-CLIENT = netacka.exe
+LIB = `./allegro-config --libs` -L. -lm -lnet -I.
+CLIENT = netacka
 
 all: $(CLIENT) $(SERVER)
 
 $(CLIENT): $(OBJECTS_CLIENT)
-	$(CC) -s $(OBJECTS_CLIENT) -o $(CLIENT) $(LIB) -mwindows
+	$(CC) -s $(OBJECTS_CLIENT) -o $(CLIENT) $(LIB)
 
 clean:
-	del *.o
+	rm *.o
 
 # for SciTE; I set "make run" for the run command
 run: $(CLIENT)

@@ -5,10 +5,11 @@
 
 #include <stdlib.h>
 #include <libnet.h>
+#include <allegro.h>
 
-#define VER_MAJOR 2
-#define VER_MINOR 1
-#define VER_STRING "2.1"
+#define VER_MAJOR 3
+#define VER_MINOR 0
+#define VER_STRING "3.0"
 
 #define clIWANNAPLAY      1
 #define seHEREARESETTNGS  2
@@ -36,10 +37,62 @@
 #define loASERVER        17
 #define seLOGTHIS        22
 
+#define gNORMAL    0
+#define gONEFINGER 1
+#define gTRON      2
+
+
+#define CLIENT_PLAYERS 6
+
+#define MAX_CLIENTS 23
+
+#define MAX_PLAYERS MAX_CLIENTS
+
+
+#define cBLACK 0
+#define cDARKGRAY 1
+#define cVLIGHTGRAY 2
+#define cLIGHTGRAY 3
+#define cRED 4
+#define cGRAY 7
+#define cBLUE 9
+#define cGREEN 10
+#define cCYAN 11
+#define cORANGE 12
+#define cPINK 13
+#define cYELLOW 14
+#define cWHITE 15
+#define cWHITE_WALL 255
+
+
+extern int game_mode, torus;
+extern int screen_w,screen_h;
+
+extern struct player {
+   char name[11];
+   int x,y,old_x,old_y;
+   int hole,old_hole,to_change;
+   int a,last_da,da,da_change_time;
+   int playing,alive;
+   int client,client_num;
+   int score;
+} players[];
+
+int _test(BITMAP *arena,int old_x,int old_y,int x,int y,
+                 int hole,int old_hole);
+void _update(int x,int y,int a,int *x1,int *y1);
+void _update_tron(int x,int y,int a,int *x1,int *y1);
+void _put(BITMAP *arena,int x,int y,int c);
+static inline void _update_angle(int *a,int da)
+{
+   *a=(*a+256+4*da)%256;
+}
+
 extern int net_driver;
-
 int start_net();
-
 void send_byte(NET_CHANNEL *chan,unsigned char a);
+
+
+
 
 #endif
