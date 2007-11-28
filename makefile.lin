@@ -1,29 +1,28 @@
 
 .PHONY = all clean run
 
-BOTS = bot.o genialny_bot0.o
-OBJECTS_CLIENT = netacka.o net.o $(BOTS)
+BOTS = bot.o genialny_bot0.o genialny_bot.o
+OBJECTS_EXE = netacka.o net.o $(BOTS)
 
 CC = gcc
 CFLAGS = -s -O2 -Wall -I.
 #CFLAGS = -g3
 
 # change these for other systems
-LIB = `./allegro-config --libs` -L. -lm -lnet -I.
-CLIENT = netacka
+LIB = `allegro-config --libs` -lm -lnet -lpthread
+EXE = netacka
 
-all: $(CLIENT) $(SERVER)
+all: $(EXE) $(SERVER)
 
-$(CLIENT): $(OBJECTS_CLIENT)
-	$(CC) -s $(OBJECTS_CLIENT) -o $(CLIENT) $(LIB)
+$(EXE): $(OBJECTS_EXE)
+	$(CC) -s $(OBJECTS_EXE) -o $(EXE) $(LIB)
 
 clean:
 	rm *.o
 
 # for SciTE; I set "make run" for the run command
-run: $(CLIENT)
-	$(CLIENT)
-# change to ./$(EXE) if needed
+run: $(EXE)
+	./$(EXE)
 
 netacka.o: net.h bots.inc 
 

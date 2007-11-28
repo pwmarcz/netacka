@@ -1,8 +1,8 @@
 
 .PHONY = all clean run
 
-BOTS = bot.o genialny_bot0.o
-OBJECTS_CLIENT = netacka.o net.o $(BOTS)
+BOTS = bot.o genialny_bot0.o genialny_bot.o
+OBJECTS_EXE = netacka.o net.o $(BOTS)
 
 CC = gcc
 CFLAGS = -s -O2 -Wall
@@ -10,19 +10,19 @@ CFLAGS = -s -O2 -Wall
 
 # change these for other systems
 LIB = -lalleg -lm -lnet -lwsock32
-CLIENT = netacka.exe
+EXE = netacka.exe
 
-all: $(CLIENT) $(SERVER)
+all: $(EXE)
 
-$(CLIENT): $(OBJECTS_CLIENT)
-	$(CC) -s $(OBJECTS_CLIENT) -o $(CLIENT) $(LIB) -mwindows
+$(EXE): $(OBJECTS_EXE)
+	$(CC) -s $(OBJECTS_EXE) -o $(EXE) $(LIB) -mwindows
 
 clean:
 	del *.o
 
 # for SciTE; I set "make run" for the run command
-run: $(CLIENT)
-	$(CLIENT)
+run: $(EXE)
+	$(EXE)
 # change to ./$(EXE) if needed
 
 netacka.o: net.h bots.inc 

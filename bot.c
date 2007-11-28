@@ -8,7 +8,7 @@
 
 #define SEARCHING_DISTANCE 60
 
-const char *BOT_NAME = "gawron";
+
 
 static int longest_path (BITMAP *arena, int x, int y, int a, int da)
 {

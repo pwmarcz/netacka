@@ -152,7 +152,7 @@ int check_bot_d0 (BITMAP *arena, int m, void *data)
 }
 
 
-void *start_bot_d0 () 
+void *start_bot_d0 (int m) 
 {
   if(!arena2)
     arena2=create_bitmap(screen_w-110,screen_h);

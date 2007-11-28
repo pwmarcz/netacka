@@ -163,7 +163,7 @@ inline void set_to_client(int client)
 const char *welcome[]={
    " NETACKA ver. "VER_STRING" with BOTS [a.k.a. Botacka]",
    "",
-   "by    pafel    (humpolec@gmail.com)",
+   "by    humpolec (humpolec@gmail.com)",
    "                   + bots by",
    "      jamiwron (jamiwron@gmail.com)",
    "    & derezin  (md262929@students.mimuw.edu.pl)",
@@ -677,6 +677,17 @@ void revise_pos()
             if(players[i].y<5<<8)              players[i].y+=(screen_h-2)<<8;
             if(players[i].y>(screen_h+6)<<8)   players[i].y-=(screen_h-2)<<8;
         }
+                        int dx=(players[i].x-players[i].old_x)>>8,
+                            dy=(players[i].y-players[i].old_y)>>8;
+                        if(dx>screen_w/2)
+                           players[i].old_x+=(screen_w-111)<<8;
+                        else if(dx<-screen_w/2)
+                           players[i].old_x-=(screen_w-111)<<8;
+                        if(dy>screen_h/2)
+                           players[i].old_y+=(screen_h-2)<<8;
+                        else if(dy<-screen_h/2)
+                           players[i].old_y-=(screen_h-2)<<8;
+
     }
 }
 
@@ -1110,20 +1121,8 @@ int play_round(int is_server)
                      players[i].hole=(data[pos+6]&64)?1:0;
                      players[i].score=(data[pos+7]<<8)+data[pos+8];
                      pos+=9;
-                     if(torus)
-                     {
-                        int dx=(players[i].x-players[i].old_x)>>8,
-                            dy=(players[i].y-players[i].old_y)>>8;
-                        if(dx>screen_w/2)
-                           players[i].old_x+=(screen_w-111)<<8;
-                        else if(dx<-screen_w/2)
-                           players[i].old_x-=(screen_w-111)<<8;
-                        if(dy>screen_h/2)
-                           players[i].old_y+=(screen_h-2)<<8;
-                        else if(dy<-screen_h/2)
-                           players[i].old_y-=(screen_h-2)<<8;
-                     }
                   }
+                  if(torus) revise_pos();
                   playing=1;
                   draw_players(arena,i_know,t);
                   if(first)
@@ -1171,14 +1170,17 @@ int play_round(int is_server)
    }
    
    if(is_server)
-      for(i=0;i<MAX_CLIENTS;i++)
+     {
+       for(i=0;i<MAX_CLIENTS;i++)
          if(clients[i].playing)
-         {
-            set_to_client(i);send_byte(chan,seIKICKYOU);
-            remove_client(i);
-         }
+	   {
+	     set_to_client(i);send_byte(chan,seIKICKYOU);
+	     remove_client(i);
+	   }
+       report_to_lobby(seIMOFF);
+     }
    close_bots();
-   report_to_lobby(seIMOFF);
+   
    destroy_bitmap(score_list);
    destroy_bitmap(arena);
    destroy_bitmap(buf);
@@ -1210,24 +1212,25 @@ void set_the_damn_config()
 
 int set_mode(int w,int h)
 {
-         if(set_gfx_mode(windowed?GFX_AUTODETECT_WINDOWED:GFX_AUTODETECT,
-            w,h,0,0)!=0)
-            if(set_gfx_mode(windowed?GFX_AUTODETECT:GFX_AUTODETECT_WINDOWED,
-               w,h,0,0)!=0)
-                  return -1;
-         set_palette(pal);
+  if(set_gfx_mode(windowed?GFX_AUTODETECT_WINDOWED:GFX_AUTODETECT,
+		  w,h,0,0)!=0)
+    if(set_gfx_mode(windowed?GFX_AUTODETECT:GFX_AUTODETECT_WINDOWED,
+		    w,h,0,0)!=0)
+      return -1;
+
+  set_palette(pal);
+  set_color(cWHITE_WALL,&pal[cWHITE]);
             
-   set_color(cWHITE_WALL,&pal[cWHITE]);
-            
-   if(gui_buf) destroy_bitmap(gui_buf);
-   gui_buf=create_bitmap(gui_w=h,gui_h=h);
-         if(set_display_switch_mode(SWITCH_BACKGROUND))
-         {
-            set_display_switch_mode(SWITCH_BACKAMNESIA);
-            /*set_display_switch_callback(SWITCH_OUT,_get_gui_buf);
-            set_display_switch_callback(SWITCH_IN,_put_gui_buf);*/
-         }
-         return 0;
+  if(gui_buf) destroy_bitmap(gui_buf);
+  gui_buf=create_bitmap(gui_w=h,gui_h=h);
+  if(set_display_switch_mode(SWITCH_BACKGROUND))
+    {
+      set_display_switch_mode(SWITCH_BACKAMNESIA);
+      /*set_display_switch_callback(SWITCH_OUT,_get_gui_buf);
+	set_display_switch_callback(SWITCH_IN,_put_gui_buf);*/
+    }
+  disable_hardware_cursor(); show_mouse(NULL); clear_bitmap(screen);
+  return 0;
 }
 
 int start();
@@ -1291,9 +1294,8 @@ int main()
       play_round(is_server);
       if(!is_server)
          send_byte(chan,clGOODBYE);
-      else
-         send_byte(chan,seIMOFF);
    }
+   set_gfx_mode(GFX_TEXT,0,0,0,0);
    destroy_bitmap(gui_buf);
    net_closechannel(chan);
    return 0;
@@ -1686,7 +1688,7 @@ int start()
    wait_for_key=(the_list[POS_WAITFORKEY].flags & D_SELECTED)?1:0;
    if (done==-1) torus=(the_list[POS_TORUS].flags & D_SELECTED)?1:0;                                               
    show_mouse(NULL);
-   shutdown_dialog(dialog_player);
+   shutdown_dialog(dialog_player); clear_bitmap(screen);
    net_closechannel(chan);
    net_closechannel(chan2);
    

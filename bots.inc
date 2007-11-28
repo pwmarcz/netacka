@@ -19,16 +19,16 @@ void close_bot_d (void *data);
 const struct bot {
    char *name;
    char *descr;
-   void *((*start)()); // void start ();
+   void *((*start)(int)); // void start ();
    int (*check)(BITMAP*,int,void*); // int check (BITMAP *arena,int m);
    void (*close)(void*); // void close ();
 } bots[] = {
    { "sigma","by jamiwron",
       &start_bot,&check_bot,&close_bot } ,
    { "pi","by derezin",
-      &start_bot_d0,&check_bot_d0,&close_bot_d0 } /*,
-   { "genialny dwa","by derezin",
-      &start_bot_d,&check_bot_d,&close_bot_d }*/
+      &start_bot_d0,&check_bot_d0,&close_bot_d0 } ,
+   { "omega","by derezin",
+      &start_bot_d,&check_bot_d,&close_bot_d }
 };
 
 const int N_BOTS=sizeof(bots)/sizeof(struct bot);

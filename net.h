@@ -8,8 +8,8 @@
 #include <allegro.h>
 
 #define VER_MAJOR 3
-#define VER_MINOR 0
-#define VER_STRING "3.0"
+#define VER_MINOR 1
+#define VER_STRING "3.1"
 
 #define clIWANNAPLAY      1
 #define seHEREARESETTNGS  2
