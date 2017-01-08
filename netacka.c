@@ -74,7 +74,7 @@ PALETTE pal = {
     {63, 63, 63},		// 15 white_wall
 };
 
-const char player_colors[MAX_PLAYERS][2] = {
+const int player_colors[MAX_PLAYERS][2] = {
     {cWHITE, cWHITE},
     {cRED, cRED},
     {cYELLOW, cYELLOW},
@@ -100,7 +100,7 @@ const char player_colors[MAX_PLAYERS][2] = {
     {cRED, cGREEN}
 };
 
-inline int get_player_color(i, j) {
+inline int get_player_color(int i, int j) {
     return palette_color[player_colors[i][j]];
 }
 
