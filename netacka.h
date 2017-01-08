@@ -1,7 +1,5 @@
-/* NET.H */
-
-#ifndef _NET_H
-#define _NET_H
+#ifndef _NETACKA_H
+#define _NETACKA_H
 
 #include <stdlib.h>
 #include <libnet.h>
@@ -91,8 +89,6 @@ static inline void _update_angle(int *a,int da)
 extern int net_driver;
 int start_net();
 void send_byte(NET_CHANNEL *chan,unsigned char a);
-
-
 
 
 #endif

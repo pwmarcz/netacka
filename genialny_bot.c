@@ -2,7 +2,7 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <math.h>
-#include "net.h"
+#include "netacka.h"
 
 #define JAK_DALEKO 100
 #define USREDNIAC 3
@@ -21,7 +21,7 @@ typedef struct punkt {
 } punkt;
 static punkt gdzie_wrog[MAX_PLAYERS][3][WROG];
 static int zyje_wrog[MAX_PLAYERS][3][WROG];
-static punkt doskasowania[KASOWANIE]; 
+static punkt doskasowania[KASOWANIE];
 static int chwile[WROG];
 static int wiazkapom[70];
 static int wiazka[130];
@@ -74,7 +74,7 @@ static inline void czysta_arena ()
 {
     int dzeta,delta;
     //masked_blit(arena2,screen,0,0,0,0,screen_w,screen_h);
-    for (dzeta=0; dzeta < ile_kasuj; dzeta++) 
+    for (dzeta=0; dzeta < ile_kasuj; dzeta++)
 	_put(arena2, (doskasowania[dzeta].x)>>8, (doskasowania[dzeta].y)>>8, 0);
     ile_kasuj=0;
     for (dzeta=0; dzeta<MAX_PLAYERS; dzeta++)
@@ -95,7 +95,7 @@ static inline void czysta_arena ()
     przeszlismy=0;
     killed=0;
     kiedy_killed=-1;
-} 
+}
 static inline void rusz_wrogow (BITMAP *arena)
 {
     if (przeszlismy>=WROG-1) return;
@@ -110,27 +110,27 @@ static inline void rusz_wrogow (BITMAP *arena)
 	    {
 		gdzie_wrog[dzeta][delta][przeszlismy+1].a=gdzie_wrog[dzeta][delta][przeszlismy].a;
 		_update_angle(&gdzie_wrog[dzeta][delta][przeszlismy+1].a,delta-1);
-		_update(gdzie_wrog[dzeta][delta][przeszlismy].x, 
-			gdzie_wrog[dzeta][delta][przeszlismy].y, 
+		_update(gdzie_wrog[dzeta][delta][przeszlismy].x,
+			gdzie_wrog[dzeta][delta][przeszlismy].y,
 			gdzie_wrog[dzeta][delta][przeszlismy].a, &xif, &yif);
-		if (_test(arena2, gdzie_wrog[dzeta][delta][przeszlismy].x, 
+		if (_test(arena2, gdzie_wrog[dzeta][delta][przeszlismy].x,
 			  gdzie_wrog[dzeta][delta][przeszlismy].y, xif, yif, 0, 0)==1 && delta==1)
 		{
 		    killed=1;
 		    if (kiedy_killed==-1) kiedy_killed=przeszlismy;
 		    continue;
 		}
-		if (_test(arena, gdzie_wrog[dzeta][delta][przeszlismy].x, 
+		if (_test(arena, gdzie_wrog[dzeta][delta][przeszlismy].x,
 			  gdzie_wrog[dzeta][delta][przeszlismy].y, xif, yif, 0, 0)/* ||
-		   ( _test(arena2, gdzie_wrog[dzeta][delta][przeszlismy].x, 
+		   ( _test(arena2, gdzie_wrog[dzeta][delta][przeszlismy].x,
 			  gdzie_wrog[dzeta][delta][przeszlismy].y, xif, yif, 0, 0) &&
-		     _test(arena2, gdzie_wrog[dzeta][delta][przeszlismy].x, 
+		     _test(arena2, gdzie_wrog[dzeta][delta][przeszlismy].x,
 		     gdzie_wrog[dzeta][delta][przeszlismy].y, xif, yif, 0, 0)!=dzeta*10+delta+2)  */)
 		{
 		    zyje_wrog[dzeta][delta][przeszlismy+1]=0;
-		    zyje_wrog[dzeta][delta][przeszlismy]=0;		    
+		    zyje_wrog[dzeta][delta][przeszlismy]=0;
 		}
-		else 
+		else
 		{
 		    pu[delta]=1;
 		    rysuj(xif,yif,dzeta*10+delta+2);
@@ -138,10 +138,10 @@ static inline void rusz_wrogow (BITMAP *arena)
 		    gdzie_wrog[dzeta][delta][przeszlismy+1].y=yif;
 		    zyje_wrog[dzeta][delta][przeszlismy+1]=1;
 		}
-		
+
 	    }
 	}
-//	for (delta=0; delta<3; delta++) 
+//	for (delta=0; delta<3; delta++)
 	//  if (pu[delta]) rysuj(xif,yif,2);
     }
 }
@@ -149,14 +149,14 @@ static inline int idz(BITMAP *arena,int zm_kier,int dyst)
 {
     int d=0,len=dyst,xa,ya;
     while(len && przeszlismy<JAK_DALEKO-1 && wynik==-2)
-    { 
+    {
 	_update_angle(&bot.a,zm_kier);
 	_update(bot.x,bot.y,bot.a,&xa,&ya);
 	//if (_test(arena2,bot.x,bot.y,xa,ya,0,0)==2 && !_test(arena,bot.x,bot.y,xa,ya,0,0)) printf("(%d, %d,kier=%d)",(bot.x-players[m].x)>>8,(bot.y-players[m].y)>>8,zm_kier);
 	//else printf("0");
 	if(_test(arena,bot.x,bot.y,xa,ya,0,0) || _test(arena2,bot.x,bot.y,xa,ya,0,0)) break;
 	bot.x=xa; bot.y=ya;
-	if (przeszlismy < WROG-1) 
+	if (przeszlismy < WROG-1)
 	{
 	    rusz_wrogow(arena);
 	    rysuj(bot.x,bot.y,1);
@@ -175,14 +175,14 @@ static inline void cofnij_do(int chwila)
     if ((chwila>=przeszlismy) || (chwila<0)) return;
     przeszlismy=chwila;
     bot=gdzie_bot[chwila];
-    if (kiedy_killed>chwila) 
+    if (kiedy_killed>chwila)
     {
 	kiedy_killed=-1;
 	killed=0;
     }
     if (chwila<WROG-1)
     {
-	for (dzeta=ile_kasuj-1; dzeta >= chwile[chwila]; dzeta--) 
+	for (dzeta=ile_kasuj-1; dzeta >= chwile[chwila]; dzeta--)
 	    _put(arena2, (doskasowania[dzeta].x)>>8, (doskasowania[dzeta].y)>>8, 0);
 	ile_kasuj=chwile[chwila];
     }
@@ -190,15 +190,15 @@ static inline void cofnij_do(int chwila)
 static inline int wybierz(int abc1, int abc2, int abc3)
 {
     if ((abc1>=abc2) && (abc1>=abc3)) return LEWO;
-    return ((abc2 >= abc3) ? PROSTO : PRAWO);    
+    return ((abc2 >= abc3) ? PROSTO : PRAWO);
 }
-static inline void zwroc(int w) 
-{ 
+static inline void zwroc(int w)
+{
     if (wynik==-2) wynik=w;
 }
 static inline int find_the_way_n (BITMAP *arena,moje_dane *dane)
 {
-    inicjuj();    
+    inicjuj();
     wiazkapom[0]=idz(arena,PROSTO,JAK_DALEKO);
     cofnij_do(0);
     int i;
@@ -211,7 +211,7 @@ static inline int find_the_way_n (BITMAP *arena,moje_dane *dane)
 	    int ch=przeszlismy;
 	    wiazkapom[indeks]=idz(arena,PROSTO,JAK_DALEKO);
 	    if (przeszlismy==JAK_DALEKO) wiazkapom[indeks]*=10;
-	    if (killed) morduj=LEWO; 
+	    if (killed) morduj=LEWO;
 	    indeks++;
 	    cofnij_do(ch);
 	} else break;
@@ -225,12 +225,12 @@ static inline int find_the_way_n (BITMAP *arena,moje_dane *dane)
     {
 	if (idz(arena,PRAWO,SKOK)==SKOK)
 	{
-	    int ch=przeszlismy;	    
+	    int ch=przeszlismy;
 	    wiazka[indeks]=idz(arena,PROSTO,JAK_DALEKO);
 	    if (przeszlismy==JAK_DALEKO) wiazka[indeks]*=10;
 	    //printf("%d ",wiazka[indeks]);
 	    indeks++;
-	    if (killed) morduj=PRAWO; 
+	    if (killed) morduj=PRAWO;
 	    cofnij_do(ch);
 	} else break;
     }
@@ -248,7 +248,7 @@ static inline int find_the_way_n (BITMAP *arena,moje_dane *dane)
 	    suma+=wiazka[i+USREDNIAC-1]/*+2*wiazka[i]-2*wiazka[i-1]*/-wiazka[i-USREDNIAC];
 	    if(suma>=max)
 	      {
-		max=suma; 
+		max=suma;
 		gdzie_max=i;
 	      }
 	  }
@@ -256,12 +256,12 @@ static inline int find_the_way_n (BITMAP *arena,moje_dane *dane)
 	if(gdzie_max<=srodek) zwroc(LEWO);
 	//zwroc(PROSTO);
       }
-    else 
+    else
       {
 	max=-1;
 	gdzie_max=0;
-	for (i=0; i<indeks; i++) 
-	  if (wiazka[indeks]>max) 
+	for (i=0; i<indeks; i++)
+	  if (wiazka[indeks]>max)
 	    {
 	      max=wiazka[indeks];
 	      gdzie_max=indeks;
@@ -285,7 +285,7 @@ int check_bot_d (BITMAP *arena, int m, void *data)
 }
 
 
-void *start_bot_d (int m) 
+void *start_bot_d (int m)
 {
    moje_dane *dane=malloc(sizeof(moje_dane));
    if(!dane) return NULL;
@@ -296,7 +296,7 @@ void *start_bot_d (int m)
   return dane;
 }
 
-void close_bot_d (void *data) 
+void close_bot_d (void *data)
 {
     if(arena2)
     {

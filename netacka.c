@@ -6,7 +6,7 @@
 #include <allegro.h>
 #include <libnet.h>
 
-#include "net.h"
+#include "netacka.h"
 #include "bots.inc"
 
 int gray_bg = 0;

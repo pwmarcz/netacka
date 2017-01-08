@@ -5,7 +5,7 @@
 #include <string.h>
 #include <libnet.h>
 
-#include "net.h"
+#include "netacka.h"
 
 
 void
@@ -46,12 +46,12 @@ void send_servers(NET_CHANNEL *chan,int n)
 {
    int i,j;
    char data[54];
-   
+
    if(n_active<n) n=n_active;
    for(i=j=0;j<n;j++)
    {
       int len;
-      
+
       while(!servers[i].active) i++;
 
       len=strlen(servers[i].addr)+1;
@@ -110,7 +110,7 @@ int main(int argc,char *argv[])
             char from[50];
             int n;
             int j;
-            
+
             n=net_receive(chan,data,100,from);
             for(i=0;i<MAX_SERVERS;i++)
             {

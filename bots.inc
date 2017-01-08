@@ -1,6 +1,6 @@
 /* BOTS.INC */
 
-#include "net.h"
+#include "netacka.h"
 
 // bots by gawron - bot.c
 void *start_bot (int m);

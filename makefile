@@ -25,8 +25,8 @@ run: $(EXE)
 	$(EXE)
 # change to ./$(EXE) if needed
 
-netacka.o: net.h bots.inc 
+netacka.o: netacka.h bots.inc
 
-net.o: net.h 
+net.o: netacka.h
 
-$(BOTS): net.h
+$(BOTS): netacka.h

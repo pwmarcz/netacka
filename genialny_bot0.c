@@ -2,7 +2,7 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <math.h>
-#include "net.h"
+#include "netacka.h"
 
 #define JAK_DALEKO 100
 #define USREDNIAC 3
@@ -19,7 +19,7 @@ static BITMAP *arena2=NULL;
 static inline int na_wprost(BITMAP *arena,BITMAP *arena2, int x, int y, int a){
   int d=0,l=JAK_DALEKO,xa,ya;
   while(d++,l--)
-     { 
+     {
      _update(x,y,a,&xa,&ya);
      if(_test(arena,x,y,xa,ya,0,0) || _test(arena2,x,y,xa,ya,0,0)) break;
      x=xa; y=ya;
@@ -29,12 +29,12 @@ static inline int na_wprost(BITMAP *arena,BITMAP *arena2, int x, int y, int a){
 
 static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int y, int a)
 {
-    
-    
+
+
     clear_bitmap(arena2);
-    
-    
-    
+
+
+
     for (i=0; i<MAX_CLIENTS; i++)
       {
 	if (players[i].alive && players[i].playing && i!=m)
@@ -49,7 +49,7 @@ static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int
 	      if(_test(arena,xi,yi,xip,yip,0,0) ) break;
 	      _put(arena2,xip>>8,yip>>8,alfa);
 	      xi=xip; yi=yip;
-	      
+
 	    }
 	    xi=players[i].x;
 	    yi=players[i].y;
@@ -81,16 +81,16 @@ static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int
     {
 	_update_angle(&a1,-1);
 	_update(x1,y1,a1,&xa,&ya);
-	
+
 	if(_test(arena,x1,y1,xa,ya,0,0) || _test(arena2,x1,y1,xa,ya,0,0) ) break;
 	przeszlismy++;
 	x1=xa; y1=ya;
 	tab1[indeks]=na_wprost(arena,arena2,x1,y1,a1)+przeszlismy;
 	indeks++;
-    } 
+    }
     int srodek=indeks-1;
     for(i=0; i<indeks; i++) tab2[i]=tab1[indeks-i-1];
-    
+
     x1=x; y1=y; a1=a;
     przeszlismy=0;
     while(indeks<=128)
@@ -102,14 +102,14 @@ static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int
 	przeszlismy++;
 	x1=xa; y1=ya;
 	tab2[indeks]=na_wprost(arena,arena2,x1,y1,a1)+przeszlismy;
-	indeks++; 
+	indeks++;
     }
     //jak odkomentujesz ponizszy komentarz to uzyskasz zupelnie innego bota
     /*int suma1=0;
     int suma2=0;
     for (i=0; i<srodek; i++) suma1+=tab2[i];
     for (i=srodek+1; i<indeks; i++) suma2+=tab2[i];
-    
+
     if (suma2>suma1) return 1;
     if (suma1>suma2) return -1;
     return 0;*/
@@ -121,17 +121,17 @@ static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int
       for(i=USREDNIAC; i<indeks-USREDNIAC+1; i++){
 	  suma+=tab2[i+USREDNIAC-1]/*+2*tab2[i]-2*tab2[i-1]*/-tab2[i-USREDNIAC];
 	if(suma>=max){max=suma; gdzie_max=i;}
-      }       
+      }
       /*max=-1; gdzie_max=0;
 	while(indeks--)
 	if(tab2[indeks]>max) { max=tab2[indeks]; gdzie_max=indeks;}*/
       //fprintf(stderr,"\n");
       /*int fiks=gdzie_max;
       max=tab2[gdzie_max];
-      for (i=fiks-USREDNIAC+1; i<fiks+USREDNIAC; i++) 
+      for (i=fiks-USREDNIAC+1; i<fiks+USREDNIAC; i++)
       {
-	  if (tab2[i]>max) 
-	  { 
+	  if (tab2[i]>max)
+	  {
 	      gdzie_max=i;
 	      max=tab2[i];
 	  }
@@ -152,14 +152,14 @@ int check_bot_d0 (BITMAP *arena, int m, void *data)
 }
 
 
-void *start_bot_d0 (int m) 
+void *start_bot_d0 (int m)
 {
   if(!arena2)
     arena2=create_bitmap(screen_w-110,screen_h);
   return &dummy;
 }
 
-void close_bot_d0 (void *data) 
+void close_bot_d0 (void *data)
 {
   if(arena2)
     {
