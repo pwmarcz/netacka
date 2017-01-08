@@ -1294,6 +1294,8 @@ int main()
 
     set_the_damn_config();
     windowed = get_config_int(0, "windowed", 1);
+    if (getenv("NETACKA_WINDOWED"))
+        windowed = 1;
 
     install_keyboard();
     install_mouse();
