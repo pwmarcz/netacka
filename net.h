@@ -62,7 +62,7 @@
 #define cPINK 13
 #define cYELLOW 14
 #define cWHITE 15
-#define cWHITE_WALL 255
+#define cWHITE_WALL 16
 
 
 extern int game_mode, torus;
