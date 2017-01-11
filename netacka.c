@@ -159,12 +159,8 @@ int screen_w, screen_h;
 
 NET_CHANNEL *chan;
 
-char lobby_addr[31];
-int using_lobby = 1;
-
 int hide_bot_numbers = 0;
 
-void report_to_lobby(unsigned char a);
 void send_name(int whose, NET_CHANNEL * chan);
 void send_names_to_client(int who);
 
@@ -365,9 +361,6 @@ void draw_konec(BITMAP * bmp)
     int x = (screen_w - 110) / 2;
     FILE *fp = 0;
 
-    unsigned char data[100] = { seLOGTHIS };
-    char *s = (char *) &data[1];
-
     if (save_log) {
         long t = time(0);
         char fname[256];
@@ -375,7 +368,6 @@ void draw_konec(BITMAP * bmp)
 
         sprintf(fname, "%s%ld.txt", game_path, t);
         fp = fopen(fname, "w");
-        net_assigntarget(chan, lobby_addr);
         switch (game_mode) {
         case gTRON:
             mode = ", tron";
@@ -387,8 +379,6 @@ void draw_konec(BITMAP * bmp)
             mode = "";
             break;
         }
-        sprintf(s, "%s%s%s", server_name, mode, torus ? ", torus" : "");
-        net_send(chan, data, strlen(s) + 2);
     }
     clear_bitmap(bmp);
     for (i = 0; i < MAX_PLAYERS; i++)
@@ -424,9 +414,6 @@ void draw_konec(BITMAP * bmp)
             if (fp)
                 fprintf(fp, "#%2d %10s (%3d)\n", tmp, name,
                         players[tmp].score);
-            sprintf(s, "#%2d (%10s) = %3d pts", tmp, name,
-                    players[tmp].score);
-            net_send(chan, data, strlen(s) + 2);
         }
         rectfill(bmp, x, 10 + i * 25, x + 9, 19 + i * 25,
                  get_player_color(tmp, 0));
@@ -802,11 +789,6 @@ int play_round(int is_server)
     //for(i=0;i<N_BOTS;i++) bots[i].start();
     start_bots();
     while (!key[KEY_ESC] && !escape && !done) {
-        if (using_lobby && is_server)
-            if (next_report < time(0)) {
-                next_report = time(0) + 10;
-                report_to_lobby(seREGISTERME);
-            }
         rest(1);
         if (is_server && wait_for_key)
             if (key[KEY_SPACE])
@@ -1093,13 +1075,13 @@ int play_round(int is_server)
                     break;
                 case clKNOCKKNOCK:
                     {
-                        char data2[19];
+                        char data2[20];
                         data2[0] = seMYINFO;
                         data2[1] = n_players;
                         data2[2] = server_passwd[0] ? '*' : ' ';
                         strcpy(&data2[3], server_name);
                         net_assigntarget(chan, from);
-                        net_send(chan, data2, 19);
+                        net_send(chan, data2, 20);
                         break;
                     }
                 case PING:
@@ -1215,7 +1197,6 @@ int play_round(int is_server)
                 send_byte(chan, seIKICKYOU);
                 remove_client(i);
             }
-        report_to_lobby(seIMOFF);
     }
     close_bots();
 
@@ -1359,7 +1340,7 @@ void crash(const char *msg)
 #define SERVER_LIST_SIZE 16
 
 struct {
-    char addr[50], name[16];
+    char addr[50], name[17];
     int active;
     int n_players;
 } servers[SERVER_LIST_SIZE];
@@ -1367,7 +1348,7 @@ int n_servers = 0;
 
 char *_getter(int index, int *list_size)
 {
-    static char str[40];
+    static char str[100];
     if (index == -1) {
         if (n_servers)
             *list_size = n_servers;
@@ -1439,19 +1420,17 @@ char server_addr[31], str_score_limit[4], str_fps[3], port[6];
 #define POS_CONNECT         4
 #define POS_START_SERVER    5
 #define POS_RES_LIST        10
-#define POS_ASKLOBBY        15
-#define POS_REPORT          17
-#define POS_MODE_LIST       18
-#define POS_ONEGAME         19
-#define POS_SAVELOG         20
-#define POS_WAITFORKEY      25
-#define POS_TORUS           26
+#define POS_MODE_LIST       15
+#define POS_ONEGAME         16
+#define POS_SAVELOG         17
+#define POS_WAITFORKEY      22
+#define POS_TORUS           23
 
 #define POS_SCORELIMIT      7
 #define POS_FPS             9
 
 int to_disable[] = { POS_SCORELIMIT, POS_FPS, POS_WAITFORKEY,
-    POS_SAVELOG, POS_REPORT, POS_ONEGAME, POS_RES_LIST,
+    POS_SAVELOG, POS_ONEGAME, POS_RES_LIST,
     -1
 };
 
@@ -1486,14 +1465,6 @@ DIALOG the_list[] = {
     {d_text_proc, 325, 395, 0, 0, 0, 0, 0, 0, 0, 0, "Server port:", 0,
      NULL},
     {d_edit_proc, 455, 395, 170, 10, 0, 0, 0, 0, 5, 0, port, 0, NULL},
-
-    {d_radio_proc, 10, 10, 200, 10, 0, 0, 0, D_SELECTED, 0, 0,
-     "Use lobby server", 0, NULL},
-    {d_radio_proc, 10, 30, 200, 10, 0, 0, 0, 0, 0, 0, "Search LAN", 0,
-     NULL},
-
-    {d_check_proc, 325, 410, 220, 10, 0, 0, 0, 0, 1, 0,
-     "Report to lobby server", 0, NULL},
 
     {d_list_proc, 10, 315, 260, 40, 0, 0, 0, 0, 0, 0, _mode_getter, 0,
      NULL},
@@ -1558,15 +1529,11 @@ int start()
     sprintf(str_score_limit, "%d", score_limit);
     strncpy(server_addr,
             get_config_string("client", "server", "127.0.0.1:6789"), 30);
-    strncpy(lobby_addr, get_config_string(0, "lobby", "127.0.0.1:6790"),
-            30);
     strncpy(port, get_config_string("server", "port", "6789"), 5);
     strncpy(server_name,
             get_config_string("server", "name", "Netacka ver " VER_STRING),
             15);
 
-    if (get_config_int("server", "report_to_lobby", 1))
-        the_list[POS_REPORT].flags |= D_SELECTED;
     if (get_config_int("server", "one_game", 0))
         the_list[POS_ONEGAME].flags |= D_SELECTED;
     if (get_config_int("server", "save_log", 0))
@@ -1595,8 +1562,6 @@ int start()
 
     dialog_player = init_dialog(the_list, 0);
 
-    net_assigntarget(chan, lobby_addr);
-
     escape = 0;
 
     show_mouse(screen);
@@ -1614,15 +1579,14 @@ int start()
                 servers[i].n_players = -1;
             }
             the_list[POS_SERVER_LIST].flags |= D_DIRTY;
-            if (the_list[POS_ASKLOBBY].flags & D_SELECTED) {
-                data[0] = clGIMMESERVERS;
-                data[1] = SERVER_LIST_SIZE;
-                net_send(chan, data, 2);
-            } else {
-                net_assigntarget(chan2, "255.255.255.255:6789");
-                data[0] = clKNOCKKNOCK;
-                net_send(chan2, data, 1);
-            }
+
+            net_assigntarget(chan2, "255.255.255.255:6789");
+            send_byte(chan2, clKNOCKKNOCK);
+
+            // Also send to localhost, for testing.
+            net_assigntarget(chan2, "127.0.0.1:6789");
+            send_byte(chan2, clKNOCKKNOCK);
+
             restart_server_list = 0;
         }
         if (key[KEY_ESC] || escape) {
@@ -1678,47 +1642,18 @@ int start()
             game_mode = game_modes[the_list[POS_MODE_LIST].d1].modenum;
             if (start_server(port)) {
                 done = -1;
-                if (!(the_list[POS_REPORT].flags & D_SELECTED))
-                    lobby_addr[0] = 0;
                 break;
             } else {
                 alert("Couldn't start server", 0, 0, "OK", 0, 0, 0);
                 FPS = 20;
             }
         }
-        while (net_query(chan)) {
-            char data[54];
-            char from[50];
-            int n;
-
-            n = net_receive(chan, data, 54, from);
-            strcpy(lobby_addr, from);
-
-            if (*data == loASERVER) {
-                for (i = 0; i < n_servers; i++) {
-                    if (servers[i].active)
-                        if (!strcmp(&data[2], servers[i].addr))
-                            break;
-                }
-                if (i == n_servers && n_servers < SERVER_LIST_SIZE) {
-                    n_servers++;
-                    strcpy(servers[i].addr, &data[2]);
-                    servers[i].active = 1;
-                    servers[i].n_players = -1;
-                    if (servers[i].n_players == -1) {
-                        net_assigntarget(chan2, servers[i].addr);
-                        send_byte(chan2, clKNOCKKNOCK);
-                    }
-                    the_list[POS_SERVER_LIST].flags |= D_DIRTY;
-                }
-            }
-        }
         while (net_query(chan2)) {
-            char data[19];
+            char data[20];
             char from[50];
             int n;
 
-            n = net_receive(chan2, data, 19, from);
+            n = net_receive(chan2, data, 20, from);
             for (i = 0; i < n_servers; i++) {
                 if (servers[i].active)
                     if (!strcmp(from, servers[i].addr))
@@ -1814,12 +1749,4 @@ int start_server(const char *port)
     }
 
     return 1;
-}
-
-void report_to_lobby(unsigned char a)
-{
-    if (lobby_addr[0]) {
-        net_assigntarget(chan, lobby_addr);
-        send_byte(chan, a);
-    }
 }

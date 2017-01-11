@@ -29,12 +29,6 @@
 #define clKNOCKKNOCK     12
 #define seMYINFO         19
 
-#define seREGISTERME     13
-#define seIMOFF          16
-#define clGIMMESERVERS   15
-#define loASERVER        17
-#define seLOGTHIS        22
-
 #define gNORMAL    0
 #define gONEFINGER 1
 #define gTRON      2
