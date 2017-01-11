@@ -1,5 +1,5 @@
 
-.PHONY = all clean run
+.PHONY = all clean
 
 BOTS = bot.o genialny_bot0.o genialny_bot.o
 OBJECTS_EXE = netacka.o net.o $(BOTS)
@@ -19,10 +19,6 @@ $(EXE): $(OBJECTS_EXE)
 
 clean:
 	rm *.o
-
-# for SciTE; I set "make run" for the run command
-run: $(EXE)
-	./$(EXE)
 
 netacka.o: netacka.h bots.inc
 
