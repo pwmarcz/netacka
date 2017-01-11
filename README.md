@@ -7,6 +7,8 @@ For more information, go to https://pwmarcz.pl/netacka.
 
 I wrote this in high school. Expect some horrible code.
 
+Patches welcome!
+
 ## Building
 
 Netacka depends on:
