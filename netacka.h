@@ -5,9 +5,9 @@
 #include <libnet.h>
 #include <allegro.h>
 
-#define VER_MAJOR 3
-#define VER_MINOR 1
-#define VER_STRING "3.1"
+#define VER_MAJOR 4
+#define VER_MINOR 0
+#define VER_STRING "4.0"
 
 #define clIWANNAPLAY      1
 #define seHEREARESETTNGS  2
