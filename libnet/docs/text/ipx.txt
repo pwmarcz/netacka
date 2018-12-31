@@ -1,0 +1,112 @@
+IPX Driver
+==========
+
+Opening Channels
+----------------
+    The IPX driver uses a 'virtual port' system to allow data to be 
+sent to specific channels. When an IPX channel is opened using 
+net_openchannel the binding parameter is used to specify what port
+is associated with that channel. The bindings used are as follows :
+
+    ""       - use the default listening port - port 0.
+    NULL     - use the next avalible port.
+    :'port#' - use the port number specified by 'port #'.
+             - this is a decimal number.
+
+The port is checked to see if it is bound to another channel and, if
+it is, net_openchannel will return an error. When a channel is destroyed
+by net_closechannel the port bound to it is freed and is avalible for
+use by another channel.
+
+Examples :
+
+  - use the default port
+
+    chan=net_openchannel (NET_DRIVER_IPX, "");
+
+  - use any avalible port
+
+    chan=net_openchannel (NET_DRIVER_IPX, NULL);
+
+  - use a specific port (port # 5147)
+
+    chan=net_openchannel (NET_DRIVER_IPX, ":5147");
+
+
+Assigning Targets
+-----------------
+    In order to send data from one channel to another the sending channel
+must be assigned the target address of the receiving channel. This done via
+the target parameter in the net_assigntarget function. An IPX network has
+a two part address, the network address and the node address. The network
+address is an 8 digit hexidecimal number that is unique to the network that
+your computer is on. The node address is a 12 digit hexidecimal number
+that is unique to your computer. They are usually written in the form 
+of 'network':'node'.
+
+Example :
+
+    00000000:0060674A702D
+
+    Since libnet uses a port system for IPX we must also specify a
+port number in the target address. The port is a decimal number of any
+number of digits. The complete address format is written in the form
+of 'network':'node':'port'.
+
+Example :
+
+    00000000:0060674A7034:245
+
+    In keeping with the spirit of the Internet drivers, it is possible
+to only specify part of the address and net_assigntarget will use default
+values for the rest. If the network address is not included the address
+of the local network for your computer will be used. If the port number
+is left off, the default port number is assumed. The node address must
+always be present.
+
+Example :
+
+  - use local network address
+
+    0060674A702D:1
+
+  - use default port number
+
+    00000000:0060674A7034
+
+  - use local network address and default port number
+
+    0060674A7034
+
+    If the target address is not in the right format net_assigntarget will
+return an error. Care must be taken when manually providing a target
+address. Very little error checking can be done so it is possible to
+have net_assigntarget accept the address but have it be completely wrong.
+    The 'from' address returned by net_receive is in the proper form to be
+used directly by net_assigntarget.
+
+Example :
+
+    x = net_receive (chan, buffer2, 32, from_address);
+    y = net_assigntarget (chan, from_address);
+
+
+Broadcast Address
+-----------------
+    One feature of the IPX network is the 'broadcast address'. If the node
+address is FFFFFFFFFFFF the the data is sent to all computers on the 
+network, including your own. Of course, this data can only be read by the
+channel with the port number you specified. This is most commonly used
+by a client when it is looking for a server. It sends a 'server request'
+command using the broadcast address and the default port number. The server
+then sends back an acknowledgment and a proper address and port to
+communicate through.
+
+
+Notes
+-----
+  1. It is not possible for a channel to send data to itself. If the 'from'
+address is the channels own address the packet is discarded. This is done
+to reduce problems when using the broadcast address feature.
+
+

@@ -1,0 +1,108 @@
+config file reference    third revision       by gfoot        04/03/98
+______________________________________________________________________
+
+                            |o|   _  _ . 
+                            |||-.| |/_)|-
+                            '''-'' '`- `-
+
+    libnet is (c) Copyright Chad Catlett and George Foot 1997-1998
+______________________________________________________________________
+
+
+This file describes the various sections and settings that the 
+libnet drivers recognise in config files.
+
+
+
+0. Contents
+~~~~~~~~~~~
+   0 - Contents
+   1 - Driver-Section index
+     + a) Windows sockets
+     + b) Berkeley sockets
+   2 - Section Index
+     + a) [sockets]
+     + b) [winsock]
+
+
+1. Driver-Section Index
+~~~~~~~~~~~~~~~~~~~~~~~
+    This index shows which sections are used by each driver.
+
+    a) Windows sockets: (a) [sockets], (b) [winsock]
+    b) Berkeley sockets: (a) [sockets]
+
+
+2. Section Index
+~~~~~~~~~~~~~~~~
+    a) [sockets]
+    """"""""""""
+        Relevant to:  Windows sockets, Berkeley sockets
+
+        This section is shared between the drivers that use 
+        sockets to communicate over the internet, so that they
+        can communicate with one another easily.
+
+        port = <port number>                default: 24785
+        
+            A 16-bit port number to use as a default port.  A 
+            newly created "input" channel's socket is bound to
+            this port, and ordinary channels are assigned this
+            port on target machines when no other port is 
+            specified.
+        
+        
+        forceport = 0 or 1                  default: 0
+
+            This tells the interface what to do if, when 
+            creating an input channel, it cannot bind to the 
+            port.  If this is 0, it simply gives up; if it is 1
+            the driver will attempt to use the port despite the
+            fact that it's already occupied.
+        
+        
+        ip = <ip address>                   default: 0.0.0.0
+        
+            If specified, this is used as the local IP address.
+            If you don't specify this but do specify a nameserver
+            and the `auto_get_ip' flag is set in the [Winsock] 
+            section, the Winsock driver will attempt to determine
+            the local IP address using the nameserver.  At 
+            present the Berkeley sockets driver can't get the 
+            local IP address (other than through this setting).
+            It's not crucial, just aesthetic.
+        
+        
+    b) [winsock]
+    """"""""""""
+        Relevant to:  Windows sockets
+
+        Most of these are really just hacks to things the 
+        driver ought to be able to find out by itself, but the
+        VxD doesn't provide the information.
+
+        nameserver = <ip address>           default: none
+        
+            There can be any number of these but only the first
+            MAX_NAMESERVERS (#defined to 4 in wsock.c) are used.
+            These nameservers will be queried when addresses are
+            given in hostname format.
+        
+        
+        dns_timeout = <time>                default: 10
+        
+            This is the maximum length of time (in seconds) that
+            the driver will spend trying to resolve a hostname.
+            If the value is too short some addresses may not get
+            resolved in time.
+        
+        
+        auto_get_ip = 0 or 1                default: 0
+        
+            If this flag is set, a nameserver is given and the 
+            IP address is either not given or is 0.0.0.0, the 
+            Winsock driver will attempt to find out an IP 
+            address for this machine by establishing a TCP/IP
+            connection with a nameserver (it tries each in turn)
+            and querying the local address of the socket.  
+        

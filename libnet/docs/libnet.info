@@ -1,0 +1,2353 @@
+This is net.info, produced by makeinfo version 4.0 from
+numbered.net.
+
+   This is the Libnet Documentation, edition 10 for Libnet
+0.10.2.
+
+   Copyright (C) 1997-1999 Chad Catlett and George Foot
+
+   Permission is granted to distribute this documentation
+verbatim in any form. Please do not distribute modified copies.
+
+
+File: net.info,  Node: Top,  Next: Basic Aims,  Prev: (dir),  Up: (dir)
+
+Libnet documentation
+********************
+
+   This is the main documentation for Libnet.  Most of it is
+relevant to end-users, but some of it is more relevant to
+driver authors.  You should read the instructions in
+`readme.txt' before this.
+
+   All parts of Libnet are Copyright (C) 1997-1999 Chad Catlett
+and George Foot.
+
+   This is edition 10 of the Libnet documentation, consistent
+with Libnet version 0.10.2.
+
+* Menu:
+
+* Basic Aims::                  Aims of this project
+* Functions::                   List of functions with descriptions
+* Drivers::                     Notes on Libnet's drivers
+* Configuration::               How to use config files
+* Structs::                     Notes on Libnet's structs
+* Improvements::                Future improvements to the library
+* Contacting the Authors::      How to contact the authors
+* Mailing List::                Information about the netgame list
+
+* Variable/macro Index::
+* Concept Index::
+
+
+File: net.info,  Node: Basic Aims,  Next: Functions,  Prev: Top,  Up: Top
+
+1. Basic Aims
+*************
+
+   Aims of this project:
+
+   * Make a generic interface to a variety of network drivers.
+
+     Such an interface will enable people to write programs with
+     networking capabilities without having to tie them down to
+     particular types of network.  The same program code will be
+     able to use any supported network (e.g. Winsock, IPX,
+     serial, ...) neither becoming cluttered nor requiring much
+     effort to adapt.
+
+   * Offer basic functionality only.
+
+     Restricting the functionality means that more classes of
+     network can be implemented and makes it easy for new users
+     to get used to.
+
+   * Make addition of new drivers painless.
+
+     Naturally, writing a new driver will require an amount of
+     research and testing; however, adding new drivers to the
+     library should not be a painful process.
+
+   * Start with a core library, and a few sample drivers; invite
+     other people to contribute new drivers.
+
+     We can test whether the theory is workable, as well as
+     creating sample programs to show people how to use the
+     library.  Hopefully they will then contribute missing
+     drivers.
+
+
+
+File: net.info,  Node: Functions,  Next: Drivers,  Prev: Basic Aims,  Up: Top
+
+2. Functions
+************
+
+   The Libnet library functions fall into the following
+categories:
+
+* Menu:
+
+* Core Functions::              e.g. initialisation, configuration
+* Channel Functions::           Functions to work with channels
+* Connection Functions::        Functions to work with connections
+* Driver List Functions::       For manipulating driver lists
+
+* Alphabetic List of Functions::
+
+
+File: net.info,  Node: Core Functions,  Next: Channel Functions,  Prev: Functions,  Up: Functions
+
+2.1 Core Functions
+==================
+
+   These functions interact with the core of the library.
+
+* Menu:
+
+* net_init::
+* net_register_driver::
+* net_loadconfig::
+* net_getdrivernames::
+* net_detectdrivers::
+* net_initdrivers::
+* net_shutdown::
+
+
+File: net.info,  Node: net_init,  Next: net_register_driver,  Prev: Core Functions,  Up: Core Functions
+
+2.1.1 net_init
+--------------
+
+Prototype
+.........
+
+     int net_init (void);
+
+Purpose
+.......
+
+   This function initialises the library, and should be called
+before any others.
+
+Return Value
+............
+
+   This function returns 0 on success.
+
+
+File: net.info,  Node: net_register_driver,  Next: net_loadconfig,  Prev: net_init,  Up: Core Functions
+
+2.1.2 net_register_driver
+-------------------------
+
+Prototype
+.........
+
+     int net_register_driver (int num, NET_DRIVER *driver);
+
+Purpose
+.......
+
+   This function is primarily used internally by Libnet to
+register its own drivers, but it is a public function so you
+can use it too if you want to register custom drivers.
+
+   You should register any custom drivers before calling
+`net_loadconfig' (*note net_loadconfig::); otherwise they won't
+get an opportunity to read the config file.
+
+Parameters
+..........
+
+   NUM is a unique reference number.  Make sure it is unique!
+You can check this by seeing whether or not a driver in the
+driver list `net_drivers_all' has the same number.  Values from
+0 to `NET_DRIVER_USER - 1' inclusive are reserved for Libnet's
+use.  You can use values from `NET_DRIVER_USER' to
+`NET_DRIVER_MAX - 1'.  If you specify 0, Libnet will allocate a
+unique number on your behalf, out of its reserved range
+(subject to availability).
+
+   DRIVER is a pointer to the new driver's function table.
+
+Return Value
+............
+
+   This function returns the number associated with your driver
+on success, or 0 on failure.  (0 is a reserved driver number.)
+
+
+File: net.info,  Node: net_loadconfig,  Next: net_getdrivernames,  Prev: net_register_driver,  Up: Core Functions
+
+2.1.3 net_loadconfig
+--------------------
+
+Prototype
+.........
+
+     int net_loadconfig (char *filename);
+
+Purpose
+.......
+
+   This loads a configuration file and invites the various
+drivers to extract information from it.  *Note Configuration::.
+
+Parameters
+..........
+
+   FILENAME can be `NULL', a directory name, or a filename
+(with or without an explicit directory).
+
+   If FILENAME is `NULL' the file `libnet.cfg' is read from the
+program's home directory (as in `argv[0]').  If FILENAME is a
+directory then the file `libnet.cfg' is loaded from that
+directory.  If FILENAME names a file, that file is loaded.
+
+Return Value
+............
+
+   This function returns 0 on success.  Other return values:
+
+1
+     The resulting filename (i.e. after mangling as above)
+     could not be statted.  The `errno' variable should be set,
+     so you can use `perror' or make comparisons yourself.
+
+2
+     The file could not be opened.  More than likely this is an
+     access problem, but maybe you ran out of file handles.
+     Again, use `errno' and/or `perror' to find out why.
+
+Example
+.......
+
+     if (net_loadconfig(NULL)) {
+        perror("Error loading config file");
+        exit (1);
+     }
+
+
+File: net.info,  Node: net_getdrivernames,  Next: net_detectdrivers,  Prev: net_loadconfig,  Up: Core Functions
+
+2.1.4 net_getdrivernames
+------------------------
+
+Prototype
+.........
+
+     NET_DRIVERNAME *net_getdrivernames (NET_DRIVERLIST which);
+
+Purpose
+.......
+
+   This function gets the names of some or all of the drivers.
+
+Parameters
+..........
+
+   The WHICH parameter specifies which drivers to query.  The
+type `NET_DRIVERLIST' is defined in `libnet.h'.  You can either
+pass a list you created yourself using the driver list
+functions (*note Driver List Functions::), or the list
+`net_drivers_all' which contains all the drivers.
+
+Return value
+............
+
+   This function returns a pointer to an array of
+`NET_DRIVERNAME' structs which contain the reference numbers
+and names of the drivers specified by WHICH, plus the `nonet'
+driver and a terminating entry with a `NULL' pointer for the
+driver name.  This list is malloced, and should be freed by the
+caller.
+
+Example
+.......
+
+     NET_DRIVERNAME *names;
+     int i;
+     NET_DRIVERLIST drivers;
+     
+     /* Get names of all drivers */
+     names = net_getdrivernames (net_drivers_all);
+     
+     /* Print all entries in the array */
+     for (i = 0; names[i].name; i++)
+        printf ("%d: %s\n", names[i].num, names[i].name);
+     
+     /* Free the array */
+     free (names);
+     
+     /* Get names of the Unix sockets and the Winsock driver driver */
+     /* So, first make a list containing them... */
+     drivers = net_driverlist_create();                   /* creates empty list */
+     net_driverlist_add (drivers, NET_DRIVER_SOCKS);      /* adds sockets driver */
+     net_driverlist_add (drivers, NET_DRIVER_WSOCK_WIN);  /* adds Winsock driver */
+     
+     /* ... and then pass it to the function */
+     names = net_getdrivernames (drivers);
+     
+     /* Print the names, as before, and free them */
+     for (i = 0; names[i].name; i++)
+        printf ("%d: %s\n", names[i].num, names[i].name);
+     free (names);
+     
+     /* We don't need the driver list any more */
+     net_driverlist_destroy (drivers);
+
+   For more real-life examples please refer to the test programs
+`tests/getdrvnm.c' and `tests/gentest.c', and the client-server
+chat example in `examples/chat', where both `client.c' and
+`server.c' use this function in a useful way.
+
+
+File: net.info,  Node: net_detectdrivers,  Next: net_initdrivers,  Prev: net_getdrivernames,  Up: Core Functions
+
+2.1.5 net_detectdrivers
+-----------------------
+
+Prototype
+.........
+
+     NET_DRIVERLIST net_detectdrivers (NET_DRIVERLIST which);
+
+Purpose
+.......
+
+   This function detects whether or not the given drivers can
+be used.
+
+Parameters
+..........
+
+   WHICH is a driver list, as for `net_getdrivernames' - see
+*Note net_getdrivernames::, and also *Note Driver List
+Functions::.  It indicates which drivers to try to detect.
+`net_drivers_all' can be given to detect all drivers.
+
+Return value
+............
+
+   The function returns a similar type showing which of the
+specified drivers were actually detected.  Note that if you
+call this function several times (e.g. once for each driver you
+want to detect) its return value only shows which of the
+drivers you specified in WHICH were detected; it does not
+include drivers detected on previous calls.  This contrasts
+with the behaviour of `net_initdrivers' (*note
+net_initdrivers::).
+
+   Note that the return value is valid only until the next call
+to this function (or until you shut down the library, of
+course).  You don't need to destroy this list manually.
+
+Example
+.......
+
+     NET_DRIVERLIST drivers;
+     NET_DRIVERNAME *names;
+     int i;
+     
+     drivers = net_detectdrivers (net_drivers_all);
+     names = net_getdrivernames (drivers);
+     for (i = 0; names[i].name; i++)
+        printf ("%d: %s\n", names[i].num, names[i].name);
+     free (names);
+
+
+File: net.info,  Node: net_initdrivers,  Next: net_shutdown,  Prev: net_detectdrivers,  Up: Core Functions
+
+2.1.6 net_initdrivers
+---------------------
+
+Prototype
+.........
+
+     NET_DRIVERLIST net_initdrivers (NET_DRIVERLIST which);
+
+Purpose
+.......
+
+   This function operates similarly to the `net_detectdrivers'
+function (*note net_detectdrivers::), but it initialises the
+specified drivers rather than detecting them.
+
+Parameters
+..........
+
+   WHICH is a driver list as in `net_detectdrivers' (*note
+net_detectdrivers::), indicating which drivers to attempt to
+initialise.  `net_drivers_all' can be given to initialise all
+drivers.  Drivers will not be initialised unless they were
+detected in a previous call to `net_detectdrivers'.  Previously
+initialised drivers will not be reinitialised.
+
+Return value
+............
+
+   The function returns a list in the same format as its
+argument, just as `net_detectdrivers' does.  Note that it
+returns the complete list of initialised (i.e. ready-for-use)
+drivers, not just those you specified in the call.  Again, don't
+destroy or modify this list.  It is valid until the next call to
+this function only.
+
+Example
+.......
+
+     NET_DRIVERNAME *names;
+     NET_DRIVERLIST drivers, detected, initialised;
+     int i;
+     
+     drivers = net_driverlist_create(); /* create the list for use later */
+     names = net_getdrivernames (net_drivers_all);
+     for (i = 0; names[i].name; i++) {
+        printf ("%d: %s ", names[i].num, names[i].name);
+        net_driverlist_clear (drivers);
+        net_driverlist_add (drivers, names[i].num);
+        detected = net_detectdrivers (drivers);
+        if (net_driverlist_test (detected, names[i].num)) {
+           printf ("(detected) ");
+           initialised = net_initdrivers (drivers);
+           if (net_driverlist_test (initialised, names[i].num))
+              printf ("(initialised) ");
+        }
+        printf ("\n");
+     }
+     free (names);
+     
+     /* Destroy the `drivers' list, but not the other lists. */
+     net_driverlist_destroy (drivers);
+
+
+File: net.info,  Node: net_shutdown,  Prev: net_initdrivers,  Up: Core Functions
+
+2.1.7 net_shutdown
+------------------
+
+Prototype
+.........
+
+     int net_shutdown (void);
+
+Purpose
+.......
+
+   Shuts everything down nicely, closing any open channels and
+shutting down all initialised drivers.  `net_init' installs an
+exit function that calls this, so you don't normally need to
+call it.  You do need to call it if for some reason you want to
+reinitialise the library with a different driver set, maybe -
+for example, if you need to reinitialise the drivers with a new
+config file.
+
+Return value
+............
+
+   Returns 0 on success.
+
+
+File: net.info,  Node: Channel Functions,  Next: Connection Functions,  Prev: Core Functions,  Up: Functions
+
+2.2 Channel Functions
+=====================
+
+   These functions work with communication channels.  Whenever
+you send or receive data, you do so through a channel.  Each
+channel has an associated network type (which can't be changed
+after the channel is created), a local address (which is
+controlled by the driver) and a target address (which the user
+can change at will).
+
+   Channels are referred to through pointers to `NET_CHANNEL'
+objects.
+
+* Menu:
+
+* net_openchannel::
+* net_closechannel::
+* net_assigntarget::
+* net_getlocaladdress::
+* net_send::
+* net_receive::
+* net_query::
+
+
+File: net.info,  Node: net_openchannel,  Next: net_closechannel,  Prev: Channel Functions,  Up: Channel Functions
+
+2.2.1 net_openchannel
+---------------------
+
+Prototype
+.........
+
+     NET_CHANNEL *net_openchannel(int type, char *binding);
+
+Purpose
+.......
+
+   This function opens a communications channel for use over
+the specified network type.
+
+Parameters
+..........
+
+   TYPE is one of the `NET_DRIVER_*' constants, for example it
+could be one of the set bits returned by `net_initdrivers', or
+the `num' entry for one of the elements in a `NET_DRIVERNAME'
+array.
+
+   BINDING determines the local binding for the channel.  Pass
+`NULL' if you don't care.  Otherwise, pass a string.  The empty
+string always causes a default binding to be used; otherwise
+the string's meaning depends upon the driver in use.
+
+Return value
+............
+
+   This function returns a pointer to the `NET_CHANNEL' struct
+it creates, or `NULL' on error.
+
+Compatibility with older versions
+.................................
+
+   In Libnet versions before 0.9.13 this function did not have
+the `binding' parameter, and there was another function,
+`net_openinputchannel'.  To make that code work with the new
+API you need to change calls to these two functions:
+
+net_openchannel (chan)
+     Change to `net_openchannel (chan, NULL)'
+
+net_openinputchannel (chan)
+     Change to `net_openchannel (chan, "")'
+
+Notes
+.....
+
+   The meaning of the `binding' parameter may seem a bit misty.
+As a general rule, if a channel is going to receive
+first-contact data from other computers, you must specify its
+binding.  If it's going to be used to send/receive data after
+initial contact has been established then its binding doesn't
+matter.
+
+   As an analogy, let's consider a group of people who want to
+communicate through email.  The people represent the computers
+in your game.
+
+   First imagine that none of the people know any of the email
+addresses.  Obviously, nobody can communicate.  This represents
+a situation where all channels were opened with `binding =
+NULL'.
+
+   Now suppose A knows B's email address.  Then A can
+communicate with B in both directions, because as soon as A
+sends B an email, B can look at the return address to discover
+A's address.  This represents a situation where computer B
+initialised a channel with a specific binding.  A's channel did
+not need a specific binding, since he made first contact, not B.
+
+   Now for a more accurate analogy.  Imagine each person has a
+whole domain to themself, but nobody knows which users exist at
+each domain.  So nobody can send messages; this is the first
+scenario again.
+
+   In the second scenario, A knows that B has a user called
+"default".  So A can send email to that user from any of his
+own users.  And then B can send email back to whichever of A's
+users have already sent email to B, from any of his [B's]
+users.  Again, only one of them needed to have a channel of
+known binding.  This represents the situation where B
+initialised a channel with the empty string as `binding'.  He
+got the default binding (i.e. "default" as username).
+
+   So why don't we initialise all channels with the default
+binding?  Well, only one channel could then exist per computer
+(actually per network type per computer).  You can't have two
+users both called "default".
+
+   Next consider the situation where B has two domains, one on
+net1 and one on net2, while A has only one, on net1, and C has
+only one, on net2.  Assume that A and B are communicating and B
+and C are communicating; then B knows email addresses for A and
+C.  Can A and C then communicate, if B tells them what each
+other's addresses are?  No, because they're on different
+networks.
+
+   In this situation, B might want to explicitly bind channels
+to networks net1 and net2, rather than letting the driver make a
+(possibly) bad choice.  This is a reason why you might want to
+let the user choose the binding.  B is a gateway here, and this
+is a fairly unusual situation for a multiplayer game, but it can
+be a useful feature.  An example of B is a machine on a LAN
+(which runs Internet Protocol), with a modem connection to the
+Internet itself.  A is out on the Internet and C is on the LAN.
+In fact, the machine on which I am typing this is in this
+situation.
+
+
+File: net.info,  Node: net_closechannel,  Next: net_assigntarget,  Prev: net_openchannel,  Up: Channel Functions
+
+2.2.2 net_closechannel
+----------------------
+
+Prototype
+.........
+
+     int net_closechannel(NET_CHANNEL *channel);
+
+Purpose
+.......
+
+   Closes a previously opened channel. This will not
+necessarily inform the remote machine; it will simply discard
+the channel record, after inviting the network driver
+responsible to tidy things up.
+
+Parameters
+..........
+
+   CHANNEL is the channel to close.
+
+Return value
+............
+
+   Returns 0 on success.
+
+Example
+.......
+
+     NET_CHANNEL *chan = net_openchannel (driver, binding);
+     net_closechannel (chan);
+
+
+File: net.info,  Node: net_assigntarget,  Next: net_getlocaladdress,  Prev: net_closechannel,  Up: Channel Functions
+
+2.2.3 net_assigntarget
+----------------------
+
+Prototype
+.........
+
+     int net_assigntarget(NET_CHANNEL *channel, char *target);
+
+Purpose
+.......
+
+   Sets the target of the given channel.
+
+Parameters
+..........
+
+   CHANNEL is the channel whose target address needs changing.
+TARGET is the new target address.  The format of the target
+address depends upon the network type being used by the channel.
+
+Return value
+............
+
+   Zero on success, nonzero on error (i.e. address in wrong
+format).  A zero return does not indicate that the target can
+necessarily be reached.
+
+Example
+.......
+
+     NET_CHANNEL *chan = net_openchannel (NET_DRIVER_WSOCK, NULL);
+     net_assigntarget (chan, "127.0.0.1:12345");
+
+
+File: net.info,  Node: net_getlocaladdress,  Next: net_send,  Prev: net_assigntarget,  Up: Channel Functions
+
+2.2.4 net_getlocaladdress
+-------------------------
+
+Prototype
+.........
+
+     char *net_getlocaladdress(NET_CHANNEL *channel);
+
+Purpose
+.......
+
+   This function is used to discover the local address of a
+channel.
+
+Parameters
+..........
+
+   CHANNEL is the channel whose local address is wanted.
+
+Return value
+............
+
+   The address of CHANNEL is returned in the driver's normal
+address format.
+
+Notes
+.....
+
+   "local address" means the address of the channel according
+to this computer.  This might not be the address other
+computers should use; for example, a serial port driver would
+have no way of knowing what port the other computer should use.
+The Internet sockets drivers have a bit of trouble with this
+too, since a computer can have more than one IP address and
+it's not trivial to find out even one of these.
+
+   Because of all this, it's probably best to tell the user
+this local address and let them figure out what the other
+computer should use.
+
+Example
+.......
+
+     NET_CHANNEL *chan;
+     chan = net_openchannel (driver, binding);
+     printf ("Local address of channel: %s\n", net_getlocaladdress (chan));
+
+
+File: net.info,  Node: net_send,  Next: net_receive,  Prev: net_getlocaladdress,  Up: Channel Functions
+
+2.2.5 net_send
+--------------
+
+Prototype
+.........
+
+     int net_send(CHANNEL *channel,void *buffer,int size);
+
+Purpose
+.......
+
+   Sends data down a channel.
+
+Parameters
+..........
+
+   CHANNEL is the channel to send the data through.  BUFFER
+points to the data to send.  SIZE is the size of the data in
+bytes.
+
+Return value
+............
+
+   Zero on success, non-zero on error.
+
+Example
+.......
+
+   *Note net_receive::.
+
+
+File: net.info,  Node: net_receive,  Next: net_query,  Prev: net_send,  Up: Channel Functions
+
+2.2.6 net_receive
+-----------------
+
+Prototype
+.........
+
+     int net_receive(CHANNEL *channel,void *buffer,int maxsize,char *from);
+
+Purpose
+.......
+
+   Receives data from a channel.
+
+Parameters
+..........
+
+   CHANNEL is the channel to receive from.  BUFFER is a buffer
+to hold the data, of length MAXSIZE.  If FROM is not `NULL',
+the address of the source of the data will be stored in the
+buffer it points to (which should be able to hold
+NET_MAX_ADDRESS_LENGTH characters).
+
+Return value
+............
+
+   Returns the number of bytes received.  0 is valid; there was
+no data to read.  -1 indicates that an error occured.
+
+Example
+.......
+
+     NET_CHANNEL *chan;
+     char buffer1[32] = "Data to send";
+     char buffer2[32] = "";
+     int x;
+     
+     chan = net_openchannel (NET_DRIVER_WSOCK, "");
+     net_assigntarget (chan, "127.0.0.1");
+     
+     net_send (chan, buffer1, strlen (buffer1) + 1);
+     
+     do {
+        x = net_receive (chan, buffer2, 32, NULL);
+     } while (x == 0);
+     
+     if (x > 0)
+        printf ("Received data: %s\n", buffer2);
+     else
+        printf ("Error receiving data.\n");
+
+
+File: net.info,  Node: net_query,  Prev: net_receive,  Up: Channel Functions
+
+2.2.7 net_query
+---------------
+
+Prototype
+.........
+
+     int net_query(CHANNEL *channel);
+
+Purpose
+.......
+
+   This function checks to see if there is data waiting to be
+read from the channel.
+
+Parameters
+..........
+
+   CHANNEL is the channel to query.
+
+Return value
+............
+
+   Returns nonzero if data is waiting, zero if not.
+
+Example
+.......
+
+     if (net_query (chan)) get_data(chan);
+
+
+File: net.info,  Node: Connection Functions,  Next: Driver List Functions,  Prev: Channel Functions,  Up: Functions
+
+2.3 Connection Functions
+========================
+
+   Libnet's channels are unreliable -- there's no guarantee that
+a packet will arrive at its destination, nor that packets won't
+get duplicated en route, nor that packets will arrive in the
+right order.  If you bear those facts in mind, channels should
+be fine for most uses (in particular, cases where data is made
+redundant very quickly by new incoming data).
+
+   Sometimes though you want to be able to send a packet and be
+sure that it will reach its destination.  Libnet's second type
+of communicator is the "connection".  A connection is a fixed
+link between two computers.  You can't assign a new target.
+Packets sent along a connection are guaranteed to arrive
+precisely once, and in the correct order.
+
+   Conns are referred to through pointers to `NET_CONN' objects.
+
+* Menu:
+
+* net_openconn::
+* net_closeconn::
+* net_listen::
+* net_poll_listen::
+* net_connect::
+* net_poll_connect::
+* net_connect_wait_time::
+* net_connect_wait_cb::
+* net_connect_wait_cb_time::
+* net_send_rdm::
+* net_receive_rdm::
+* net_query_rdm::
+* net_ignore_rdm::
+* net_conn_stats::
+* net_getpeer::
+
+
+File: net.info,  Node: net_openconn,  Next: net_closeconn,  Prev: Connection Functions,  Up: Connection Functions
+
+2.3.1 net_openconn
+------------------
+
+Prototype
+.........
+
+     NET_CONN *net_openconn (int type, char *binding);
+
+Purpose
+.......
+
+   Opens a conn over the specified network type.
+
+Parameters
+..........
+
+   TYPE is the type of the network to use.  BINDING can
+determine the local binding.  *Note net_openchannel::, for more
+information about the binding.
+
+Return value
+............
+
+   The function returns a pointer to the NET_CONN struct
+created, or NULL on error.
+
+
+File: net.info,  Node: net_closeconn,  Next: net_listen,  Prev: net_openconn,  Up: Connection Functions
+
+2.3.2 net_closeconn
+-------------------
+
+Prototype
+.........
+
+     int net_closeconn (NET_CONN *conn);
+
+Purpose
+.......
+
+   Closes a previously opened conn.
+
+Parameters
+..........
+
+   CONN is the connection to be closed.
+
+Return value
+............
+
+   Returns zero on success.
+
+
+File: net.info,  Node: net_listen,  Next: net_poll_listen,  Prev: net_closeconn,  Up: Connection Functions
+
+2.3.3 net_listen
+----------------
+
+Prototype
+.........
+
+     int net_listen (NET_CONN *conn);
+
+Purpose
+.......
+
+   Makes a conn start listening (waiting for connection
+attempts).  Only works on an idle conn.
+
+Parameters
+..........
+
+   CONN is the conn that should start listening.
+
+Return value
+............
+
+   Returns zero on success, nonzero otherwise.
+
+
+File: net.info,  Node: net_poll_listen,  Next: net_connect,  Prev: net_listen,  Up: Connection Functions
+
+2.3.4 net_poll_listen
+---------------------
+
+Prototype
+.........
+
+     NET_CONN *net_poll_listen (NET_CONN *conn);
+
+Purpose
+.......
+
+   Polls a listening channel for incoming connections.  If
+there are any, this function accepts the first one queued and
+creates a new conn to talk to the connecting computer.
+
+Parameters
+..........
+
+   CONN is the (listening) conn to poll.
+
+Return value
+............
+
+   If a new conn is created, this function returns a new
+NET_CONN * which the user can use to talk to the connecting
+computer.  Otherwise NULL is returned.
+
+
+File: net.info,  Node: net_connect,  Next: net_poll_connect,  Prev: net_poll_listen,  Up: Connection Functions
+
+2.3.5 net_connect
+-----------------
+
+Prototype
+.........
+
+     int net_connect (NET_CONN *conn, char *addr);
+
+Purpose
+.......
+
+   Initiates a connection attempt.  See also: *Note
+net_connect_wait_time::, *Note net_connect_wait_cb::, *Note
+net_connect_wait_cb_time::.
+
+Parameters
+..........
+
+   CONN is the conn to connect; ADDR is the target address.
+
+Return value
+............
+
+   Returns zero if successful in initiating; nonzero otherwise.
+If the return value is zero, the app should keep calling
+`net_poll_connect' until a connection is established or
+refused, or until the app gets bored.
+
+
+File: net.info,  Node: net_poll_connect,  Next: net_connect_wait_time,  Prev: net_connect,  Up: Connection Functions
+
+2.3.6 net_poll_connect
+----------------------
+
+Prototype
+.........
+
+     int net_poll_connect (NET_CONN *conn);
+
+Purpose
+.......
+
+   Polls a connecting conn to monitor connection progress.
+
+Parameters
+..........
+
+   CONN is the (connecting) conn to poll.
+
+Return value
+............
+
+   Returns zero if the connection is still in progress, nonzero
+if the connection process has ended.  A nonzero return value is
+either positive (connection established) or negative
+(connection not established).
+
+
+File: net.info,  Node: net_connect_wait_time,  Next: net_connect_wait_cb,  Prev: net_poll_connect,  Up: Connection Functions
+
+2.3.7 net_connect_wait_time
+---------------------------
+
+Prototype
+.........
+
+     int net_connect_wait_time (NET_CONN *conn, char *addr, int time);
+
+Purpose
+.......
+
+   This function uses `net_connect' and `net_poll_connect' to
+establish a connection.  It waits until the connection process
+is completed or the time runs out.
+
+Parameters
+..........
+
+   CONN is the conn to connect with.  ADDR is the target
+address.  TIME is the time in seconds to wait before giving up.
+
+Return value
+............
+
+   Returns zero if the connection is established, negative if
+there is an error (e.g. connection refused) and positive if the
+time ran out.
+
+
+File: net.info,  Node: net_connect_wait_cb,  Next: net_connect_wait_cb_time,  Prev: net_connect_wait_time,  Up: Connection Functions
+
+2.3.8 net_connect_wait_cb
+-------------------------
+
+Prototype
+.........
+
+     int net_connect_wait_cb (NET_CONN *conn, char *addr, int (*cb)());
+
+Purpose
+.......
+
+   This function uses `net_connect' and `net_poll_connect' to
+establish a connection.  It waits, calling the callback function
+regularly (once per second), until the connection process is
+completed or the callback function returns nonzero.
+
+Parameters
+..........
+
+   CONN is the conn to connect with.  ADDR is the target
+address.  CB is the address of the callback function.
+
+Return value
+............
+
+   Returns zero if the connection is established, negative if
+there is an error (e.g. connection refused) and positive if the
+callback function returned nonzero.
+
+
+File: net.info,  Node: net_connect_wait_cb_time,  Next: net_send_rdm,  Prev: net_connect_wait_cb,  Up: Connection Functions
+
+2.3.9 net_connect_wait_cb_time
+------------------------------
+
+Prototype
+.........
+
+     int net_connect_wait_cb_time (NET_CONN *conn, char *addr, int (*cb)(), int time)
+
+Purpose
+.......
+
+   This function uses `net_connect' and `net_poll_connect' to
+establish a connection.  It waits, calling the callback function
+regularly (once per second), until the connection process is
+completed, the time runs out, or the callback function returns
+nonzero.
+
+   Note that if the callback function is time consuming, the
+time limit will be inaccurate.
+
+Parameters
+..........
+
+   CONN is the conn to connect with.  ADDR is the target
+address.  CB is the callback function and TIME is the time in
+seconds to wait before giving up.
+
+Return value
+............
+
+   Returns zero if the connection is established, negative if
+there is an error (e.g. connection refused) and positive if
+either the time ran out or the callback function returned
+nonzero.
+
+
+File: net.info,  Node: net_send_rdm,  Next: net_receive_rdm,  Prev: net_connect_wait_cb_time,  Up: Connection Functions
+
+2.3.10 net_send_rdm
+-------------------
+
+Prototype
+.........
+
+     int net_send_rdm (NET_CONN *conn, void *buffer, int size);
+
+Purpose
+.......
+
+   Sends data down a conn.  Analogous to *Note net_send::.
+
+Parameters
+..........
+
+   CONN is the conn to send the packet down, BUFFER points to
+the data to send and SIZE is the number of bytes to send.
+
+Return value
+............
+
+   Returning zero to indicate success or non-zero if an error
+occurs.
+
+
+File: net.info,  Node: net_receive_rdm,  Next: net_query_rdm,  Prev: net_send_rdm,  Up: Connection Functions
+
+2.3.11 net_receive_rdm
+----------------------
+
+Prototype
+.........
+
+     int net_receive_rdm (NET_CONN *conn, void *buffer, int maxsize);
+
+Purpose
+.......
+
+   Receives data from a conn.  Analogous to *Note net_receive::.
+
+Parameters
+..........
+
+   CONN is the conn to receive from.  BUFFER points somewhere
+to store the packet, and MAXSIZE is the maximum number of bytes
+to store.
+
+Return value
+............
+
+   Returns the number of bytes received.  0 is a valid return
+type; there was no data to read.  -1 indicates that an error
+occured.
+
+
+File: net.info,  Node: net_query_rdm,  Next: net_ignore_rdm,  Prev: net_receive_rdm,  Up: Connection Functions
+
+2.3.12 net_query_rdm
+--------------------
+
+Prototype
+.........
+
+     int net_query_rdm (NET_CONN *conn);
+
+Purpose
+.......
+
+   Tests whether data can be read from a conn.  Analogous to
+*Note net_query::, but this function actually returns the size
+of the next queued packet.
+
+Parameters
+..........
+
+   CONN is the conn to test.
+
+Return value
+............
+
+   The size of the next queued incoming packet, or 0 if no
+packets are queued.
+
+     if (net_query_rdm (conn)) process_data(conn);
+
+
+File: net.info,  Node: net_ignore_rdm,  Next: net_conn_stats,  Prev: net_query_rdm,  Up: Connection Functions
+
+2.3.13 net_ignore_rdm
+---------------------
+
+Prototype
+.........
+
+     int net_ignore_rdm (NET_CONN *conn);
+
+Purpose
+.......
+
+   If there are any incoming packets waiting to be read, this
+causes the first to be dropped; otherwise nothing happens.
+Note that the sender isn't notified, and will have received a
+confirmation of the packet's arrival.  This function is
+intended for use if a large packet is in the queue and you
+weren't expecting to have to deal with it; call this function
+to remove the packet.
+
+Parameters
+..........
+
+   CONN is the conn to operate on.
+
+Return value
+............
+
+   Non-zero if a packet was removed; zero if no packets were
+queued, or if an error occured.
+
+     char buffer[1024];
+     int size = net_query_rdm (conn);
+     if (size > 0) {                    /* got some data */
+         if (size > sizeof buffer)       /* too much data */
+             net_ignore_rdm (conn);
+         else {
+             net_receive_rdm (conn, buffer, sizeof buffer);
+             ...
+         }
+     }
+
+
+File: net.info,  Node: net_conn_stats,  Next: net_getpeer,  Prev: net_ignore_rdm,  Up: Connection Functions
+
+2.3.14 net_conn_stats
+---------------------
+
+Prototype
+.........
+
+     int net_conn_stats (NET_CONN *conn, int *in_q, int *out_q);
+
+Purpose
+.......
+
+   This function fills in *IN_Q and *OUT_Q with the numbers of
+packets in the incoming and outgoing queues for the conn.  If
+either pointer is `NULL', its will not be filled in.
+
+   I'm not entirely sure how useful this information is; maybe
+somebody can use it to optimise the way their game treats the
+network.
+
+Parameters
+..........
+
+   CONN is the conn to test; IN_Q and OUT_Q are pointers to
+integers which, if not `NULL', will be filled with the lengths
+of the incoming and outgoing queues respectively.
+
+Return value
+............
+
+   Zero on success.
+
+     int in_queue, out_queue;
+     net_conn_stats (conn, &in_queue, &out_queue);
+
+
+File: net.info,  Node: net_getpeer,  Prev: net_conn_stats,  Up: Connection Functions
+
+2.3.15 net_getpeer
+------------------
+
+Prototype
+.........
+
+     char *net_getpeer (NET_CONN *conn);
+
+Purpose
+.......
+
+   This function gives the address of the peer of this conn,
+i.e. the computer at the other end.  The conn must be in the
+connected state (a return value from `net_poll_listen' or
+passed to a successful `net_poll_connect').
+
+Parameters
+..........
+
+   CONN is the conn whose address will be returned.
+
+Return value
+............
+
+   A pointer to a static array is returned.  Do not write
+through the pointer.  `NULL' is returned on error.
+
+     printf ("Connection received from %s\n", net_getpeer (conn));
+
+
+File: net.info,  Node: Driver List Functions,  Next: Alphabetic List of Functions,  Prev: Connection Functions,  Up: Functions
+
+2.4 Driver List Functions
+=========================
+
+   These functions are provided to manipulate driver lists.
+
+* Menu:
+
+* net_driverlist_create::
+* net_driverlist_destroy::
+* net_driverlist_clear::
+* net_driverlist_add::
+* net_driverlist_remove::
+* net_driverlist_add_list::
+* net_driverlist_remove_list::
+* net_driverlist_test::
+* net_driverlist_foreach::
+* net_driverlist_count::
+
+
+File: net.info,  Node: net_driverlist_create,  Next: net_driverlist_destroy,  Prev: Driver List Functions,  Up: Driver List Functions
+
+2.4.1 net_driverlist_create
+---------------------------
+
+Prototype
+.........
+
+     NET_DRIVERLIST net_driverlist_create (void);
+
+Purpose
+.......
+
+   This function creates a new driver list.  Initially the
+driver list will be cleared.
+
+Return value
+............
+
+   This function returns a pointer to the `NET_DRIVERLIST'
+struct it creates, or `NULL' on error (extremely unlikely).
+
+
+File: net.info,  Node: net_driverlist_destroy,  Next: net_driverlist_clear,  Prev: net_driverlist_create,  Up: Driver List Functions
+
+2.4.2 net_driverlist_destroy
+----------------------------
+
+Prototype
+.........
+
+     void net_driverlist_destroy (NET_DRIVERLIST list);
+
+Purpose
+.......
+
+   Frees the memory occupied by a driver list.
+
+Parameters
+..........
+
+   LIST is the driver list to free.
+
+
+File: net.info,  Node: net_driverlist_clear,  Next: net_driverlist_add,  Prev: net_driverlist_destroy,  Up: Driver List Functions
+
+2.4.3 net_driverlist_clear
+--------------------------
+
+Prototype
+.........
+
+     int net_driverlist_clear (NET_DRIVERLIST list);
+
+Purpose
+.......
+
+   This function clears a driver list.
+
+Parameters
+..........
+
+   LIST is the driver list to clear.
+
+Return value
+............
+
+   This function always returns 1.
+
+
+File: net.info,  Node: net_driverlist_add,  Next: net_driverlist_remove,  Prev: net_driverlist_clear,  Up: Driver List Functions
+
+2.4.4 net_driverlist_add
+------------------------
+
+Prototype
+.........
+
+     int net_driverlist_add (NET_DRIVERLIST list, int driver);
+
+Purpose
+.......
+
+   This function adds a driver to a driver list.
+
+Parameters
+..........
+
+   DRIVER is one of the `NET_DRIVER_*' constants, and will be
+added to the driver list LIST.
+
+Return value
+............
+
+   This function always returns 1.
+
+
+File: net.info,  Node: net_driverlist_remove,  Next: net_driverlist_add_list,  Prev: net_driverlist_add,  Up: Driver List Functions
+
+2.4.5 net_driverlist_remove
+---------------------------
+
+Prototype
+.........
+
+     int net_driverlist_remove (NET_DRIVERLIST list, int driver);
+
+Purpose
+.......
+
+   This function removes a driver from a driver list.
+
+Parameters
+..........
+
+   LIST is the driver list from which the driver DRIVER will be
+removed.
+
+Return value
+............
+
+   This function always returns 1.
+
+
+File: net.info,  Node: net_driverlist_add_list,  Next: net_driverlist_remove_list,  Prev: net_driverlist_remove,  Up: Driver List Functions
+
+2.4.6 net_driverlist_add_list
+-----------------------------
+
+Prototype
+.........
+
+     int net_driverlist_add_list (NET_DRIVERLIST list1, NET_DRIVERLIST list2);
+
+Purpose
+.......
+
+   This function adds the contents of one driver list to
+another driver list.
+
+Parameters
+..........
+
+   The contents of driver list LIST2 will be added into the
+contents of driver list LIST1.  LIST1 will be modified in place.
+
+Return value
+............
+
+   This function always returns 1.
+
+
+File: net.info,  Node: net_driverlist_remove_list,  Next: net_driverlist_test,  Prev: net_driverlist_add_list,  Up: Driver List Functions
+
+2.4.7 net_driverlist_remove_list
+--------------------------------
+
+Prototype
+.........
+
+     int net_driverlist_remove_list (NET_DRIVERLIST list1, NET_DRIVERLIST list2);
+
+Purpose
+.......
+
+   This function removes the contents of one driver list from
+another driver list.
+
+Parameters
+..........
+
+   The contents of driver list LIST2 will be removed from
+driver list LIST1.  LIST1 will be modified in place.
+
+Return value
+............
+
+   This function always returns 1.
+
+
+File: net.info,  Node: net_driverlist_test,  Next: net_driverlist_foreach,  Prev: net_driverlist_remove_list,  Up: Driver List Functions
+
+2.4.8 net_driverlist_test
+-------------------------
+
+Prototype
+.........
+
+     int net_driverlist_test (NET_DRIVERLIST list, int driver);
+
+Purpose
+.......
+
+   This function tests if a specific driver is contained in a
+driver list.
+
+Parameters
+..........
+
+   LIST is the driver list in which to look for the driver
+DRIVER.
+
+Return value
+............
+
+   Returns non-zero if LIST contains DRIVER, otherwise returns
+zero.
+
+
+File: net.info,  Node: net_driverlist_foreach,  Next: net_driverlist_count,  Prev: net_driverlist_test,  Up: Driver List Functions
+
+2.4.9 net_driverlist_foreach
+----------------------------
+
+Prototype
+.........
+
+     int net_driverlist_foreach (NET_DRIVERLIST list,
+     	int (*func)(int driver, void *dat), void *dat);
+
+Purpose
+.......
+
+   This function iterates through a driver list, calling a
+callback function for each driver in the list.
+
+Parameters
+..........
+
+   LIST is the driver list to iterate through.
+
+   FUNC is the callback function that will be called for each
+driver in LIST.  It will be passed two arguments: the driver and
+DAT.  It should return an integer.  If the integer is non-zero,
+`net_driverlist_foreach' will stop iterating through the list.
+
+   DAT is a parameter which you can use to pass any data you
+want to the callback function.
+
+Return value
+............
+
+   Returns zero if iteration was terminated by the callback
+function, otherwise returns non-zero.
+
+Notes
+.....
+
+   Note that Libnet driver lists do not preserve the order in
+which you add or remove drivers.  Currently,
+`net_driverlist_foreach' iterates from the driver with the
+smallest id number to the largest.  However, this, and the
+assignment of id numbers, may change in future, so you should
+not rely on any particular ordering.
+
+
+File: net.info,  Node: net_driverlist_count,  Prev: net_driverlist_foreach,  Up: Driver List Functions
+
+2.4.10 net_driverlist_count
+---------------------------
+
+Prototype
+.........
+
+     int net_driverlist_count (NET_DRIVERLIST list);
+
+Purpose
+.......
+
+   Counts the number of drivers in a driver list.
+
+Parameters
+..........
+
+   LIST is the driver list to count.
+
+Return value
+............
+
+   The number of drivers in LIST.
+
+
+File: net.info,  Node: Alphabetic List of Functions,  Prev: Driver List Functions,  Up: Functions
+
+2.5 Alphabetic List of Functions
+================================
+
+   This is an alphabetic list of all the interface functions of
+Libnet.
+
+* Menu:
+
+* net_assigntarget:                      net_assigntarget.
+* net_closechannel:                      net_closechannel.
+* net_closeconn:                         net_closeconn.
+* net_conn_stats:                        net_conn_stats.
+* net_connect:                           net_connect.
+* net_connect_wait_cb:                   net_connect_wait_cb.
+* net_connect_wait_cb_time:              net_connect_wait_cb_time.
+* net_connect_wait_time:                 net_connect_wait_time.
+* net_detectdrivers:                     net_detectdrivers.
+* net_driverlist_add:                    net_driverlist_add.
+* net_driverlist_add_list:               net_driverlist_add_list.
+* net_driverlist_clear:                  net_driverlist_clear.
+* net_driverlist_count:                  net_driverlist_count.
+* net_driverlist_create:                 net_driverlist_create.
+* net_driverlist_destroy:                net_driverlist_destroy.
+* net_driverlist_foreach:                net_driverlist_foreach.
+* net_driverlist_remove:                 net_driverlist_remove.
+* net_driverlist_remove_list:            net_driverlist_remove_list.
+* net_driverlist_test:                   net_driverlist_test.
+* net_getdrivernames:                    net_getdrivernames.
+* net_getlocaladdress:                   net_getlocaladdress.
+* net_getpeer:                           net_getpeer.
+* net_ignore_rdm:                        net_ignore_rdm.
+* net_init:                              net_init.
+* net_initdrivers:                       net_initdrivers.
+* net_listen:                            net_listen.
+* net_loadconfig:                        net_loadconfig.
+* net_openchannel:                       net_openchannel.
+* net_openconn:                          net_openconn.
+* net_poll_connect:                      net_poll_connect.
+* net_poll_listen:                       net_poll_listen.
+* net_query:                             net_query.
+* net_query_rdm:                         net_query_rdm.
+* net_receive:                           net_receive.
+* net_receive_rdm:                       net_receive_rdm.
+* net_register_driver:                   net_register_driver.
+* net_send:                              net_send.
+* net_send_rdm:                          net_send_rdm.
+* net_shutdown:                          net_shutdown.
+
+
+File: net.info,  Node: Drivers,  Next: Configuration,  Prev: Functions,  Up: Top
+
+3. Notes on Drivers in Libnet
+*****************************
+
+   The drivers fall into the following categories:
+
+* Menu:
+
+* nonet::                       No networking
+* template::                    Template for custom drivers
+
+Internet drivers:  These communicate over the Internet using
+UDP.
+
+* socks::                       Berkeley sockets (Unix)
+* wsockwin::                    Winsock (Windows)
+* wsockdos::                    Winsock (DOS)
+
+IPX drivers:       These communicate over an IPX network.
+
+* ipxdos::                      DOS-based IPX
+
+Serial drivers:    These communicate through a serial link.
+
+* serialdos::                   DOS-based Serial
+
+Local host driver: This driver lets a program talk to itself.
+
+* localhost::                   Local host
+
+Future drivers:    These haven't been written yet.
+
+* Other drivers::               PPP, serial, etc
+
+
+File: net.info,  Node: nonet,  Next: template,  Prev: Drivers,  Up: Drivers
+
+3.1 No networking
+=================
+
+Network type
+     No networking
+
+Environment
+     Any
+
+Code
+     `NET_DRIVER_NONET'
+
+Description
+     This driver will return success codes for everything, but
+     won't actually do anything.  It's a dummy driver, in case
+     no others are available.  Target and return addresses are
+     meaningless; send an empty string to `net_assigntarget'.
+
+Principal author
+     George Foot
+
+
+File: net.info,  Node: template,  Next: socks,  Prev: nonet,  Up: Drivers
+
+3.2 Template driver
+===================
+
+Network type
+     No networking
+
+Environment
+     Any
+
+Code
+     n/a
+
+Description
+     This driver is very similar to the `nonet' driver.  It
+     exists to show implementors how to write new drivers.  See
+     the source code (`lib/drivers/template.c'), which is well
+     commented.  If anything is not clear, please contact me so
+     that I can correct the problem.
+
+Principal author
+     George Foot
+
+
+File: net.info,  Node: socks,  Next: wsockwin,  Prev: template,  Up: Drivers
+
+3.3 Berkeley sockets
+====================
+
+Network type
+     Internet
+
+Environment
+     Unix
+
+Code
+     `NET_DRIVER_SOCKETS'
+
+Description
+     This driver uses Berkeley sockets on Unix machines to
+     access the Internet.
+
+     It has been tested at various times on Linux (i386), OSF1
+     (DEC Alpha) and FreeBSD.
+
+Principal author
+     George Foot
+
+
+File: net.info,  Node: wsockwin,  Next: wsockdos,  Prev: socks,  Up: Drivers
+
+3.4 Winsock from Windows
+========================
+
+Network type
+     Internet
+
+Environment
+     Windows (native)
+
+Code
+     `NET_DRIVER_WSOCKWIN'
+
+Description
+     This driver uses the Winsock from Windows to access the
+     Internet.
+
+     It has been tested with RSXNTDJ+DJGPP and MSVC++.
+
+Principal author
+     George Foot
+
+
+File: net.info,  Node: wsockdos,  Next: ipxdos,  Prev: wsockwin,  Up: Drivers
+
+3.5 Winsock from a DOS box
+==========================
+
+Network type
+     Internet
+
+Environment
+     DOS (under Windows)
+
+Code
+     `NET_DRIVER_WSOCK_DOS'
+
+Description
+     This driver uses the Winsock from DOS to access the
+     Internet.  It only works with version 1.x of Winsock -- in
+     particular it does not work with Winsock 2, as distributed
+     with Windows 98.  Obviously this only works from a DOS
+     prompt under Windows.
+
+     It has been tested with DJGPP but this was some time ago
+     (i.e.  before the author used Windows 98).
+
+Principal author
+     George Foot
+
+
+File: net.info,  Node: ipxdos,  Next: serialdos,  Prev: wsockdos,  Up: Drivers
+
+3.6 IPX from DOS
+================
+
+Network type
+     IPX
+
+Environment
+     DOS
+
+Code
+     `NET_DRIVER_IPX_DOS'
+
+Description
+     This driver uses BIOS level routines to access an IPX
+     network.
+
+     It has been tested on DOS and a DOS box under Windows
+     95/98.
+
+Principal author
+     Ralph Deane
+
+
+File: net.info,  Node: serialdos,  Next: localhost,  Prev: ipxdos,  Up: Drivers
+
+3.7 Serial link from DOS
+========================
+
+Network type
+     Serial
+
+Environment
+     DOS
+
+Code
+     `NET_DRIVER_SERIAL_DOS'
+
+Description
+     This driver sends its data over serial ports.
+
+Principal author
+     Peter Wang
+
+
+File: net.info,  Node: localhost,  Next: Other drivers,  Prev: serialdos,  Up: Drivers
+
+3.8 Local host
+==============
+
+Network type
+     Local host (no real network)
+
+Environment
+     All
+
+Code
+     `NET_DRIVER_LOCAL'
+
+Description
+     This driver provides a local network for the passing of
+     data from one part of a program to another. It is mostly
+     used in a server/client program to provide a network link
+     to the local client.
+
+     It will work on all platforms.
+
+Principal author
+     Ralph Deane
+
+
+File: net.info,  Node: Other drivers,  Prev: localhost,  Up: Drivers
+
+3.9 Other drivers
+=================
+
+   DOS-based Internet drivers via PPP and through network cards
+were once being worked on by Ove Kaaven.  Currently the only
+way to play over the Internet from plain DOS using Libnet is to
+run Kali, which emulates IPX over an Internet connection.  You
+still need to have Internet software for DOS.  Libnet's IPX
+driver should be able to use this emulated IPX, but it hasn't
+been tested yet.  If you try it, please let me (gfoot) know how
+you get on.
+
+   Any other useful drivers would be much appreciated.  *Note
+Contacting the Authors::.
+
+
+File: net.info,  Node: Configuration,  Next: Structs,  Prev: Drivers,  Up: Top
+
+4. Config files
+***************
+
+   The library will work without config files by using hardwired
+defaults, but if you want to use other settings config files
+are what you need.
+
+   The system for config files was designed to allow other
+non-Libnet data to be included in the same file.  It uses a
+similar system to many other packages, like Windows' *.ini
+files.
+
+   * Config files are plain text files
+
+   * They are split into several sections
+
+   * Each section starts with a line containing only a title in
+     square brackets (`[',`]') and ends with the next such title
+
+   * Inside the sections there may be several settings of the
+     form:  option = setting
+
+   In fact what goes on inside the sections is entirely up to
+the driver that owns the section; the above system is
+recommended though.
+
+   Libnet drivers won't mind at all if you put garbage at the
+start or end of the file provided you don't duplicate any of
+its section headings and the trailing garbage has a section
+name separating it from the last Libnet driver.
+
+   For full details of what sections each driver looks for and
+which settings within those sections it recognises please see
+the drivers' documentation.
+
+   To load a config file you use the `net_loadconfig' function,
+_before calling `net_init'_, passing it one of:
+
+  a. a filename (with or without a path) to load
+
+  b. a path with no filename
+
+  c. `NULL'
+
+   For [b] and [c] a default filename of `libnet.cfg' will be
+used.  For [c] the file will be checked for in various
+platform-dependent locations (e.g. the current directory, or
+the directory containing the program, or the user's home
+directory).
+
+
+File: net.info,  Node: Structs,  Next: Improvements,  Prev: Configuration,  Up: Top
+
+5. Notes on Libnet's structs
+****************************
+
+   `libnet.h' declares several structs -- `NET_CHANNEL',
+`NET_CONN', `NET_DRIVER' and `NET_DRIVERNAME'. `NET_CHANNEL'
+and `NET_CONN' are used by user programs and internally to hold
+information about channels and conns; the user doesn't see
+inside the struct.  `NET_DRIVER' is used internally to hold
+information about network drivers.  `NET_DRIVERNAME' is used to
+hold a driver's reference number and name; an array of these is
+returned by the `net_getdrivernames' function.
+
+   The definitions of these structs are in
+`lib/include/internal.h'.  Beware that these definitions may
+change from version to version; it's best not to use them in
+user programs.  If you really need something and think the API
+should publicise it, let me (gfoot) know and we can talk about
+extending the API.
+
+   The documentation about the structs has not yet been
+converted to Texinfo format.
+
+
+File: net.info,  Node: Improvements,  Next: Contacting the Authors,  Prev: Structs,  Up: Top
+
+6. Future improvements to the library
+*************************************
+
+   Here are some possible enhancements for the future.  Other
+suggestions for improvement are of course always welcome.
+*Note Contacting the Authors::.
+
+   * Rather than querying all channels one by one, there could
+     be a function to query them all at once, perhaps setting a
+     flag in the `NET_CHANNEL' struct if data is waiting.  The
+     user program could then issue one query call, and
+     afterwards just check this flag.
+
+
+File: net.info,  Node: Contacting the Authors,  Next: Mailing List,  Prev: Improvements,  Up: Top
+
+7. Contacting the authors
+*************************
+
+   Authors' email addresses:
+
+   * George Foot (gfoot):  george.foot@merton.oxford.ac.uk
+
+   * Chad Catlett (dwi):  catlettc@canvaslink.com
+
+   * Ralph Deane
+
+   * Peter Wang:  tjaden@users.sourceforge.net
+
+   Before making queries about specific drivers, please look for
+documentation on the driver in question, e.g. in this document
+or in the `text' directory.  Also see the following chapter,
+which discusses the netgame mailing list.
+
+
+File: net.info,  Node: Mailing List,  Next: Variable/macro Index,  Prev: Contacting the Authors,  Up: Top
+
+8. The netgame mailing list
+***************************
+
+   The netgame mailing list was created in Spring 1998.  You can
+discuss any aspect of networked game programming.  Libnet
+discussion is on topic, but the list is not just about Libnet.
+The list does not generate a lot of traffic, but there are
+people on the list with experience writing games using Libnet
+and other libraries, including the authors of Libnet, so asking
+this mailing list is better than asking the authors directly.
+
+   To subscribe to the mailing list, please send an email to
+listserv@canvaslink.com with no subject, putting in the body of
+the message:
+
+     subscribe netgame name
+
+replacing `name' with your name.  You'll be sent more
+information about the mailing list when your subscription is
+processed.
+
+   The administrator of this mailing list is George Foot.
+
+
+File: net.info,  Node: Variable/macro Index,  Next: Concept Index,  Prev: Mailing List,  Up: Top
+
+Variable/macro Index
+********************
+
+* Menu:
+
+* NET_DRIVER_IPX_DOS:                    ipxdos.
+* NET_DRIVER_LOCAL:                      localhost.
+* NET_DRIVER_NONET:                      nonet.
+* NET_DRIVER_SERIAL_DOS:                 serialdos.
+* NET_DRIVER_SOCKETS:                    socks.
+* NET_DRIVER_WSOCK_DOS:                  wsockdos.
+* NET_DRIVER_WSOCK_WIN:                  wsockwin.
+
+
+File: net.info,  Node: Concept Index,  Prev: Variable/macro Index,  Up: Top
+
+Concept Index
+*************
+
+* Menu:
+
+* aims of Libnet:                        Basic Aims.
+* allocating a conn:                     net_openconn.
+* alphabetic list of functions:          Alphabetic List of Functions.
+* assigning the target of a conn:        net_connect.
+* authors:                               Contacting the Authors.
+* basic aims of Libnet:                  Basic Aims.
+* Berkeley sockets (Unix Internet) driver: socks.
+* BSD sockets (Unix Internet) driver:    socks.
+* channel:                               Channel Functions.
+* channel functions:                     Channel Functions.
+* checking for incoming packets on a conn: net_query_rdm.
+* checking whether a connecting conn has connected yet: net_poll_connect.
+* checking whether a listening conn has been contacted: net_poll_listen.
+* closing a conn:                        net_closeconn.
+* config files:                          Configuration.
+* conn:                                  Connection Functions.
+* conn functions:                        Connection Functions.
+* conn, checking for incoming packets:   net_query_rdm.
+* conn, closing:                         net_closeconn.
+* conn, connecting:                      net_connect.
+* conn, connecting with callback:        net_connect_wait_cb.
+* conn, connecting with callback and time limit: net_connect_wait_cb_time.
+* conn, connecting with time limit:      net_connect_wait_time.
+* conn, dropping packets deliberately:   net_ignore_rdm.
+* conn, functions to work with:          Connection Functions.
+* conn, ignoring packets:                net_ignore_rdm.
+* conn, listening:                       net_listen.
+* conn, opening:                         net_openconn.
+* conn, optimising network usage:        net_conn_stats.
+* conn, packet queue status:             net_conn_stats.
+* conn, peer's address:                  net_getpeer.
+* conn, polling (listening) for connection attempts: net_poll_listen.
+* conn, polling connection status:       net_poll_connect.
+* conn, querying for incoming packets:   net_query_rdm.
+* conn, receiving packets:               net_receive_rdm.
+* conn, sending packets:                 net_send_rdm.
+* conn, starting to listen:              net_listen.
+* conn, status of packet queues:         net_conn_stats.
+* connecting a conn with callback:       net_connect_wait_cb.
+* connecting a conn with callback and time limit: net_connect_wait_cb_time.
+* connecting a conn with time limit:     net_connect_wait_time.
+* connecting conn, initiating:           net_connect.
+* connecting conn, polling for status:   net_poll_connect.
+* connection functions:                  Connection Functions.
+* contacting the authors:                Contacting the Authors.
+* contributors:                          Contacting the Authors.
+* core functions:                        Core Functions.
+* creating a conn:                       net_openconn.
+* data, checking for on a conn:          net_query_rdm.
+* data, querying for on a conn:          net_query_rdm.
+* data, receiving on a conn:             net_receive_rdm.
+* data, sending on a conn:               net_send_rdm.
+* destroying a conn:                     net_closeconn.
+* DOS-based Internet:                    Other drivers.
+* DOS-based Internet (Winsock) driver:   wsockdos.
+* DOS-based IPX driver:                  ipxdos.
+* DOS-based serial driver:               serialdos.
+* DOS-based Winsock driver:              wsockdos.
+* driver list functions:                 Driver List Functions.
+* drivers in Libnet:                     Drivers.
+* dropping packets deliberately:         net_ignore_rdm.
+* dummy (no networking) driver:          nonet.
+* emailing the authors:                  Contacting the Authors.
+* Ethernet (IPX) driver:                 ipxdos.
+* FreeBSD-based Internet (Berkeley sockets) driver: socks.
+* freeing a conn:                        net_closeconn.
+* functions:                             Functions.
+* functions, alphabetical list:          Alphabetic List of Functions.
+* functions, channel:                    Channel Functions.
+* functions, conn:                       Connection Functions.
+* functions, core:                       Core Functions.
+* functions, driver list manipulation:   Driver List Functions.
+* future developments:                   Improvements.
+* future drivers:                        Other drivers.
+* getting the address of a conn's peer:  net_getpeer.
+* getting the status of a conn:          net_conn_stats.
+* goals of Libnet:                       Basic Aims.
+* how to write a driver:                 template.
+* ignoring a packet queued on a conn:    net_ignore_rdm.
+* important messages:                    Connection Functions.
+* improvements:                          Improvements.
+* incoming packet count of a conn:       net_conn_stats.
+* initiating a connection:               net_connect.
+* internal loopback (local host) driver: localhost.
+* internals -- structs:                  Structs.
+* Internet from a DOS box:               wsockdos.
+* Internet from plain DOS:               Other drivers.
+* Internet from Unix/Linux/FreeBSD:      socks.
+* Internet from Windows:                 wsockwin.
+* IP support in DOS boxes:               wsockdos.
+* IP support in Unix/Linux/FreeBSD:      socks.
+* IP support in Windows:                 wsockwin.
+* IPX driver:                            ipxdos.
+* Kali and Libnet:                       Other drivers.
+* LAN (IPX) driver:                      ipxdos.
+* large packets, ignoring:               net_ignore_rdm.
+* Linux-based Internet (Berkeley sockets) driver: socks.
+* list of drivers:                       Drivers.
+* list of functions:                     Alphabetic List of Functions.
+* listening conn, initiating:            net_listen.
+* listening conn, polling for status:    net_poll_listen.
+* local host driver:                     localhost.
+* loopback (local host) driver:          localhost.
+* low level packet sending:              Channel Functions.
+* mailing list:                          Mailing List.
+* manipulating driver lists:             Driver List Functions.
+* modem driver:                          serialdos.
+* NET_CHANNEL struct:                    Structs.
+* NET_CONN struct:                       Structs.
+* NET_DRIVER struct:                     Structs.
+* NET_DRIVERNAME struct:                 Structs.
+* netgame mailing list:                  Mailing List.
+* no networking (dummy) driver:          nonet.
+* nonet driver:                          nonet.
+* null modem driver:                     serialdos.
+* opening a conn:                        net_openconn.
+* optimising network usage:              net_conn_stats.
+* other drivers:                         Other drivers.
+* outgoing packet count of a conn:       net_conn_stats.
+* packet queue status of a conn:         net_conn_stats.
+* packets, checking for on a conn:       net_query_rdm.
+* packets, dropping deliberately:        net_ignore_rdm.
+* packets, querying for on a conn:       net_query_rdm.
+* packets, receiving on a conn:          net_receive_rdm.
+* packets, sending on a conn:            net_send_rdm.
+* peer, definition:                      net_getpeer.
+* peer, getting address of:              net_getpeer.
+* plans for the future:                  Improvements.
+* polling a conn for connection status:  net_poll_connect.
+* polling a listening conn for connection status: net_poll_listen.
+* PPP driver:                            Other drivers.
+* querying for incoming packets on a conn: net_query_rdm.
+* queue status of a conn:                net_conn_stats.
+* RDM:                                   Connection Functions.
+* RDM, checking for:                     net_query_rdm.
+* RDM, ignoring:                         net_ignore_rdm.
+* RDM, querying for:                     net_query_rdm.
+* RDM, receiving:                        net_receive_rdm.
+* RDM, sending:                          net_send_rdm.
+* reading from a conn:                   net_receive_rdm.
+* receiving packets on a conn:           net_receive_rdm.
+* receiving RDMs:                        net_receive_rdm.
+* reliable communication, functions:     Connection Functions.
+* sending packets on a conn:             net_send_rdm.
+* sending RDMs:                          net_send_rdm.
+* serial driver:                         serialdos.
+* setting the target of a conn:          net_connect.
+* settings in config files:              Configuration.
+* starting a connection attempt:         net_connect.
+* starting to listen for connections on a conn: net_listen.
+* structs:                               Structs.
+* subscribing to the netgame mailing list: Mailing List.
+* TCP/IP support in DOS boxes:           wsockdos.
+* TCP/IP support in Unix/Linux/FreeBSD:  socks.
+* TCP/IP support in Windows:             wsockwin.
+* template driver:                       template.
+* UDP/IP support in DOS boxes:           wsockdos.
+* UDP/IP support in Unix/Linux/FreeBSD:  socks.
+* UDP/IP support in Windows:             wsockwin.
+* Unix-based Internet (Berkeley sockets) driver: socks.
+* unreliable communication, functions:   Channel Functions.
+* Windows-based Internet (Winsock) driver: wsockwin.
+* Windows-based Winsock driver:          wsockwin.
+* Winsock 2 in DOS (lack of support):    wsockdos.
+* Winsock driver for DOS:                wsockdos.
+* Winsock driver for Windows:            wsockwin.
+* writing your own drivers:              template.
+
+
+
+Tag Table:
+Node: Top319
+Node: Basic Aims1349
+Node: Functions2594
+Node: Core Functions3075
+Node: net_init3422
+Node: net_register_driver3775
+Node: net_loadconfig5062
+Node: net_getdrivernames6373
+Node: net_detectdrivers8704
+Node: net_initdrivers10229
+Node: net_shutdown12284
+Node: Channel Functions12920
+Node: net_openchannel13617
+Node: net_closechannel17876
+Node: net_assigntarget18549
+Node: net_getlocaladdress19380
+Node: net_send20625
+Node: net_receive21153
+Node: net_query22373
+Node: Connection Functions22850
+Node: net_openconn24103
+Node: net_closeconn24690
+Node: net_listen25075
+Node: net_poll_listen25542
+Node: net_connect26209
+Node: net_poll_connect26918
+Node: net_connect_wait_time27533
+Node: net_connect_wait_cb28302
+Node: net_connect_wait_cb_time29168
+Node: net_send_rdm30231
+Node: net_receive_rdm30800
+Node: net_query_rdm31454
+Node: net_ignore_rdm32055
+Node: net_conn_stats33188
+Node: net_getpeer34089
+Node: Driver List Functions34802
+Node: net_driverlist_create35318
+Node: net_driverlist_destroy35837
+Node: net_driverlist_clear36235
+Node: net_driverlist_add36679
+Node: net_driverlist_remove37194
+Node: net_driverlist_add_list37706
+Node: net_driverlist_remove_list38319
+Node: net_driverlist_test38930
+Node: net_driverlist_foreach39490
+Node: net_driverlist_count40820
+Node: Alphabetic List of Functions41249
+Node: Drivers43806
+Node: nonet44765
+Node: template45265
+Node: socks45789
+Node: wsockwin46222
+Node: wsockdos46629
+Node: ipxdos47296
+Node: serialdos47683
+Node: localhost47998
+Node: Other drivers48516
+Node: Configuration49165
+Node: Structs50894
+Node: Improvements51914
+Node: Contacting the Authors52524
+Node: Mailing List53117
+Node: Variable/macro Index54071
+Node: Concept Index54575
+
+End Tag Table

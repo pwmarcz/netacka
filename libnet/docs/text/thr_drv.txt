@@ -1,0 +1,45 @@
+Thread-safeness of drivers
+==========================
+
+This is a listing of driver code modules, showing which are essentially
+thread-safe.  My criterion is really whether the basic driver I/O
+functions can be called simultaneously from multiple threads, but on
+different channels or conns.  There's no requirement to handle
+multi-threaded access to a single channel or conn tidily -- it's a
+user error if that occurs.
+
+Driver initialisation, shutdown, config file reading, and channel and
+conn creation will always occur in a single-threaded manner.
+
+The main thing to watch out for is static variables (in or out of
+functions) -- they tend to indicate unsafeness.  The bit which is unsafe
+is *modifying* these variables -- reading is OK.  So the driver
+disabling system is fine, because that's only written to during config
+file reading, which is a single-threaded part of the library.
+
+It's also possible that the low-level OS routines we eventually call are
+not thread-safe.
+
+
+local:  safe
+
+nonet:  safe
+
+template:  safe
+
+socks:  safe
+
+wsockwin:  safe
+
+wsockdos
+
+serial
+
+serbeos
+
+serdos
+
+serlinux
+
+ipx
+

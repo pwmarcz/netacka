@@ -1,0 +1,67 @@
+LocalHost Driver
+=================
+
+Opening Channels
+----------------
+    The LocalHost driver uses a 'virtual port' system to allow data to be 
+sent to specific channels. When an local channel is opened using 
+net_openchannel the binding parameter is used to specify what port
+is associated with that channel. The bindings used are as follows :
+
+    ""       - use the default listening port - port 0.
+    NULL     - use the next avalible port.
+    :'port#' - use the port number specified by 'port #'.
+             - this is a decimal number.
+
+The port is checked to see if it is bound to another channel and, if
+it is, net_openchannel will return an error. When a channel is destroyed
+by net_closechannel the port bound to it is freed and is avalible for
+use by another channel.
+
+Examples :
+
+  - use the default port
+
+    chan=net_openchannel (NET_DRIVER_LOCAL, "");
+
+  - use any avalible port
+
+    chan=net_openchannel (NET_DRIVER_LOCAL, NULL);
+
+  - use a specific port (port # 5147)
+
+    chan=net_openchannel (NET_DRIVER_LOCAL, ":5147");
+
+
+Assigning Targets
+-----------------
+    In order to send data from one channel to another the sending channel
+must be assigned the target address of the receiving channel. This done via
+the target parameter in the net_assigntarget function. A LocalHost network 
+address is the port number of the receiving channel. A empty string for a
+target address will set that port number to the default value.
+
+Example :
+
+  - target address is port 123
+
+    y = net_assigntarget (chan, "123");
+
+  - target address is default port
+
+    y = net_assigntarget (chan, "");
+
+
+    The 'from' address returned by net_receive is in the proper form to be
+used directly by net_assigntarget.
+
+Example :
+
+    x = net_receive (chan, buffer2, 32, from_address);
+    y = net_assigntarget (chan, from_address);
+
+
+Notes
+-----
+  1. It is possible for a channel to send data to itself.
+

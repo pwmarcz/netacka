@@ -1,0 +1,27 @@
+Notes on Libnet documentation
+=============================
+
+In this directory you'll find documentation in various formats
+-- plain text, info, HTML and Texinfo source.  If you have
+various required tools (notably makeinfo, texi2html and sed)
+then you can rebuild them by typing `make' here.  The normal
+build process doesn't do this though, in case people don't have
+the tools.
+
+Some of the documentation is not yet in Texinfo format.  You can
+find this in the `text' subdirectory.  Be warned that some of it 
+is rather old and needs updating.  Most of it should be correct
+though.
+
+If there are any queries about this documentation (in
+particular, mistakes or inadequacies) please do discuss them
+with me, either personally or through the netgame mailing list.
+
+You can also browse the HTML documentation online:
+
+    http://www.canvaslink.com/libnet/docs/libnet_toc.html
+
+
+George Foot <george.foot@merton.oxford.ac.uk>
+February 1999
+

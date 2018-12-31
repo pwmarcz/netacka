@@ -1,0 +1,2425 @@
+<html lang="en"><head>
+<title>Libnet Documentation</title>
+<meta http-equiv="Content-Type" content="text/html">
+<meta name=description content="Libnet Documentation">
+<meta name=generator content="makeinfo 4.0">
+<link href="http://texinfo.org/" rel=generator-home>
+</head><body>
+
+<p><hr>
+Node:<a name="Top">Top</a>,
+Next:<a rel=next href="#Basic%20Aims">Basic Aims</a>,
+Previous:<a rel=previous href="#(dir)">(dir)</a>,
+Up:<a rel=up href="#(dir)">(dir)</a>
+<br>
+
+<h1>Libnet documentation</h1>
+
+<p>This is the main documentation for Libnet.  Most of it is relevant to
+end-users, but some of it is more relevant to driver authors.  You
+should read the instructions in <code>readme.txt</code> before this.
+
+<p>All parts of Libnet are Copyright &copy; 1997-1999 Chad Catlett
+and George Foot.
+
+<p>This is edition 10 of the Libnet documentation, consistent with Libnet
+version 0.10.2.
+
+<ul>
+<li><a href="#Basic%20Aims">Basic Aims</a>:                   Aims of this project
+<li><a href="#Functions">Functions</a>:                    List of functions with descriptions
+<li><a href="#Drivers">Drivers</a>:                      Notes on Libnet's drivers
+<li><a href="#Configuration">Configuration</a>:                How to use config files
+<li><a href="#Structs">Structs</a>:                      Notes on Libnet's structs
+<li><a href="#Improvements">Improvements</a>:                 Future improvements to the library
+<li><a href="#Contacting%20the%20Authors">Contacting the Authors</a>:       How to contact the authors
+<li><a href="#Mailing%20List">Mailing List</a>:                 Information about the netgame list
+
+<p>
+</p><li><a href="#Variable%2fmacro%20Index">Variable/macro Index</a>: 
+<li><a href="#Concept%20Index">Concept Index</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="Basic%20Aims">Basic Aims</a>,
+Next:<a rel=next href="#Functions">Functions</a>,
+Previous:<a rel=previous href="#Top">Top</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>1. Basic Aims</h1>
+
+<p>Aims of this project:
+
+<ul>
+
+<li>Make a generic interface to a variety of network drivers.
+
+<p>Such an interface will enable people to write programs with
+networking capabilities without having to tie them down to
+particular types of network.  The same program code will be
+able to use any supported network (e.g. Winsock, IPX,
+serial, ...) neither becoming cluttered nor requiring much
+effort to adapt.
+
+</p><li>Offer basic functionality only.
+
+<p>Restricting the functionality means that more classes of
+network can be implemented and makes it easy for new users
+to get used to.
+
+</p><li>Make addition of new drivers painless.
+
+<p>Naturally, writing a new driver will require an amount of
+research and testing; however, adding new drivers to the
+library should not be a painful process.
+
+</p><li>Start with a core library, and a few sample drivers; invite
+other people to contribute new drivers.
+
+<p>We can test whether the theory is workable, as well as
+creating sample programs to show people how to use the
+library.  Hopefully they will then contribute missing
+drivers.
+
+</ul>
+
+<p><hr>
+Node:<a name="Functions">Functions</a>,
+Next:<a rel=next href="#Drivers">Drivers</a>,
+Previous:<a rel=previous href="#Basic%20Aims">Basic Aims</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>2. Functions</h1>
+
+<p>The Libnet library functions fall into the following categories:
+
+<ul>
+<li><a href="#Core%20Functions">Core Functions</a>:               e.g. initialisation, configuration
+<li><a href="#Channel%20Functions">Channel Functions</a>:            Functions to work with channels
+<li><a href="#Connection%20Functions">Connection Functions</a>:         Functions to work with connections
+<li><a href="#Driver%20List%20Functions">Driver List Functions</a>:        For manipulating driver lists
+
+<p>
+</p><li><a href="#Alphabetic%20List%20of%20Functions">Alphabetic List of Functions</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="Core%20Functions">Core Functions</a>,
+Next:<a rel=next href="#Channel%20Functions">Channel Functions</a>,
+Previous:<a rel=previous href="#Functions">Functions</a>,
+Up:<a rel=up href="#Functions">Functions</a>
+<br>
+
+<h2>2.1 Core Functions</h2>
+
+<p>These functions interact with the core of the library.
+
+<ul>
+<li><a href="#net_init">net_init</a>: 
+<li><a href="#net_register_driver">net_register_driver</a>: 
+<li><a href="#net_loadconfig">net_loadconfig</a>: 
+<li><a href="#net_getdrivernames">net_getdrivernames</a>: 
+<li><a href="#net_detectdrivers">net_detectdrivers</a>: 
+<li><a href="#net_initdrivers">net_initdrivers</a>: 
+<li><a href="#net_shutdown">net_shutdown</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="net_init">net_init</a>,
+Next:<a rel=next href="#net_register_driver">net_register_driver</a>,
+Previous:<a rel=previous href="#Core%20Functions">Core Functions</a>,
+Up:<a rel=up href="#Core%20Functions">Core Functions</a>
+<br>
+
+<h3>2.1.1 net_init</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_init (void);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function initialises the library, and should be called before
+any others.
+
+<h4>Return Value</h4>
+
+<p>This function returns 0 on success.
+
+<p><hr>
+Node:<a name="net_register_driver">net_register_driver</a>,
+Next:<a rel=next href="#net_loadconfig">net_loadconfig</a>,
+Previous:<a rel=previous href="#net_init">net_init</a>,
+Up:<a rel=up href="#Core%20Functions">Core Functions</a>
+<br>
+
+<h3>2.1.2 net_register_driver</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_register_driver (int num, NET_DRIVER *driver);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function is primarily used internally by Libnet to register
+its own drivers, but it is a public function so you can use it too
+if you want to register custom drivers.
+
+<p>You should register any custom drivers before calling
+<code>net_loadconfig</code> (see <a href="#net_loadconfig">net_loadconfig</a>); otherwise they
+won't get an opportunity to read the config file.
+
+<h4>Parameters</h4>
+
+<p><var>num</var> is a unique reference number.  Make sure it is unique!  You
+can check this by seeing whether or not a driver in the driver list
+<code>net_drivers_all</code> has the same number.  Values from 0 to
+<code>NET_DRIVER_USER - 1</code> inclusive are reserved for Libnet's
+use.  You can use values from <code>NET_DRIVER_USER</code> to
+<code>NET_DRIVER_MAX - 1</code>.  If you specify 0, Libnet will allocate a
+unique number on your behalf, out of its reserved range (subject to
+availability).
+
+<p><var>driver</var> is a pointer to the new driver's function table.
+
+<h4>Return Value</h4>
+
+<p>This function returns the number associated with your driver on
+success, or 0 on failure.  (0 is a reserved driver number.)
+
+<p><hr>
+Node:<a name="net_loadconfig">net_loadconfig</a>,
+Next:<a rel=next href="#net_getdrivernames">net_getdrivernames</a>,
+Previous:<a rel=previous href="#net_register_driver">net_register_driver</a>,
+Up:<a rel=up href="#Core%20Functions">Core Functions</a>
+<br>
+
+<h3>2.1.3 net_loadconfig</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_loadconfig (char *filename);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This loads a configuration file and invites the various drivers
+to extract information from it.  See <a href="#Configuration">Configuration</a>.
+
+<h4>Parameters</h4>
+
+<p><var>filename</var> can be <code>NULL</code>, a directory name, or a filename
+(with or without an explicit directory).
+
+<p>If <var>filename</var> is <code>NULL</code> the file <code>libnet.cfg</code> is
+read from the program's home directory (as in <code>argv[0]</code>).  If
+<var>filename</var> is a directory then the file <code>libnet.cfg</code>
+is loaded from that directory.  If <var>filename</var> names a file,
+that file is loaded.
+
+<h4>Return Value</h4>
+
+<p>This function returns 0 on success.  Other return values:
+
+<dl>
+
+<br><dt>1
+<dd>The resulting filename (i.e. after mangling as above) could not
+be statted.  The <code>errno</code> variable should be set, so you can
+use <code>perror</code> or make comparisons yourself.
+
+<br><dt>2
+<dd>The file could not be opened.  More than likely this is an access
+problem, but maybe you ran out of file handles.  Again, use
+<code>errno</code> and/or <code>perror</code> to find out why.
+
+</dl>
+
+<h4>Example</h4>
+
+<pre>if (net_loadconfig(NULL)) {
+   perror("Error loading config file");
+   exit (1);
+}
+</pre>
+
+<p><hr>
+Node:<a name="net_getdrivernames">net_getdrivernames</a>,
+Next:<a rel=next href="#net_detectdrivers">net_detectdrivers</a>,
+Previous:<a rel=previous href="#net_loadconfig">net_loadconfig</a>,
+Up:<a rel=up href="#Core%20Functions">Core Functions</a>
+<br>
+
+<h3>2.1.4 net_getdrivernames</h3>
+
+<h4>Prototype</h4>
+
+<pre>NET_DRIVERNAME *net_getdrivernames (NET_DRIVERLIST which);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function gets the names of some or all of the drivers.
+
+<h4>Parameters</h4>
+
+<p>The <var>which</var> parameter specifies which drivers to query.  The
+type <code>NET_DRIVERLIST</code> is defined in <code>libnet.h</code>.  You can
+either pass a list you created yourself using the driver list
+functions (see <a href="#Driver%20List%20Functions">Driver List Functions</a>), or the list
+<code>net_drivers_all</code> which contains all the drivers.
+
+<h4>Return value</h4>
+
+<p>This function returns a pointer to an array of <code>NET_DRIVERNAME</code>
+structs which contain the reference numbers and names of the
+drivers specified by <var>which</var>, plus the <code>nonet</code> driver
+and a terminating entry with a <code>NULL</code> pointer for the driver
+name.  This list is malloced, and should be freed by the caller.
+
+<h4>Example</h4>
+
+<pre>NET_DRIVERNAME *names;
+int i;
+NET_DRIVERLIST drivers;
+
+/* Get names of all drivers */
+names = net_getdrivernames (net_drivers_all);
+
+/* Print all entries in the array */
+for (i = 0; names[i].name; i++)
+   printf ("%d: %s\n", names[i].num, names[i].name);
+
+/* Free the array */
+free (names);
+
+/* Get names of the Unix sockets and the Winsock driver driver */
+/* So, first make a list containing them... */
+drivers = net_driverlist_create();                   /* creates empty list */
+net_driverlist_add (drivers, NET_DRIVER_SOCKS);      /* adds sockets driver */
+net_driverlist_add (drivers, NET_DRIVER_WSOCK_WIN);  /* adds Winsock driver */
+
+/* ... and then pass it to the function */
+names = net_getdrivernames (drivers);
+
+/* Print the names, as before, and free them */
+for (i = 0; names[i].name; i++)
+   printf ("%d: %s\n", names[i].num, names[i].name);
+free (names);
+
+/* We don't need the driver list any more */
+net_driverlist_destroy (drivers);
+</pre>
+
+<p>For more real-life examples please refer to the test programs
+<code>tests/getdrvnm.c</code> and <code>tests/gentest.c</code>, and the
+client-server chat example in <code>examples/chat</code>, where both
+<code>client.c</code> and <code>server.c</code> use this function in a useful
+way.
+
+<p><hr>
+Node:<a name="net_detectdrivers">net_detectdrivers</a>,
+Next:<a rel=next href="#net_initdrivers">net_initdrivers</a>,
+Previous:<a rel=previous href="#net_getdrivernames">net_getdrivernames</a>,
+Up:<a rel=up href="#Core%20Functions">Core Functions</a>
+<br>
+
+<h3>2.1.5 net_detectdrivers</h3>
+
+<h4>Prototype</h4>
+
+<pre>NET_DRIVERLIST net_detectdrivers (NET_DRIVERLIST which);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function detects whether or not the given drivers can
+be used.
+
+<h4>Parameters</h4>
+
+<p><var>which</var> is a driver list, as for <code>net_getdrivernames</code> - see
+<a href="#net_getdrivernames">net_getdrivernames</a>, and also <a href="#Driver%20List%20Functions">Driver List Functions</a>.  It
+indicates which drivers to try to detect.  <code>net_drivers_all</code>
+can be given to detect all drivers.
+
+<h4>Return value</h4>
+
+<p>The function returns a similar type showing which of the
+specified drivers were actually detected.  Note that if you
+call this function several times (e.g. once for each driver
+you want to detect) its return value only shows which of the
+drivers you specified in <var>which</var> were detected; it does
+not include drivers detected on previous calls.  This
+contrasts with the behaviour of <code>net_initdrivers</code>
+(see <a href="#net_initdrivers">net_initdrivers</a>).
+
+<p>Note that the return value is valid only until the next call
+to this function (or until you shut down the library, of
+course).  You don't need to destroy this list manually.
+
+<h4>Example</h4>
+
+<pre>NET_DRIVERLIST drivers;
+NET_DRIVERNAME *names;
+int i;
+
+drivers = net_detectdrivers (net_drivers_all);
+names = net_getdrivernames (drivers);
+for (i = 0; names[i].name; i++)
+   printf ("%d: %s\n", names[i].num, names[i].name);
+free (names);
+</pre>
+
+<p><hr>
+Node:<a name="net_initdrivers">net_initdrivers</a>,
+Next:<a rel=next href="#net_shutdown">net_shutdown</a>,
+Previous:<a rel=previous href="#net_detectdrivers">net_detectdrivers</a>,
+Up:<a rel=up href="#Core%20Functions">Core Functions</a>
+<br>
+
+<h3>2.1.6 net_initdrivers</h3>
+
+<h4>Prototype</h4>
+
+<pre>NET_DRIVERLIST net_initdrivers (NET_DRIVERLIST which);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function operates similarly to the <code>net_detectdrivers</code>
+function (see <a href="#net_detectdrivers">net_detectdrivers</a>), but it initialises the
+specified drivers rather than detecting them.
+
+<h4>Parameters</h4>
+
+<p><var>which</var> is a driver list as in <code>net_detectdrivers</code>
+(see <a href="#net_detectdrivers">net_detectdrivers</a>), indicating which drivers to attempt
+to initialise.  <code>net_drivers_all</code> can be given to initialise
+all drivers.  Drivers will not be initialised unless they were
+detected in a previous call to <code>net_detectdrivers</code>.  Previously
+initialised drivers will not be reinitialised.
+
+<h4>Return value</h4>
+
+<p>The function returns a list in the same format as its
+argument, just as <code>net_detectdrivers</code> does.  Note that it
+returns the complete list of initialised (i.e. ready-for-use)
+drivers, not just those you specified in the call.  Again, don't
+destroy or modify this list.  It is valid until the next call to
+this function only.
+
+<h4>Example</h4>
+
+<pre>NET_DRIVERNAME *names;
+NET_DRIVERLIST drivers, detected, initialised;
+int i;
+
+drivers = net_driverlist_create(); /* create the list for use later */
+names = net_getdrivernames (net_drivers_all);
+for (i = 0; names[i].name; i++) {
+   printf ("%d: %s ", names[i].num, names[i].name);
+   net_driverlist_clear (drivers);
+   net_driverlist_add (drivers, names[i].num);
+   detected = net_detectdrivers (drivers);
+   if (net_driverlist_test (detected, names[i].num)) {
+      printf ("(detected) ");
+      initialised = net_initdrivers (drivers);
+      if (net_driverlist_test (initialised, names[i].num))
+         printf ("(initialised) ");
+   }
+   printf ("\n");
+}
+free (names);
+
+/* Destroy the `drivers' list, but not the other lists. */
+net_driverlist_destroy (drivers);
+</pre>
+
+<p><hr>
+Node:<a name="net_shutdown">net_shutdown</a>,
+Previous:<a rel=previous href="#net_initdrivers">net_initdrivers</a>,
+Up:<a rel=up href="#Core%20Functions">Core Functions</a>
+<br>
+
+<h3>2.1.7 net_shutdown</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_shutdown (void);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Shuts everything down nicely, closing any open channels and
+shutting down all initialised drivers.  <code>net_init</code>
+installs an exit function that calls this, so you don't
+normally need to call it.  You do need to call it if for
+some reason you want to reinitialise the library with a
+different driver set, maybe - for example, if you need
+to reinitialise the drivers with a new config file.
+
+<h4>Return value</h4>
+
+<p>Returns 0 on success.
+
+<p><hr>
+Node:<a name="Channel%20Functions">Channel Functions</a>,
+Next:<a rel=next href="#Connection%20Functions">Connection Functions</a>,
+Previous:<a rel=previous href="#Core%20Functions">Core Functions</a>,
+Up:<a rel=up href="#Functions">Functions</a>
+<br>
+
+<h2>2.2 Channel Functions</h2>
+
+<p>These functions work with communication channels.  Whenever you send
+or receive data, you do so through a channel.  Each channel has an
+associated network type (which can't be changed after the channel is
+created), a local address (which is controlled by the driver) and a
+target address (which the user can change at will).
+
+<p>Channels are referred to through pointers to <code>NET_CHANNEL</code>
+objects.
+
+<ul>
+<li><a href="#net_openchannel">net_openchannel</a>: 
+<li><a href="#net_closechannel">net_closechannel</a>: 
+<li><a href="#net_assigntarget">net_assigntarget</a>: 
+<li><a href="#net_getlocaladdress">net_getlocaladdress</a>: 
+<li><a href="#net_send">net_send</a>: 
+<li><a href="#net_receive">net_receive</a>: 
+<li><a href="#net_query">net_query</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="net_openchannel">net_openchannel</a>,
+Next:<a rel=next href="#net_closechannel">net_closechannel</a>,
+Previous:<a rel=previous href="#Channel%20Functions">Channel Functions</a>,
+Up:<a rel=up href="#Channel%20Functions">Channel Functions</a>
+<br>
+
+<h3>2.2.1 net_openchannel</h3>
+
+<h4>Prototype</h4>
+
+<pre>NET_CHANNEL *net_openchannel(int type, char *binding);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function opens a communications channel for use over
+the specified network type.
+
+<h4>Parameters</h4>
+
+<p><var>type</var> is one of the <code>NET_DRIVER_*</code> constants, for
+example it could be one of the set bits returned by
+<code>net_initdrivers</code>, or the <code>num</code> entry for one of the
+elements in a <code>NET_DRIVERNAME</code> array.
+
+<p><var>binding</var> determines the local binding for the channel.  Pass
+<code>NULL</code> if you don't care.  Otherwise, pass a string.  The empty string
+always causes a default binding to be used; otherwise the string's
+meaning depends upon the driver in use.
+
+<h4>Return value</h4>
+
+<p>This function returns a pointer to the <code>NET_CHANNEL</code>
+struct it creates, or <code>NULL</code> on error.
+
+<h4>Compatibility with older versions</h4>
+
+<p>In Libnet versions before 0.9.13 this function did not have the
+<code>binding</code> parameter, and there was another function,
+<code>net_openinputchannel</code>.  To make that code work with the new
+API you need to change calls to these two functions:
+
+<dl>
+<dt>net_openchannel (chan)
+<dd>Change to <code>net_openchannel (chan, NULL)</code>
+<br><dt>net_openinputchannel (chan)
+<dd>Change to <code>net_openchannel (chan, "")</code>
+</dl>
+
+<h4>Notes</h4>
+
+<p>The meaning of the <code>binding</code> parameter may seem a bit
+misty.  As a general rule, if a channel is going to receive
+first-contact data from other computers, you must specify
+its binding.  If it's going to be used to send/receive data
+after initial contact has been established then its binding
+doesn't matter.
+
+<p>As an analogy, let's consider a group of people who want to
+communicate through email.  The people represent the computers
+in your game.
+
+<p>First imagine that none of the people know any of the
+email addresses.  Obviously, nobody can communicate.  This
+represents a situation where all channels were opened with
+<code>binding = NULL</code>.
+
+<p>Now suppose A knows B's email address.  Then A can communicate
+with B in both directions, because as soon as A sends B an email,
+B can look at the return address to discover A's address.  This
+represents a situation where computer B initialised a channel
+with a specific binding.  A's channel did not need a specific
+binding, since he made first contact, not B.
+
+<p>Now for a more accurate analogy.  Imagine each person has a whole
+domain to themself, but nobody knows which users exist at each
+domain.  So nobody can send messages; this is the first scenario
+again.
+
+<p>In the second scenario, A knows that B has a user called
+"default".  So A can send email to that user from any of his
+own users.  And then B can send email back to whichever of A's
+users have already sent email to B, from any of his [B's]
+users.  Again, only one of them needed to have a channel of
+known binding.  This represents the situation where B initialised
+a channel with the empty string as <code>binding</code>.  He got the
+default binding (i.e. "default" as username).
+
+<p>So why don't we initialise all channels with the default
+binding?  Well, only one channel could then exist per computer
+(actually per network type per computer).  You can't have two
+users both called "default".
+
+<p>Next consider the situation where B has two domains, one on
+net1 and one on net2, while A has only one, on net1, and C has
+only one, on net2.  Assume that A and B are communicating and
+B and C are communicating; then B knows email addresses for A and
+C.  Can A and C then communicate, if B tells them what each other's
+addresses are?  No, because they're on different networks.
+
+<p>In this situation, B might want to explicitly bind channels to
+networks net1 and net2, rather than letting the driver make a
+(possibly) bad choice.  This is a reason why you might want to
+let the user choose the binding.  B is a gateway here, and this is
+a fairly unusual situation for a multiplayer game, but it can
+be a useful feature.  An example of B is a machine on a LAN (which
+runs Internet Protocol), with a modem connection to the Internet
+itself.  A is out on the Internet and C is on the LAN.  In fact,
+the machine on which I am typing this is in this situation.
+
+<p><hr>
+Node:<a name="net_closechannel">net_closechannel</a>,
+Next:<a rel=next href="#net_assigntarget">net_assigntarget</a>,
+Previous:<a rel=previous href="#net_openchannel">net_openchannel</a>,
+Up:<a rel=up href="#Channel%20Functions">Channel Functions</a>
+<br>
+
+<h3>2.2.2 net_closechannel</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_closechannel(NET_CHANNEL *channel);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Closes a previously opened channel. This will not
+necessarily inform the remote machine; it will simply
+discard the channel record, after inviting the network
+driver responsible to tidy things up.
+
+<h4>Parameters</h4>
+
+<p><var>channel</var> is the channel to close.
+
+<h4>Return value</h4>
+
+<p>Returns 0 on success.
+
+<h4>Example</h4>
+
+<pre>NET_CHANNEL *chan = net_openchannel (driver, binding);
+net_closechannel (chan);
+</pre>
+
+<p><hr>
+Node:<a name="net_assigntarget">net_assigntarget</a>,
+Next:<a rel=next href="#net_getlocaladdress">net_getlocaladdress</a>,
+Previous:<a rel=previous href="#net_closechannel">net_closechannel</a>,
+Up:<a rel=up href="#Channel%20Functions">Channel Functions</a>
+<br>
+
+<h3>2.2.3 net_assigntarget</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_assigntarget(NET_CHANNEL *channel, char *target);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Sets the target of the given channel.
+
+<h4>Parameters</h4>
+
+<p><var>channel</var> is the channel whose target address needs
+changing.  <var>target</var> is the new target address.  The
+format of the target address depends upon the network
+type being used by the channel.
+
+<h4>Return value</h4>
+
+<p>Zero on success, nonzero on error (i.e. address in wrong
+format).  A zero return does not indicate that the target
+can necessarily be reached.
+
+<h4>Example</h4>
+
+<pre>NET_CHANNEL *chan = net_openchannel (NET_DRIVER_WSOCK, NULL);
+net_assigntarget (chan, "127.0.0.1:12345");
+</pre>
+
+<p><hr>
+Node:<a name="net_getlocaladdress">net_getlocaladdress</a>,
+Next:<a rel=next href="#net_send">net_send</a>,
+Previous:<a rel=previous href="#net_assigntarget">net_assigntarget</a>,
+Up:<a rel=up href="#Channel%20Functions">Channel Functions</a>
+<br>
+
+<h3>2.2.4 net_getlocaladdress</h3>
+
+<h4>Prototype</h4>
+
+<pre>char *net_getlocaladdress(NET_CHANNEL *channel);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function is used to discover the local address of a
+channel.
+
+<h4>Parameters</h4>
+
+<p><var>channel</var> is the channel whose local address is wanted.
+
+<h4>Return value</h4>
+
+<p>The address of <var>channel</var> is returned in the driver's
+normal address format.
+
+<h4>Notes</h4>
+
+<p><dfn>local address</dfn> means the address of the channel
+according to this computer.  This might not be the
+address other computers should use; for example, a
+serial port driver would have no way of knowing what
+port the other computer should use.  The Internet
+sockets drivers have a bit of trouble with this too,
+since a computer can have more than one IP address
+and it's not trivial to find out even one of these.
+
+<p>Because of all this, it's probably best to tell the
+user this local address and let them figure out what
+the other computer should use.
+
+<h4>Example</h4>
+
+<pre>NET_CHANNEL *chan;
+chan = net_openchannel (driver, binding);
+printf ("Local address of channel: %s\n", net_getlocaladdress (chan));
+</pre>
+
+<p><hr>
+Node:<a name="net_send">net_send</a>,
+Next:<a rel=next href="#net_receive">net_receive</a>,
+Previous:<a rel=previous href="#net_getlocaladdress">net_getlocaladdress</a>,
+Up:<a rel=up href="#Channel%20Functions">Channel Functions</a>
+<br>
+
+<h3>2.2.5 net_send</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_send(CHANNEL *channel,void *buffer,int size);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Sends data down a channel.
+
+<h4>Parameters</h4>
+
+<p><var>channel</var> is the channel to send the data through.  <var>buffer</var>
+points to the data to send.  <var>size</var> is the size of the data in
+bytes.
+
+<h4>Return value</h4>
+
+<p>Zero on success, non-zero on error.
+
+<h4>Example</h4>
+
+<p>See <a href="#net_receive">net_receive</a>.
+
+<p><hr>
+Node:<a name="net_receive">net_receive</a>,
+Next:<a rel=next href="#net_query">net_query</a>,
+Previous:<a rel=previous href="#net_send">net_send</a>,
+Up:<a rel=up href="#Channel%20Functions">Channel Functions</a>
+<br>
+
+<h3>2.2.6 net_receive</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_receive(CHANNEL *channel,void *buffer,int maxsize,char *from);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Receives data from a channel.
+
+<h4>Parameters</h4>
+
+<p><var>channel</var> is the channel to receive from.  <var>buffer</var>
+is a buffer to hold the data, of length <var>maxsize</var>.  If
+<var>from</var> is not <code>NULL</code>, the address of the source of
+the data will be stored in the buffer it points to (which
+should be able to hold NET_MAX_ADDRESS_LENGTH characters).
+
+<h4>Return value</h4>
+
+<p>Returns the number of bytes received.  0 is valid; there
+was no data to read.  -1 indicates that an error occured.
+
+<h4>Example</h4>
+
+<pre>NET_CHANNEL *chan;
+char buffer1[32] = "Data to send";
+char buffer2[32] = "";
+int x;
+
+chan = net_openchannel (NET_DRIVER_WSOCK, "");
+net_assigntarget (chan, "127.0.0.1");
+
+net_send (chan, buffer1, strlen (buffer1) + 1);
+
+do {
+   x = net_receive (chan, buffer2, 32, NULL);
+} while (x == 0);
+
+if (x &gt; 0)
+   printf ("Received data: %s\n", buffer2);
+else
+   printf ("Error receiving data.\n");
+</pre>
+
+<p><hr>
+Node:<a name="net_query">net_query</a>,
+Previous:<a rel=previous href="#net_receive">net_receive</a>,
+Up:<a rel=up href="#Channel%20Functions">Channel Functions</a>
+<br>
+
+<h3>2.2.7 net_query</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_query(CHANNEL *channel);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function checks to see if there is data waiting to be
+read from the channel.
+
+<h4>Parameters</h4>
+
+<p><var>channel</var> is the channel to query.
+
+<h4>Return value</h4>
+
+<p>Returns nonzero if data is waiting, zero if not.
+
+<h4>Example</h4>
+
+<pre>if (net_query (chan)) get_data(chan);
+</pre>
+
+<p><hr>
+Node:<a name="Connection%20Functions">Connection Functions</a>,
+Next:<a rel=next href="#Driver%20List%20Functions">Driver List Functions</a>,
+Previous:<a rel=previous href="#Channel%20Functions">Channel Functions</a>,
+Up:<a rel=up href="#Functions">Functions</a>
+<br>
+
+<h2>2.3 Connection Functions</h2>
+
+<p>Libnet's channels are unreliable -- there's no guarantee that
+a packet will arrive at its destination, nor that packets won't
+get duplicated en route, nor that packets will arrive in the
+right order.  If you bear those facts in mind, channels should
+be fine for most uses (in particular, cases where data is made
+redundant very quickly by new incoming data).
+
+<p>Sometimes though you want to be able to send a packet and be
+sure that it will reach its destination.  Libnet's second type
+of communicator is the <dfn>connection</dfn>.  A connection is a
+fixed link between two computers.  You can't assign a new
+target.  Packets sent along a connection are guaranteed to
+arrive precisely once, and in the correct order.
+
+<p>Conns are referred to through pointers to <code>NET_CONN</code> objects.
+
+<ul>
+<li><a href="#net_openconn">net_openconn</a>: 
+<li><a href="#net_closeconn">net_closeconn</a>: 
+<li><a href="#net_listen">net_listen</a>: 
+<li><a href="#net_poll_listen">net_poll_listen</a>: 
+<li><a href="#net_connect">net_connect</a>: 
+<li><a href="#net_poll_connect">net_poll_connect</a>: 
+<li><a href="#net_connect_wait_time">net_connect_wait_time</a>: 
+<li><a href="#net_connect_wait_cb">net_connect_wait_cb</a>: 
+<li><a href="#net_connect_wait_cb_time">net_connect_wait_cb_time</a>: 
+<li><a href="#net_send_rdm">net_send_rdm</a>: 
+<li><a href="#net_receive_rdm">net_receive_rdm</a>: 
+<li><a href="#net_query_rdm">net_query_rdm</a>: 
+<li><a href="#net_ignore_rdm">net_ignore_rdm</a>: 
+<li><a href="#net_conn_stats">net_conn_stats</a>: 
+<li><a href="#net_getpeer">net_getpeer</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="net_openconn">net_openconn</a>,
+Next:<a rel=next href="#net_closeconn">net_closeconn</a>,
+Previous:<a rel=previous href="#Connection%20Functions">Connection Functions</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.1 net_openconn</h3>
+
+<h4>Prototype</h4>
+
+<pre>NET_CONN *net_openconn (int type, char *binding);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Opens a conn over the specified network type.
+
+<h4>Parameters</h4>
+
+<p><var>type</var> is the type of the network to use.  <var>binding</var> can
+determine the local binding.  See <a href="#net_openchannel">net_openchannel</a>, for more
+information about the binding.
+
+<h4>Return value</h4>
+
+<p>The function returns a pointer to the NET_CONN struct created, or
+NULL on error.
+
+<p><hr>
+Node:<a name="net_closeconn">net_closeconn</a>,
+Next:<a rel=next href="#net_listen">net_listen</a>,
+Previous:<a rel=previous href="#net_openconn">net_openconn</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.2 net_closeconn</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_closeconn (NET_CONN *conn);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Closes a previously opened conn.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the connection to be closed.
+
+<h4>Return value</h4>
+
+<p>Returns zero on success.
+
+<p><hr>
+Node:<a name="net_listen">net_listen</a>,
+Next:<a rel=next href="#net_poll_listen">net_poll_listen</a>,
+Previous:<a rel=previous href="#net_closeconn">net_closeconn</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.3 net_listen</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_listen (NET_CONN *conn);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Makes a conn start listening (waiting for connection attempts).  Only
+works on an idle conn.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn that should start listening.
+
+<h4>Return value</h4>
+
+<p>Returns zero on success, nonzero otherwise.
+
+<p><hr>
+Node:<a name="net_poll_listen">net_poll_listen</a>,
+Next:<a rel=next href="#net_connect">net_connect</a>,
+Previous:<a rel=previous href="#net_listen">net_listen</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.4 net_poll_listen</h3>
+
+<h4>Prototype</h4>
+
+<pre>NET_CONN *net_poll_listen (NET_CONN *conn);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Polls a listening channel for incoming connections.  If
+there are any, this function accepts the first one queued
+and creates a new conn to talk to the connecting computer.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the (listening) conn to poll.
+
+<h4>Return value</h4>
+
+<p>If a new conn is created, this function returns a new
+NET_CONN * which the user can use to talk to the connecting
+computer.  Otherwise NULL is returned.
+
+<p><hr>
+Node:<a name="net_connect">net_connect</a>,
+Next:<a rel=next href="#net_poll_connect">net_poll_connect</a>,
+Previous:<a rel=previous href="#net_poll_listen">net_poll_listen</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.5 net_connect</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_connect (NET_CONN *conn, char *addr);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Initiates a connection attempt.  See also: <a href="#net_connect_wait_time">net_connect_wait_time</a>,
+<a href="#net_connect_wait_cb">net_connect_wait_cb</a>, <a href="#net_connect_wait_cb_time">net_connect_wait_cb_time</a>.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to connect; <var>addr</var> is the target address.
+
+<h4>Return value</h4>
+
+<p>Returns zero if successful in initiating; nonzero otherwise.  If
+the return value is zero, the app should keep calling
+<code>net_poll_connect</code> until a connection is established or
+refused, or until the app gets bored.
+
+<p><hr>
+Node:<a name="net_poll_connect">net_poll_connect</a>,
+Next:<a rel=next href="#net_connect_wait_time">net_connect_wait_time</a>,
+Previous:<a rel=previous href="#net_connect">net_connect</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.6 net_poll_connect</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_poll_connect (NET_CONN *conn);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Polls a connecting conn to monitor connection progress.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the (connecting) conn to poll.
+
+<h4>Return value</h4>
+
+<p>Returns zero if the connection is still in progress, nonzero
+if the connection process has ended.  A nonzero return value
+is either positive (connection established) or negative
+(connection not established).
+
+<p><hr>
+Node:<a name="net_connect_wait_time">net_connect_wait_time</a>,
+Next:<a rel=next href="#net_connect_wait_cb">net_connect_wait_cb</a>,
+Previous:<a rel=previous href="#net_poll_connect">net_poll_connect</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.7 net_connect_wait_time</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_connect_wait_time (NET_CONN *conn, char *addr, int time);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function uses <code>net_connect</code> and <code>net_poll_connect</code>
+to establish a connection.  It waits until the connection process
+is completed or the time runs out.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to connect with.  <var>addr</var> is the target
+address.  <var>time</var> is the time in seconds to wait before giving up.
+
+<h4>Return value</h4>
+
+<p>Returns zero if the connection is established, negative if
+there is an error (e.g. connection refused) and positive if
+the time ran out.
+
+<p><hr>
+Node:<a name="net_connect_wait_cb">net_connect_wait_cb</a>,
+Next:<a rel=next href="#net_connect_wait_cb_time">net_connect_wait_cb_time</a>,
+Previous:<a rel=previous href="#net_connect_wait_time">net_connect_wait_time</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.8 net_connect_wait_cb</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_connect_wait_cb (NET_CONN *conn, char *addr, int (*cb)());
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function uses <code>net_connect</code> and <code>net_poll_connect</code>
+to establish a connection.  It waits, calling the callback function
+regularly (once per second), until the connection process is completed
+or the callback function returns nonzero.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to connect with.  <var>addr</var> is the target
+address.  <var>cb</var> is the address of the callback function.
+
+<h4>Return value</h4>
+
+<p>Returns zero if the connection is established, negative if
+there is an error (e.g. connection refused) and positive if
+the callback function returned nonzero.
+
+<p><hr>
+Node:<a name="net_connect_wait_cb_time">net_connect_wait_cb_time</a>,
+Next:<a rel=next href="#net_send_rdm">net_send_rdm</a>,
+Previous:<a rel=previous href="#net_connect_wait_cb">net_connect_wait_cb</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.9 net_connect_wait_cb_time</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_connect_wait_cb_time (NET_CONN *conn, char *addr, int (*cb)(), int time)
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function uses <code>net_connect</code> and <code>net_poll_connect</code>
+to establish a connection.  It waits, calling the callback function
+regularly (once per second), until the connection process is
+completed, the time runs out, or the callback function returns
+nonzero.
+
+<p>Note that if the callback function is time consuming, the time limit
+will be inaccurate.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to connect with.  <var>addr</var> is the target
+address.  <var>cb</var> is the callback function and <var>time</var> is the
+time in seconds to wait before giving up.
+
+<h4>Return value</h4>
+
+<p>Returns zero if the connection is established, negative if
+there is an error (e.g. connection refused) and positive if
+either the time ran out or the callback function returned
+nonzero.
+
+<p><hr>
+Node:<a name="net_send_rdm">net_send_rdm</a>,
+Next:<a rel=next href="#net_receive_rdm">net_receive_rdm</a>,
+Previous:<a rel=previous href="#net_connect_wait_cb_time">net_connect_wait_cb_time</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.10 net_send_rdm</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_send_rdm (NET_CONN *conn, void *buffer, int size);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Sends data down a conn.  Analogous to <a href="#net_send">net_send</a>.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to send the packet down, <var>buffer</var> points
+to the data to send and <var>size</var> is the number of bytes to send.
+
+<h4>Return value</h4>
+
+<p>Returning zero to indicate success or non-zero if an error occurs.
+
+<p><hr>
+Node:<a name="net_receive_rdm">net_receive_rdm</a>,
+Next:<a rel=next href="#net_query_rdm">net_query_rdm</a>,
+Previous:<a rel=previous href="#net_send_rdm">net_send_rdm</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.11 net_receive_rdm</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_receive_rdm (NET_CONN *conn, void *buffer, int maxsize);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Receives data from a conn.  Analogous to <a href="#net_receive">net_receive</a>.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to receive from.  <var>buffer</var> points
+somewhere to store the packet, and <var>maxsize</var> is the maximum
+number of bytes to store.
+
+<h4>Return value</h4>
+
+<p>Returns the number of bytes received.  0 is a valid return
+type; there was no data to read.  -1 indicates that an error
+occured.
+
+<p><hr>
+Node:<a name="net_query_rdm">net_query_rdm</a>,
+Next:<a rel=next href="#net_ignore_rdm">net_ignore_rdm</a>,
+Previous:<a rel=previous href="#net_receive_rdm">net_receive_rdm</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.12 net_query_rdm</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_query_rdm (NET_CONN *conn);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Tests whether data can be read from a conn.  Analogous to
+<a href="#net_query">net_query</a>, but this function actually returns the size
+of the next queued packet.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to test.
+
+<h4>Return value</h4>
+
+<p>The size of the next queued incoming packet, or 0 if no packets
+are queued.
+
+<pre>if (net_query_rdm (conn)) process_data(conn);
+</pre>
+
+<p><hr>
+Node:<a name="net_ignore_rdm">net_ignore_rdm</a>,
+Next:<a rel=next href="#net_conn_stats">net_conn_stats</a>,
+Previous:<a rel=previous href="#net_query_rdm">net_query_rdm</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.13 net_ignore_rdm</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_ignore_rdm (NET_CONN *conn);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>If there are any incoming packets waiting to be read, this causes
+the first to be dropped; otherwise nothing happens.  Note that the
+sender isn't notified, and will have received a confirmation of the
+packet's arrival.  This function is intended for use if a large
+packet is in the queue and you weren't expecting to have to deal
+with it; call this function to remove the packet.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to operate on.
+
+<h4>Return value</h4>
+
+<p>Non-zero if a packet was removed; zero if no packets were
+queued, or if an error occured.
+
+<pre>char buffer[1024];
+int size = net_query_rdm (conn);
+if (size &gt; 0) {                    /* got some data */
+    if (size &gt; sizeof buffer)       /* too much data */
+        net_ignore_rdm (conn);
+    else {
+        net_receive_rdm (conn, buffer, sizeof buffer);
+        ...
+    }
+}
+</pre>
+
+<p><hr>
+Node:<a name="net_conn_stats">net_conn_stats</a>,
+Next:<a rel=next href="#net_getpeer">net_getpeer</a>,
+Previous:<a rel=previous href="#net_ignore_rdm">net_ignore_rdm</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.14 net_conn_stats</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_conn_stats (NET_CONN *conn, int *in_q, int *out_q);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function fills in <var>*in_q</var> and <var>*out_q</var> with the
+numbers of packets in the incoming and outgoing queues for the
+conn.  If either pointer is <code>NULL</code>, its will not be filled in.
+
+<p>I'm not entirely sure how useful this information is; maybe somebody
+can use it to optimise the way their game treats the network.
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn to test; <var>in_q</var> and <var>out_q</var> are
+pointers to integers which, if not <code>NULL</code>, will be filled
+with the lengths of the incoming and outgoing queues respectively.
+
+<h4>Return value</h4>
+
+<p>Zero on success.
+
+<pre>int in_queue, out_queue;
+net_conn_stats (conn, &amp;in_queue, &amp;out_queue);
+</pre>
+
+<p><hr>
+Node:<a name="net_getpeer">net_getpeer</a>,
+Previous:<a rel=previous href="#net_conn_stats">net_conn_stats</a>,
+Up:<a rel=up href="#Connection%20Functions">Connection Functions</a>
+<br>
+
+<h3>2.3.15 net_getpeer</h3>
+
+<h4>Prototype</h4>
+
+<pre>char *net_getpeer (NET_CONN *conn);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function gives the address of the peer of this conn,
+i.e. the computer at the other end.  The conn must be in the
+connected state (a return value from <code>net_poll_listen</code> or
+passed to a successful <code>net_poll_connect</code>).
+
+<h4>Parameters</h4>
+
+<p><var>conn</var> is the conn whose address will be returned.
+
+<h4>Return value</h4>
+
+<p>A pointer to a static array is returned.  Do not write through
+the pointer.  <code>NULL</code> is returned on error.
+
+<pre>printf ("Connection received from %s\n", net_getpeer (conn));
+</pre>
+
+<p><hr>
+Node:<a name="Driver%20List%20Functions">Driver List Functions</a>,
+Next:<a rel=next href="#Alphabetic%20List%20of%20Functions">Alphabetic List of Functions</a>,
+Previous:<a rel=previous href="#Connection%20Functions">Connection Functions</a>,
+Up:<a rel=up href="#Functions">Functions</a>
+<br>
+
+<h2>2.4 Driver List Functions</h2>
+
+<p>These functions are provided to manipulate driver lists.
+
+<ul>
+<li><a href="#net_driverlist_create">net_driverlist_create</a>: 
+<li><a href="#net_driverlist_destroy">net_driverlist_destroy</a>: 
+<li><a href="#net_driverlist_clear">net_driverlist_clear</a>: 
+<li><a href="#net_driverlist_add">net_driverlist_add</a>: 
+<li><a href="#net_driverlist_remove">net_driverlist_remove</a>: 
+<li><a href="#net_driverlist_add_list">net_driverlist_add_list</a>: 
+<li><a href="#net_driverlist_remove_list">net_driverlist_remove_list</a>: 
+<li><a href="#net_driverlist_test">net_driverlist_test</a>: 
+<li><a href="#net_driverlist_foreach">net_driverlist_foreach</a>: 
+<li><a href="#net_driverlist_count">net_driverlist_count</a>: 
+</ul>
+
+<p><hr>
+Node:<a name="net_driverlist_create">net_driverlist_create</a>,
+Next:<a rel=next href="#net_driverlist_destroy">net_driverlist_destroy</a>,
+Previous:<a rel=previous href="#Driver%20List%20Functions">Driver List Functions</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.1 net_driverlist_create</h3>
+
+<h4>Prototype</h4>
+
+<pre>NET_DRIVERLIST net_driverlist_create (void);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function creates a new driver list.  Initially the driver list will
+be cleared.
+
+<h4>Return value</h4>
+
+<p>This function returns a pointer to the <code>NET_DRIVERLIST</code> struct it
+creates, or <code>NULL</code> on error (extremely unlikely).
+
+<p><hr>
+Node:<a name="net_driverlist_destroy">net_driverlist_destroy</a>,
+Next:<a rel=next href="#net_driverlist_clear">net_driverlist_clear</a>,
+Previous:<a rel=previous href="#net_driverlist_create">net_driverlist_create</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.2 net_driverlist_destroy</h3>
+
+<h4>Prototype</h4>
+
+<pre>void net_driverlist_destroy (NET_DRIVERLIST list);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Frees the memory occupied by a driver list.
+
+<h4>Parameters</h4>
+
+<p><var>list</var> is the driver list to free.
+
+<p><hr>
+Node:<a name="net_driverlist_clear">net_driverlist_clear</a>,
+Next:<a rel=next href="#net_driverlist_add">net_driverlist_add</a>,
+Previous:<a rel=previous href="#net_driverlist_destroy">net_driverlist_destroy</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.3 net_driverlist_clear</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_driverlist_clear (NET_DRIVERLIST list);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function clears a driver list.
+
+<h4>Parameters</h4>
+
+<p><var>list</var> is the driver list to clear.
+
+<h4>Return value</h4>
+
+<p>This function always returns 1.
+
+<p><hr>
+Node:<a name="net_driverlist_add">net_driverlist_add</a>,
+Next:<a rel=next href="#net_driverlist_remove">net_driverlist_remove</a>,
+Previous:<a rel=previous href="#net_driverlist_clear">net_driverlist_clear</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.4 net_driverlist_add</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_driverlist_add (NET_DRIVERLIST list, int driver);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function adds a driver to a driver list.
+
+<h4>Parameters</h4>
+
+<p><var>driver</var> is one of the <code>NET_DRIVER_*</code> constants, and will be
+added to the driver list <var>list</var>.
+
+<h4>Return value</h4>
+
+<p>This function always returns 1.
+
+<p><hr>
+Node:<a name="net_driverlist_remove">net_driverlist_remove</a>,
+Next:<a rel=next href="#net_driverlist_add_list">net_driverlist_add_list</a>,
+Previous:<a rel=previous href="#net_driverlist_add">net_driverlist_add</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.5 net_driverlist_remove</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_driverlist_remove (NET_DRIVERLIST list, int driver);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function removes a driver from a driver list.
+
+<h4>Parameters</h4>
+
+<p><var>list</var> is the driver list from which the driver <var>driver</var> will be
+removed.
+
+<h4>Return value</h4>
+
+<p>This function always returns 1.
+
+<p><hr>
+Node:<a name="net_driverlist_add_list">net_driverlist_add_list</a>,
+Next:<a rel=next href="#net_driverlist_remove_list">net_driverlist_remove_list</a>,
+Previous:<a rel=previous href="#net_driverlist_remove">net_driverlist_remove</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.6 net_driverlist_add_list</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_driverlist_add_list (NET_DRIVERLIST list1, NET_DRIVERLIST list2);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function adds the contents of one driver list to another driver
+list.
+
+<h4>Parameters</h4>
+
+<p>The contents of driver list <var>list2</var> will be added into the contents
+of driver list <var>list1</var>.  <var>list1</var> will be modified in place.
+
+<h4>Return value</h4>
+
+<p>This function always returns 1.
+
+<p><hr>
+Node:<a name="net_driverlist_remove_list">net_driverlist_remove_list</a>,
+Next:<a rel=next href="#net_driverlist_test">net_driverlist_test</a>,
+Previous:<a rel=previous href="#net_driverlist_add_list">net_driverlist_add_list</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.7 net_driverlist_remove_list</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_driverlist_remove_list (NET_DRIVERLIST list1, NET_DRIVERLIST list2);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function removes the contents of one driver list from another
+driver list.
+
+<h4>Parameters</h4>
+
+<p>The contents of driver list <var>list2</var> will be removed from driver list
+<var>list1</var>.  <var>list1</var> will be modified in place.
+
+<h4>Return value</h4>
+
+<p>This function always returns 1.
+
+<p><hr>
+Node:<a name="net_driverlist_test">net_driverlist_test</a>,
+Next:<a rel=next href="#net_driverlist_foreach">net_driverlist_foreach</a>,
+Previous:<a rel=previous href="#net_driverlist_remove_list">net_driverlist_remove_list</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.8 net_driverlist_test</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_driverlist_test (NET_DRIVERLIST list, int driver);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function tests if a specific driver is contained in a driver list.
+
+<h4>Parameters</h4>
+
+<p><var>list</var> is the driver list in which to look for the driver
+<var>driver</var>.
+
+<h4>Return value</h4>
+
+<p>Returns non-zero if <var>list</var> contains <var>driver</var>, otherwise returns
+zero.
+
+<p><hr>
+Node:<a name="net_driverlist_foreach">net_driverlist_foreach</a>,
+Next:<a rel=next href="#net_driverlist_count">net_driverlist_count</a>,
+Previous:<a rel=previous href="#net_driverlist_test">net_driverlist_test</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.9 net_driverlist_foreach</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_driverlist_foreach (NET_DRIVERLIST list,
+	int (*func)(int driver, void *dat), void *dat);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>This function iterates through a driver list, calling a callback
+function for each driver in the list.
+
+<h4>Parameters</h4>
+
+<p><var>list</var> is the driver list to iterate through.
+
+<p><var>func</var> is the callback function that will be called for each driver
+in <var>list</var>.  It will be passed two arguments: the driver and
+<var>dat</var>.  It should return an integer.  If the integer is non-zero,
+<code>net_driverlist_foreach</code> will stop iterating through the list.
+
+<p><var>dat</var> is a parameter which you can use to pass any data you want to
+the callback function.
+
+<h4>Return value</h4>
+
+<p>Returns zero if iteration was terminated by the callback function,
+otherwise returns non-zero.
+
+<h4>Notes</h4>
+
+<p>Note that Libnet driver lists do not preserve the order in which you add
+or remove drivers.  Currently, <code>net_driverlist_foreach</code> iterates
+from the driver with the smallest id number to the largest.  However,
+this, and the assignment of id numbers, may change in future, so you
+should not rely on any particular ordering.
+
+<p><hr>
+Node:<a name="net_driverlist_count">net_driverlist_count</a>,
+Previous:<a rel=previous href="#net_driverlist_foreach">net_driverlist_foreach</a>,
+Up:<a rel=up href="#Driver%20List%20Functions">Driver List Functions</a>
+<br>
+
+<h3>2.4.10 net_driverlist_count</h3>
+
+<h4>Prototype</h4>
+
+<pre>int net_driverlist_count (NET_DRIVERLIST list);
+</pre>
+
+<h4>Purpose</h4>
+
+<p>Counts the number of drivers in a driver list.
+
+<h4>Parameters</h4>
+
+<p><var>list</var> is the driver list to count.
+
+<h4>Return value</h4>
+
+<p>The number of drivers in <var>list</var>.
+
+<p><hr>
+Node:<a name="Alphabetic%20List%20of%20Functions">Alphabetic List of Functions</a>,
+Previous:<a rel=previous href="#Driver%20List%20Functions">Driver List Functions</a>,
+Up:<a rel=up href="#Functions">Functions</a>
+<br>
+
+<h2>2.5 Alphabetic List of Functions</h2>
+
+<p>This is an alphabetic list of all the interface functions of Libnet.
+
+<ul compact>
+<li><code>net_assigntarget</code>: <a href="#net_assigntarget">net_assigntarget</a>
+<li><code>net_closechannel</code>: <a href="#net_closechannel">net_closechannel</a>
+<li><code>net_closeconn</code>: <a href="#net_closeconn">net_closeconn</a>
+<li><code>net_conn_stats</code>: <a href="#net_conn_stats">net_conn_stats</a>
+<li><code>net_connect</code>: <a href="#net_connect">net_connect</a>
+<li><code>net_connect_wait_cb</code>: <a href="#net_connect_wait_cb">net_connect_wait_cb</a>
+<li><code>net_connect_wait_cb_time</code>: <a href="#net_connect_wait_cb_time">net_connect_wait_cb_time</a>
+<li><code>net_connect_wait_time</code>: <a href="#net_connect_wait_time">net_connect_wait_time</a>
+<li><code>net_detectdrivers</code>: <a href="#net_detectdrivers">net_detectdrivers</a>
+<li><code>net_driverlist_add</code>: <a href="#net_driverlist_add">net_driverlist_add</a>
+<li><code>net_driverlist_add_list</code>: <a href="#net_driverlist_add_list">net_driverlist_add_list</a>
+<li><code>net_driverlist_clear</code>: <a href="#net_driverlist_clear">net_driverlist_clear</a>
+<li><code>net_driverlist_count</code>: <a href="#net_driverlist_count">net_driverlist_count</a>
+<li><code>net_driverlist_create</code>: <a href="#net_driverlist_create">net_driverlist_create</a>
+<li><code>net_driverlist_destroy</code>: <a href="#net_driverlist_destroy">net_driverlist_destroy</a>
+<li><code>net_driverlist_foreach</code>: <a href="#net_driverlist_foreach">net_driverlist_foreach</a>
+<li><code>net_driverlist_remove</code>: <a href="#net_driverlist_remove">net_driverlist_remove</a>
+<li><code>net_driverlist_remove_list</code>: <a href="#net_driverlist_remove_list">net_driverlist_remove_list</a>
+<li><code>net_driverlist_test</code>: <a href="#net_driverlist_test">net_driverlist_test</a>
+<li><code>net_getdrivernames</code>: <a href="#net_getdrivernames">net_getdrivernames</a>
+<li><code>net_getlocaladdress</code>: <a href="#net_getlocaladdress">net_getlocaladdress</a>
+<li><code>net_getpeer</code>: <a href="#net_getpeer">net_getpeer</a>
+<li><code>net_ignore_rdm</code>: <a href="#net_ignore_rdm">net_ignore_rdm</a>
+<li><code>net_init</code>: <a href="#net_init">net_init</a>
+<li><code>net_initdrivers</code>: <a href="#net_initdrivers">net_initdrivers</a>
+<li><code>net_listen</code>: <a href="#net_listen">net_listen</a>
+<li><code>net_loadconfig</code>: <a href="#net_loadconfig">net_loadconfig</a>
+<li><code>net_openchannel</code>: <a href="#net_openchannel">net_openchannel</a>
+<li><code>net_openconn</code>: <a href="#net_openconn">net_openconn</a>
+<li><code>net_poll_connect</code>: <a href="#net_poll_connect">net_poll_connect</a>
+<li><code>net_poll_listen</code>: <a href="#net_poll_listen">net_poll_listen</a>
+<li><code>net_query</code>: <a href="#net_query">net_query</a>
+<li><code>net_query_rdm</code>: <a href="#net_query_rdm">net_query_rdm</a>
+<li><code>net_receive</code>: <a href="#net_receive">net_receive</a>
+<li><code>net_receive_rdm</code>: <a href="#net_receive_rdm">net_receive_rdm</a>
+<li><code>net_register_driver</code>: <a href="#net_register_driver">net_register_driver</a>
+<li><code>net_send</code>: <a href="#net_send">net_send</a>
+<li><code>net_send_rdm</code>: <a href="#net_send_rdm">net_send_rdm</a>
+<li><code>net_shutdown</code>: <a href="#net_shutdown">net_shutdown</a>
+</ul>
+
+<p><hr>
+Node:<a name="Drivers">Drivers</a>,
+Next:<a rel=next href="#Configuration">Configuration</a>,
+Previous:<a rel=previous href="#Functions">Functions</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>3. Notes on Drivers in Libnet</h1>
+
+<p>The drivers fall into the following categories:
+
+<ul>
+<li><a href="#nonet">nonet</a>:                        No networking
+<li><a href="#template">template</a>:                     Template for custom drivers
+
+<p>Internet drivers:  These communicate over the Internet using
+UDP.
+
+</p><li><a href="#socks">socks</a>:                        Berkeley sockets (Unix)
+<li><a href="#wsockwin">wsockwin</a>:                     Winsock (Windows)
+<li><a href="#wsockdos">wsockdos</a>:                     Winsock (DOS)
+
+<p>IPX drivers:       These communicate over an IPX network.
+
+</p><li><a href="#ipxdos">ipxdos</a>:                       DOS-based IPX
+
+<p>Serial drivers:    These communicate through a serial link.
+
+</p><li><a href="#serialdos">serialdos</a>:                    DOS-based Serial
+
+<p>Local host driver: This driver lets a program talk to itself.
+
+</p><li><a href="#localhost">localhost</a>:                    Local host
+
+<p>Future drivers:    These haven't been written yet.
+
+</p><li><a href="#Other%20drivers">Other drivers</a>:                PPP, serial, etc
+
+</ul>
+
+<p><hr>
+Node:<a name="nonet">nonet</a>,
+Next:<a rel=next href="#template">template</a>,
+Previous:<a rel=previous href="#Drivers">Drivers</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.1 No networking</h2>
+
+<dl>
+<dt>Network type
+<dd>No networking
+<br><dt>Environment
+<dd>Any
+<br><dt>Code
+<dd><code>NET_DRIVER_NONET</code>
+<br><dt>Description
+<dd>This driver will return success codes for everything, but
+won't actually do anything.  It's a dummy driver, in case
+no others are available.  Target and return addresses are
+meaningless; send an empty string to <code>net_assigntarget</code>. 
+<br><dt>Principal author
+<dd>George Foot
+</dl>
+
+<p><hr>
+Node:<a name="template">template</a>,
+Next:<a rel=next href="#socks">socks</a>,
+Previous:<a rel=previous href="#nonet">nonet</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.2 Template driver</h2>
+
+<dl>
+<dt>Network type
+<dd>No networking
+<br><dt>Environment
+<dd>Any
+<br><dt>Code
+<dd>n/a
+<br><dt>Description
+<dd>This driver is very similar to the <code>nonet</code> driver.  It
+exists to show implementors how to write new drivers.  See the
+source code (<code>lib/drivers/template.c</code>), which is well
+commented.  If anything is not clear, please contact me so that
+I can correct the problem. 
+<br><dt>Principal author
+<dd>George Foot
+</dl>
+
+<p><hr>
+Node:<a name="socks">socks</a>,
+Next:<a rel=next href="#wsockwin">wsockwin</a>,
+Previous:<a rel=previous href="#template">template</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.3 Berkeley sockets</h2>
+
+<dl>
+<dt>Network type
+<dd>Internet
+<br><dt>Environment
+<dd>Unix
+<br><dt>Code
+<dd><code>NET_DRIVER_SOCKETS</code>
+<br><dt>Description
+<dd>This driver uses Berkeley sockets on Unix machines to access
+the Internet.
+
+<p>It has been tested at various times on Linux (i386), OSF1
+(DEC Alpha) and FreeBSD. 
+<br><dt>Principal author
+<dd>George Foot
+</dl>
+
+<p><hr>
+Node:<a name="wsockwin">wsockwin</a>,
+Next:<a rel=next href="#wsockdos">wsockdos</a>,
+Previous:<a rel=previous href="#socks">socks</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.4 Winsock from Windows</h2>
+
+<dl>
+<dt>Network type
+<dd>Internet
+<br><dt>Environment
+<dd>Windows (native)
+<br><dt>Code
+<dd><code>NET_DRIVER_WSOCKWIN</code>
+<br><dt>Description
+<dd>This driver uses the Winsock from Windows to access
+the Internet.
+
+<p>It has been tested with RSXNTDJ+DJGPP and MSVC++. 
+<br><dt>Principal author
+<dd>George Foot
+</dl>
+
+<p><hr>
+Node:<a name="wsockdos">wsockdos</a>,
+Next:<a rel=next href="#ipxdos">ipxdos</a>,
+Previous:<a rel=previous href="#wsockwin">wsockwin</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.5 Winsock from a DOS box</h2>
+
+<dl>
+<dt>Network type
+<dd>Internet
+<br><dt>Environment
+<dd>DOS (under Windows)
+<br><dt>Code
+<dd><code>NET_DRIVER_WSOCK_DOS</code>
+<br><dt>Description
+<dd>This driver uses the Winsock from DOS to access
+the Internet.  It only works with version 1.x of Winsock --
+in particular it does not work with Winsock 2, as distributed
+with Windows 98.  Obviously this only works from a DOS prompt
+under Windows.
+
+<p>It has been tested with DJGPP but this was some time ago (i.e. 
+before the author used Windows 98). 
+<br><dt>Principal author
+<dd>George Foot
+</dl>
+
+<p><hr>
+Node:<a name="ipxdos">ipxdos</a>,
+Next:<a rel=next href="#serialdos">serialdos</a>,
+Previous:<a rel=previous href="#wsockdos">wsockdos</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.6 IPX from DOS</h2>
+
+<dl>
+<dt>Network type
+<dd>IPX
+<br><dt>Environment
+<dd>DOS
+<br><dt>Code
+<dd><code>NET_DRIVER_IPX_DOS</code>
+<br><dt>Description
+<dd>This driver uses BIOS level routines to access an IPX
+network.
+
+<p>It has been tested on DOS and a DOS box under Windows 95/98. 
+<br><dt>Principal author
+<dd>Ralph Deane
+</dl>
+
+<p><hr>
+Node:<a name="serialdos">serialdos</a>,
+Next:<a rel=next href="#localhost">localhost</a>,
+Previous:<a rel=previous href="#ipxdos">ipxdos</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.7 Serial link from DOS</h2>
+
+<dl>
+<dt>Network type
+<dd>Serial
+<br><dt>Environment
+<dd>DOS
+<br><dt>Code
+<dd><code>NET_DRIVER_SERIAL_DOS</code>
+<br><dt>Description
+<dd>This driver sends its data over serial ports. 
+<br><dt>Principal author
+<dd>Peter Wang
+</dl>
+
+<p><hr>
+Node:<a name="localhost">localhost</a>,
+Next:<a rel=next href="#Other%20drivers">Other drivers</a>,
+Previous:<a rel=previous href="#serialdos">serialdos</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.8 Local host</h2>
+
+<dl>
+<dt>Network type
+<dd>Local host (no real network)
+<br><dt>Environment
+<dd>All
+<br><dt>Code
+<dd><code>NET_DRIVER_LOCAL</code>
+<br><dt>Description
+<dd>This driver provides a local network for the passing of data from
+one part of a program to another. It is mostly used in a
+server/client program to provide a network link to the local
+client.
+
+<p>It will work on all platforms. 
+<br><dt>Principal author
+<dd>Ralph Deane
+</dl>
+
+<p><hr>
+Node:<a name="Other%20drivers">Other drivers</a>,
+Previous:<a rel=previous href="#localhost">localhost</a>,
+Up:<a rel=up href="#Drivers">Drivers</a>
+<br>
+
+<h2>3.9 Other drivers</h2>
+
+<p>DOS-based Internet drivers via PPP and through network cards
+were once being worked on by Ove Kaaven.  Currently the only
+way to play over the Internet from plain DOS using Libnet is
+to run Kali, which emulates IPX over an Internet connection. 
+You still need to have Internet software for DOS.  Libnet's
+IPX driver should be able to use this emulated IPX, but it
+hasn't been tested yet.  If you try it, please let me (gfoot)
+know how you get on.
+
+<p>Any other useful drivers would be much appreciated. 
+See <a href="#Contacting%20the%20Authors">Contacting the Authors</a>.
+
+<p><hr>
+Node:<a name="Configuration">Configuration</a>,
+Next:<a rel=next href="#Structs">Structs</a>,
+Previous:<a rel=previous href="#Drivers">Drivers</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>4. Config files</h1>
+
+<p>The library will work without config files by using hardwired
+defaults, but if you want to use other settings config files
+are what you need.
+
+<p>The system for config files was designed to allow other non-Libnet
+data to be included in the same file.  It uses a
+similar system to many other packages, like Windows' *.ini
+files.
+
+<ul>
+<li>Config files are plain text files
+
+<li>They are split into several sections
+
+<li>Each section starts with a line containing only a title
+in square brackets (<code>[</code>,<code>]</code>) and ends with the next such
+title
+
+<li>Inside the sections there may be several settings of the
+form:  option = setting
+</ul>
+
+<p>In fact what goes on inside the sections is entirely up to the
+driver that owns the section; the above system is recommended
+though.
+
+<p>Libnet drivers won't mind at all if you put garbage at the
+start or end of the file provided you don't duplicate any of
+its section headings and the trailing garbage has a section
+name separating it from the last Libnet driver.
+
+<p>For full details of what sections each driver looks for and
+which settings within those sections it recognises please see
+the drivers' documentation.
+
+<p>To load a config file you use the <code>net_loadconfig</code> function,
+<em>before calling <code>net_init</code></em>,
+passing it one of:
+
+<ol type=a start=1>
+</p><li>a filename (with or without a path) to load
+<li>a path with no filename
+<li><code>NULL</code>
+</ol>
+
+<p>For [b] and [c] a default filename of <code>libnet.cfg</code> will be
+used.  For [c] the file will be checked for in various platform-dependent
+locations (e.g. the current directory, or the directory containing the
+program, or the user's home directory).
+
+<p><hr>
+Node:<a name="Structs">Structs</a>,
+Next:<a rel=next href="#Improvements">Improvements</a>,
+Previous:<a rel=previous href="#Configuration">Configuration</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>5. Notes on Libnet's structs</h1>
+
+<p><code>libnet.h</code> declares several structs -- <code>NET_CHANNEL</code>,
+<code>NET_CONN</code>,
+<code>NET_DRIVER</code> and <code>NET_DRIVERNAME</code>. <code>NET_CHANNEL</code>
+and <code>NET_CONN</code> are
+used by user programs and internally to hold information about
+channels and conns; the user doesn't see inside the struct. 
+<code>NET_DRIVER</code> is used internally to hold information
+about network drivers.  <code>NET_DRIVERNAME</code> is used to hold a
+driver's reference number and name; an array of these is returned
+by the <code>net_getdrivernames</code> function.
+
+<p>The definitions of these structs are in <code>lib/include/internal.h</code>. 
+Beware that these definitions may change from version to version;
+it's best not to use them in user programs.  If you really need
+something and think the API should publicise it, let me (gfoot) know
+and we can talk about extending the API.
+
+<p>The documentation about the structs has not yet been converted to
+Texinfo format.
+
+<p><hr>
+Node:<a name="Improvements">Improvements</a>,
+Next:<a rel=next href="#Contacting%20the%20Authors">Contacting the Authors</a>,
+Previous:<a rel=previous href="#Structs">Structs</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>6. Future improvements to the library</h1>
+
+<p>Here are some possible enhancements for the future.  Other
+suggestions for improvement are of course always
+welcome.  See <a href="#Contacting%20the%20Authors">Contacting the Authors</a>.
+
+<ul>
+<li>Rather than querying all channels one by one, there could
+be a function to query them all at once, perhaps setting a
+flag in the <code>NET_CHANNEL</code> struct if data is waiting.  The
+user program could then issue one query call, and afterwards
+just check this flag. 
+</ul>
+
+<p><hr>
+Node:<a name="Contacting%20the%20Authors">Contacting the Authors</a>,
+Next:<a rel=next href="#Mailing%20List">Mailing List</a>,
+Previous:<a rel=previous href="#Improvements">Improvements</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>7. Contacting the authors</h1>
+
+<p>Authors' email addresses:
+
+<ul>
+<li>George Foot (gfoot):  george.foot@merton.oxford.ac.uk
+<li>Chad Catlett (dwi):  catlettc@canvaslink.com
+<li>Ralph Deane
+<li>Peter Wang:  tjaden@users.sourceforge.net
+</ul>
+
+<p>Before making queries about specific drivers, please look for
+documentation on the driver in question, e.g. in this document
+or in the `text' directory.  Also see the following chapter,
+which discusses the netgame mailing list.
+
+<p><hr>
+Node:<a name="Mailing%20List">Mailing List</a>,
+Next:<a rel=next href="#Variable%2fmacro%20Index">Variable/macro Index</a>,
+Previous:<a rel=previous href="#Contacting%20the%20Authors">Contacting the Authors</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>8. The netgame mailing list</h1>
+
+<p>The netgame mailing list was created in Spring 1998.  You can
+discuss any aspect of networked game programming.  Libnet
+discussion is on topic, but the list is not just about
+Libnet.  The list does not generate a lot of traffic, but there
+are people on the list with experience writing games using Libnet
+and other libraries, including the authors of Libnet, so asking
+this mailing list is better than asking the authors directly.
+
+<p>To subscribe to the mailing list, please send an email to
+listserv@canvaslink.com with no subject, putting in the body
+of the message:
+
+<pre>subscribe netgame name
+</pre>
+
+<p>replacing <code>name</code> with your name.  You'll be sent more
+information about the mailing list when your subscription is
+processed.
+
+<p>The administrator of this mailing list is George Foot.
+
+<p><hr>
+Node:<a name="Variable%2fmacro%20Index">Variable/macro Index</a>,
+Next:<a rel=next href="#Concept%20Index">Concept Index</a>,
+Previous:<a rel=previous href="#Mailing%20List">Mailing List</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>Variable/macro Index</h1>
+
+<ul compact>
+<li><code>NET_DRIVER_IPX_DOS</code>: <a href="#ipxdos">ipxdos</a>
+<li><code>NET_DRIVER_LOCAL</code>: <a href="#localhost">localhost</a>
+<li><code>NET_DRIVER_NONET</code>: <a href="#nonet">nonet</a>
+<li><code>NET_DRIVER_SERIAL_DOS</code>: <a href="#serialdos">serialdos</a>
+<li><code>NET_DRIVER_SOCKETS</code>: <a href="#socks">socks</a>
+<li><code>NET_DRIVER_WSOCK_DOS</code>: <a href="#wsockdos">wsockdos</a>
+<li><code>NET_DRIVER_WSOCK_WIN</code>: <a href="#wsockwin">wsockwin</a>
+</ul>
+<p><hr>
+Node:<a name="Concept%20Index">Concept Index</a>,
+Previous:<a rel=previous href="#Variable%2fmacro%20Index">Variable/macro Index</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h1>Concept Index</h1>
+
+<ul compact>
+<li>aims of Libnet: <a href="#Basic%20Aims">Basic Aims</a>
+<li>allocating a conn: <a href="#net_openconn">net_openconn</a>
+<li>alphabetic list of functions: <a href="#Alphabetic%20List%20of%20Functions">Alphabetic List of Functions</a>
+<li>assigning the target of a conn: <a href="#net_connect">net_connect</a>
+<li>authors: <a href="#Contacting%20the%20Authors">Contacting the Authors</a>
+<li>basic aims of Libnet: <a href="#Basic%20Aims">Basic Aims</a>
+<li>Berkeley sockets (Unix Internet) driver: <a href="#socks">socks</a>
+<li>BSD sockets (Unix Internet) driver: <a href="#socks">socks</a>
+<li>channel: <a href="#Channel%20Functions">Channel Functions</a>
+<li>channel functions: <a href="#Channel%20Functions">Channel Functions</a>
+<li>checking for incoming packets on a conn: <a href="#net_query_rdm">net_query_rdm</a>
+<li>checking whether a connecting conn has connected yet: <a href="#net_poll_connect">net_poll_connect</a>
+<li>checking whether a listening conn has been contacted: <a href="#net_poll_listen">net_poll_listen</a>
+<li>closing a conn: <a href="#net_closeconn">net_closeconn</a>
+<li>config files: <a href="#Configuration">Configuration</a>
+<li>conn: <a href="#Connection%20Functions">Connection Functions</a>
+<li>conn functions: <a href="#Connection%20Functions">Connection Functions</a>
+<li>conn, checking for incoming packets: <a href="#net_query_rdm">net_query_rdm</a>
+<li>conn, closing: <a href="#net_closeconn">net_closeconn</a>
+<li>conn, connecting: <a href="#net_connect">net_connect</a>
+<li>conn, connecting with callback: <a href="#net_connect_wait_cb">net_connect_wait_cb</a>
+<li>conn, connecting with callback and time limit: <a href="#net_connect_wait_cb_time">net_connect_wait_cb_time</a>
+<li>conn, connecting with time limit: <a href="#net_connect_wait_time">net_connect_wait_time</a>
+<li>conn, dropping packets deliberately: <a href="#net_ignore_rdm">net_ignore_rdm</a>
+<li>conn, functions to work with: <a href="#Connection%20Functions">Connection Functions</a>
+<li>conn, ignoring packets: <a href="#net_ignore_rdm">net_ignore_rdm</a>
+<li>conn, listening: <a href="#net_listen">net_listen</a>
+<li>conn, opening: <a href="#net_openconn">net_openconn</a>
+<li>conn, optimising network usage: <a href="#net_conn_stats">net_conn_stats</a>
+<li>conn, packet queue status: <a href="#net_conn_stats">net_conn_stats</a>
+<li>conn, peer's address: <a href="#net_getpeer">net_getpeer</a>
+<li>conn, polling (listening) for connection attempts: <a href="#net_poll_listen">net_poll_listen</a>
+<li>conn, polling connection status: <a href="#net_poll_connect">net_poll_connect</a>
+<li>conn, querying for incoming packets: <a href="#net_query_rdm">net_query_rdm</a>
+<li>conn, receiving packets: <a href="#net_receive_rdm">net_receive_rdm</a>
+<li>conn, sending packets: <a href="#net_send_rdm">net_send_rdm</a>
+<li>conn, starting to listen: <a href="#net_listen">net_listen</a>
+<li>conn, status of packet queues: <a href="#net_conn_stats">net_conn_stats</a>
+<li>connecting a conn with callback: <a href="#net_connect_wait_cb">net_connect_wait_cb</a>
+<li>connecting a conn with callback and time limit: <a href="#net_connect_wait_cb_time">net_connect_wait_cb_time</a>
+<li>connecting a conn with time limit: <a href="#net_connect_wait_time">net_connect_wait_time</a>
+<li>connecting conn, initiating: <a href="#net_connect">net_connect</a>
+<li>connecting conn, polling for status: <a href="#net_poll_connect">net_poll_connect</a>
+<li>connection functions: <a href="#Connection%20Functions">Connection Functions</a>
+<li>contacting the authors: <a href="#Contacting%20the%20Authors">Contacting the Authors</a>
+<li>contributors: <a href="#Contacting%20the%20Authors">Contacting the Authors</a>
+<li>core functions: <a href="#Core%20Functions">Core Functions</a>
+<li>creating a conn: <a href="#net_openconn">net_openconn</a>
+<li>data, checking for on a conn: <a href="#net_query_rdm">net_query_rdm</a>
+<li>data, querying for on a conn: <a href="#net_query_rdm">net_query_rdm</a>
+<li>data, receiving on a conn: <a href="#net_receive_rdm">net_receive_rdm</a>
+<li>data, sending on a conn: <a href="#net_send_rdm">net_send_rdm</a>
+<li>destroying a conn: <a href="#net_closeconn">net_closeconn</a>
+<li>DOS-based Internet: <a href="#Other%20drivers">Other drivers</a>
+<li>DOS-based Internet (Winsock) driver: <a href="#wsockdos">wsockdos</a>
+<li>DOS-based IPX driver: <a href="#ipxdos">ipxdos</a>
+<li>DOS-based serial driver: <a href="#serialdos">serialdos</a>
+<li>DOS-based Winsock driver: <a href="#wsockdos">wsockdos</a>
+<li>driver list functions: <a href="#Driver%20List%20Functions">Driver List Functions</a>
+<li>drivers in Libnet: <a href="#Drivers">Drivers</a>
+<li>dropping packets deliberately: <a href="#net_ignore_rdm">net_ignore_rdm</a>
+<li>dummy (no networking) driver: <a href="#nonet">nonet</a>
+<li>emailing the authors: <a href="#Contacting%20the%20Authors">Contacting the Authors</a>
+<li>Ethernet (IPX) driver: <a href="#ipxdos">ipxdos</a>
+<li>FreeBSD-based Internet (Berkeley sockets) driver: <a href="#socks">socks</a>
+<li>freeing a conn: <a href="#net_closeconn">net_closeconn</a>
+<li>functions: <a href="#Functions">Functions</a>
+<li>functions, alphabetical list: <a href="#Alphabetic%20List%20of%20Functions">Alphabetic List of Functions</a>
+<li>functions, channel: <a href="#Channel%20Functions">Channel Functions</a>
+<li>functions, conn: <a href="#Connection%20Functions">Connection Functions</a>
+<li>functions, core: <a href="#Core%20Functions">Core Functions</a>
+<li>functions, driver list manipulation: <a href="#Driver%20List%20Functions">Driver List Functions</a>
+<li>future developments: <a href="#Improvements">Improvements</a>
+<li>future drivers: <a href="#Other%20drivers">Other drivers</a>
+<li>getting the address of a conn's peer: <a href="#net_getpeer">net_getpeer</a>
+<li>getting the status of a conn: <a href="#net_conn_stats">net_conn_stats</a>
+<li>goals of Libnet: <a href="#Basic%20Aims">Basic Aims</a>
+<li>how to write a driver: <a href="#template">template</a>
+<li>ignoring a packet queued on a conn: <a href="#net_ignore_rdm">net_ignore_rdm</a>
+<li>important messages: <a href="#Connection%20Functions">Connection Functions</a>
+<li>improvements: <a href="#Improvements">Improvements</a>
+<li>incoming packet count of a conn: <a href="#net_conn_stats">net_conn_stats</a>
+<li>initiating a connection: <a href="#net_connect">net_connect</a>
+<li>internal loopback (local host) driver: <a href="#localhost">localhost</a>
+<li>internals -- structs: <a href="#Structs">Structs</a>
+<li>Internet from a DOS box: <a href="#wsockdos">wsockdos</a>
+<li>Internet from plain DOS: <a href="#Other%20drivers">Other drivers</a>
+<li>Internet from Unix/Linux/FreeBSD: <a href="#socks">socks</a>
+<li>Internet from Windows: <a href="#wsockwin">wsockwin</a>
+<li>IP support in DOS boxes: <a href="#wsockdos">wsockdos</a>
+<li>IP support in Unix/Linux/FreeBSD: <a href="#socks">socks</a>
+<li>IP support in Windows: <a href="#wsockwin">wsockwin</a>
+<li>IPX driver: <a href="#ipxdos">ipxdos</a>
+<li>Kali and Libnet: <a href="#Other%20drivers">Other drivers</a>
+<li>LAN (IPX) driver: <a href="#ipxdos">ipxdos</a>
+<li>large packets, ignoring: <a href="#net_ignore_rdm">net_ignore_rdm</a>
+<li>Linux-based Internet (Berkeley sockets) driver: <a href="#socks">socks</a>
+<li>list of drivers: <a href="#Drivers">Drivers</a>
+<li>list of functions: <a href="#Alphabetic%20List%20of%20Functions">Alphabetic List of Functions</a>
+<li>listening conn, initiating: <a href="#net_listen">net_listen</a>
+<li>listening conn, polling for status: <a href="#net_poll_listen">net_poll_listen</a>
+<li>local host driver: <a href="#localhost">localhost</a>
+<li>loopback (local host) driver: <a href="#localhost">localhost</a>
+<li>low level packet sending: <a href="#Channel%20Functions">Channel Functions</a>
+<li>mailing list: <a href="#Mailing%20List">Mailing List</a>
+<li>manipulating driver lists: <a href="#Driver%20List%20Functions">Driver List Functions</a>
+<li>modem driver: <a href="#serialdos">serialdos</a>
+<li>NET_CHANNEL struct: <a href="#Structs">Structs</a>
+<li>NET_CONN struct: <a href="#Structs">Structs</a>
+<li>NET_DRIVER struct: <a href="#Structs">Structs</a>
+<li>NET_DRIVERNAME struct: <a href="#Structs">Structs</a>
+<li>netgame mailing list: <a href="#Mailing%20List">Mailing List</a>
+<li>no networking (dummy) driver: <a href="#nonet">nonet</a>
+<li>nonet driver: <a href="#nonet">nonet</a>
+<li>null modem driver: <a href="#serialdos">serialdos</a>
+<li>opening a conn: <a href="#net_openconn">net_openconn</a>
+<li>optimising network usage: <a href="#net_conn_stats">net_conn_stats</a>
+<li>other drivers: <a href="#Other%20drivers">Other drivers</a>
+<li>outgoing packet count of a conn: <a href="#net_conn_stats">net_conn_stats</a>
+<li>packet queue status of a conn: <a href="#net_conn_stats">net_conn_stats</a>
+<li>packets, checking for on a conn: <a href="#net_query_rdm">net_query_rdm</a>
+<li>packets, dropping deliberately: <a href="#net_ignore_rdm">net_ignore_rdm</a>
+<li>packets, querying for on a conn: <a href="#net_query_rdm">net_query_rdm</a>
+<li>packets, receiving on a conn: <a href="#net_receive_rdm">net_receive_rdm</a>
+<li>packets, sending on a conn: <a href="#net_send_rdm">net_send_rdm</a>
+<li>peer, definition: <a href="#net_getpeer">net_getpeer</a>
+<li>peer, getting address of: <a href="#net_getpeer">net_getpeer</a>
+<li>plans for the future: <a href="#Improvements">Improvements</a>
+<li>polling a conn for connection status: <a href="#net_poll_connect">net_poll_connect</a>
+<li>polling a listening conn for connection status: <a href="#net_poll_listen">net_poll_listen</a>
+<li>PPP driver: <a href="#Other%20drivers">Other drivers</a>
+<li>querying for incoming packets on a conn: <a href="#net_query_rdm">net_query_rdm</a>
+<li>queue status of a conn: <a href="#net_conn_stats">net_conn_stats</a>
+<li>RDM: <a href="#Connection%20Functions">Connection Functions</a>
+<li>RDM, checking for: <a href="#net_query_rdm">net_query_rdm</a>
+<li>RDM, ignoring: <a href="#net_ignore_rdm">net_ignore_rdm</a>
+<li>RDM, querying for: <a href="#net_query_rdm">net_query_rdm</a>
+<li>RDM, receiving: <a href="#net_receive_rdm">net_receive_rdm</a>
+<li>RDM, sending: <a href="#net_send_rdm">net_send_rdm</a>
+<li>reading from a conn: <a href="#net_receive_rdm">net_receive_rdm</a>
+<li>receiving packets on a conn: <a href="#net_receive_rdm">net_receive_rdm</a>
+<li>receiving RDMs: <a href="#net_receive_rdm">net_receive_rdm</a>
+<li>reliable communication, functions: <a href="#Connection%20Functions">Connection Functions</a>
+<li>sending packets on a conn: <a href="#net_send_rdm">net_send_rdm</a>
+<li>sending RDMs: <a href="#net_send_rdm">net_send_rdm</a>
+<li>serial driver: <a href="#serialdos">serialdos</a>
+<li>setting the target of a conn: <a href="#net_connect">net_connect</a>
+<li>settings in config files: <a href="#Configuration">Configuration</a>
+<li>starting a connection attempt: <a href="#net_connect">net_connect</a>
+<li>starting to listen for connections on a conn: <a href="#net_listen">net_listen</a>
+<li>structs: <a href="#Structs">Structs</a>
+<li>subscribing to the netgame mailing list: <a href="#Mailing%20List">Mailing List</a>
+<li>TCP/IP support in DOS boxes: <a href="#wsockdos">wsockdos</a>
+<li>TCP/IP support in Unix/Linux/FreeBSD: <a href="#socks">socks</a>
+<li>TCP/IP support in Windows: <a href="#wsockwin">wsockwin</a>
+<li>template driver: <a href="#template">template</a>
+<li>UDP/IP support in DOS boxes: <a href="#wsockdos">wsockdos</a>
+<li>UDP/IP support in Unix/Linux/FreeBSD: <a href="#socks">socks</a>
+<li>UDP/IP support in Windows: <a href="#wsockwin">wsockwin</a>
+<li>Unix-based Internet (Berkeley sockets) driver: <a href="#socks">socks</a>
+<li>unreliable communication, functions: <a href="#Channel%20Functions">Channel Functions</a>
+<li>Windows-based Internet (Winsock) driver: <a href="#wsockwin">wsockwin</a>
+<li>Windows-based Winsock driver: <a href="#wsockwin">wsockwin</a>
+<li>Winsock 2 in DOS (lack of support): <a href="#wsockdos">wsockdos</a>
+<li>Winsock driver for DOS: <a href="#wsockdos">wsockdos</a>
+<li>Winsock driver for Windows: <a href="#wsockwin">wsockwin</a>
+<li>writing your own drivers: <a href="#template">template</a>
+</ul>
+
+
+<h1>Table of Contents</h1>
+<ul>
+<li><a href="#Top">Libnet documentation</a>
+<li><a href="#Basic%20Aims">1. Basic Aims</a>
+<li><a href="#Functions">2. Functions</a>
+<ul>
+<li><a href="#Core%20Functions">2.1 Core Functions</a>
+<ul>
+<li><a href="#net_init">2.1.1 net_init</a>
+<li><a href="#net_register_driver">2.1.2 net_register_driver</a>
+<li><a href="#net_loadconfig">2.1.3 net_loadconfig</a>
+<li><a href="#net_getdrivernames">2.1.4 net_getdrivernames</a>
+<li><a href="#net_detectdrivers">2.1.5 net_detectdrivers</a>
+<li><a href="#net_initdrivers">2.1.6 net_initdrivers</a>
+<li><a href="#net_shutdown">2.1.7 net_shutdown</a>
+</ul>
+<li><a href="#Channel%20Functions">2.2 Channel Functions</a>
+<ul>
+<li><a href="#net_openchannel">2.2.1 net_openchannel</a>
+<li><a href="#net_closechannel">2.2.2 net_closechannel</a>
+<li><a href="#net_assigntarget">2.2.3 net_assigntarget</a>
+<li><a href="#net_getlocaladdress">2.2.4 net_getlocaladdress</a>
+<li><a href="#net_send">2.2.5 net_send</a>
+<li><a href="#net_receive">2.2.6 net_receive</a>
+<li><a href="#net_query">2.2.7 net_query</a>
+</ul>
+<li><a href="#Connection%20Functions">2.3 Connection Functions</a>
+<ul>
+<li><a href="#net_openconn">2.3.1 net_openconn</a>
+<li><a href="#net_closeconn">2.3.2 net_closeconn</a>
+<li><a href="#net_listen">2.3.3 net_listen</a>
+<li><a href="#net_poll_listen">2.3.4 net_poll_listen</a>
+<li><a href="#net_connect">2.3.5 net_connect</a>
+<li><a href="#net_poll_connect">2.3.6 net_poll_connect</a>
+<li><a href="#net_connect_wait_time">2.3.7 net_connect_wait_time</a>
+<li><a href="#net_connect_wait_cb">2.3.8 net_connect_wait_cb</a>
+<li><a href="#net_connect_wait_cb_time">2.3.9 net_connect_wait_cb_time</a>
+<li><a href="#net_send_rdm">2.3.10 net_send_rdm</a>
+<li><a href="#net_receive_rdm">2.3.11 net_receive_rdm</a>
+<li><a href="#net_query_rdm">2.3.12 net_query_rdm</a>
+<li><a href="#net_ignore_rdm">2.3.13 net_ignore_rdm</a>
+<li><a href="#net_conn_stats">2.3.14 net_conn_stats</a>
+<li><a href="#net_getpeer">2.3.15 net_getpeer</a>
+</ul>
+<li><a href="#Driver%20List%20Functions">2.4 Driver List Functions</a>
+<ul>
+<li><a href="#net_driverlist_create">2.4.1 net_driverlist_create</a>
+<li><a href="#net_driverlist_destroy">2.4.2 net_driverlist_destroy</a>
+<li><a href="#net_driverlist_clear">2.4.3 net_driverlist_clear</a>
+<li><a href="#net_driverlist_add">2.4.4 net_driverlist_add</a>
+<li><a href="#net_driverlist_remove">2.4.5 net_driverlist_remove</a>
+<li><a href="#net_driverlist_add_list">2.4.6 net_driverlist_add_list</a>
+<li><a href="#net_driverlist_remove_list">2.4.7 net_driverlist_remove_list</a>
+<li><a href="#net_driverlist_test">2.4.8 net_driverlist_test</a>
+<li><a href="#net_driverlist_foreach">2.4.9 net_driverlist_foreach</a>
+<li><a href="#net_driverlist_count">2.4.10 net_driverlist_count</a>
+</ul>
+<li><a href="#Alphabetic%20List%20of%20Functions">2.5 Alphabetic List of Functions</a>
+</ul>
+<li><a href="#Drivers">3. Notes on Drivers in Libnet</a>
+<ul>
+<li><a href="#nonet">3.1 No networking</a>
+<li><a href="#template">3.2 Template driver</a>
+<li><a href="#socks">3.3 Berkeley sockets</a>
+<li><a href="#wsockwin">3.4 Winsock from Windows</a>
+<li><a href="#wsockdos">3.5 Winsock from a DOS box</a>
+<li><a href="#ipxdos">3.6 IPX from DOS</a>
+<li><a href="#serialdos">3.7 Serial link from DOS</a>
+<li><a href="#localhost">3.8 Local host</a>
+<li><a href="#Other%20drivers">3.9 Other drivers</a>
+</ul>
+<li><a href="#Configuration">4. Config files</a>
+<li><a href="#Structs">5. Notes on Libnet's structs</a>
+<li><a href="#Improvements">6. Future improvements to the library</a>
+<li><a href="#Contacting%20the%20Authors">7. Contacting the authors</a>
+<li><a href="#Mailing%20List">8. The netgame mailing list</a>
+<li><a href="#Variable%2fmacro%20Index">Variable/macro Index</a>
+<li><a href="#Concept%20Index">Concept Index</a>
+</ul>
+
+</body></html>
+

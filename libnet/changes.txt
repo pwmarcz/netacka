@@ -1,0 +1,189 @@
+changes list             fifteenth revision   by gfoot      11/11/2001
+______________________________________________________________________
+
+                            |o|   _  _ .
+                            |||-.| |/_)|-
+                            '''-'' '`- `-
+
+    Libnet is (c) Copyright Chad Catlett and George Foot 1997-2001
+______________________________________________________________________
+
+
+This file describes the changes between versions of Libnet.
+
+
+
+0.10.11: released 18/02/2003
+   *  Jörg Rüppel and George Foot fixed various problems the conns.
+   *  Adam J. Richter fixed a piece of code that gcc 3 didn't like.
+
+
+0.10.10: released 11/11/2001
+   *  Not sure what has changed at the moment, this is a quick release
+	to fix the DOS version which was apparently broken in 0.10.9.
+
+
+0.10.9: released 07/06/2001
+   *  Ben Davis rewrote the serial driver, making it work much better
+   *  George Foot added a conio-Allegro wrapper to the examples, which
+	could make them easier to build for Windows
+   *  George Foot added net_prepare_address for DNS lookups
+   *  I'm sure other things have changed in the past year, but I've 
+	forgotten what -- please email me (gfoot@users.sf.net) if you know
+	of something I've forgotten
+
+
+0.10.8: released 09/05/2000
+   *  Fixed the documentation, and expanded the system to support DVI and
+	PostScript output
+   *  Peter Wang corrected a bug in `lib/drivers/local.c'
+   *  Fixed various mistakes preventing the library from building in MSVC
+   *  Prevented `serbeos.cpp' from being built on non-BeOS platforms, to
+	avoid having to require a C++ compiler on other platforms
+
+
+0.10.7: released 07/05/2000
+   *  Made much of the code thread-safe.  See `docs/text/thr_*.txt'.
+   *  Added `net_set_mutex_funcs' and `net_set_timer_func', changing
+	the way `__libnet_timer_func' works.
+   *  Peter Wang reorganised the serial code, adding drivers for Linux 
+	and BeOS.
+   *  Made `net_initdriver' take a copy of its parameter, in case it 
+	gets clobbered by the new call to `net_detectdriver'.
+   *  Added an ID to each connection request.
+
+
+0.10.6: released 19/03/2000
+   *  Fixed bug in lib/core/connhelp.c -- `poll' was allocating a 64k 
+	array on the stack!
+   *  Modified wsockdos.c to support compilation with gcc 2.9.5 for DOS
+   *  Peter Wang rewrote the local host driver, since it wasn't working
+	with conns
+   *  Peter also added `net_detectdriver' and `net_initdriver', which
+	work on individual drivers rather than lists of drivers...
+   *  ... and wrote some functions to help people make new links in 
+	parallel to existing ones, along with a test program...
+   *  ... and made some modifications to the conio emulation
+   *  The `net_connect_wait*_time' functions were using `sleep', which
+	(in Linux) doesn't mix well with Allegro
+   *  Added functions to return the driver ID a conn or channel is using
+   *  Made initialising an undetected driver first try to detect it 
+	(the old behaviour was just to ignore the driver)
+   *  Added network classes
+   *  Disabled the code to deal with duplicated connection attempts from
+	a single client, because it's not right and it's safer without 
+	it for now -- maybe we'll put it back in if/when it can be 
+	fixed; I'm sceptical.
+
+
+0.10.5 (revised): released 06/02/2000
+   *  Fixed silly typo in MSVC library building batch file
+
+0.10.5: released 03/02/2000
+   *  Modified wsockdos.h to support compilation with gcc 2.9.5 for DOS
+   *  Ported to Mingw32 and MSVC
+   *  Created a batch file build system, as an alternative to makefiles
+   *  Made various text files' dates (e.g. this one's) Y2K compliant
+
+
+0.10.4: released 21/11/1999
+   *  Corrected the mistake in lib/drivers/local.c
+
+
+0.10.3: released 04/04/1999
+   *  *Really* fixed the conn system now!
+   *  Added a new example -- rdmchat, the same chat system but using 
+        conns instead of channels.  Much nicer.
+   *  Fixed minor bugs in various places
+   *  Removed the examples from the RSXNTDJ build, because it can't
+        build them yet
+   *  Merged in the serial driver (thanks to Peter Wang)
+   *  Renamed various things to be more consistent
+   *  Updated the makefile's dependency information
+   *  Added a mechanism for configuring the conn system
+   *  Changed the way the IPX driver enables the nearptr hack
+   *  Added some new conn functions and documented some existing
+        undocumented ones -- these are net_ignore_rdm, net_conn_stats
+        and net_getpeer.
+   *  Indexed a lot of the documentation (Texinfo is so cool!)
+   *  Changed the IPX driver's separator between network and machine
+        addresses to `/'
+   *  Made all drivers recognise the `disable' config option, and not
+        be detected if it's set
+
+
+0.10.2: released 01/04/1999
+   *  Added two new drivers (thanks to Ralph Deane) -- IPX and Local
+        Host
+   *  Fixed the RDM system -- connections work now
+   *  Tidied up some of the exported symbols
+
+
+0.10.1: released 27/02/1999
+   *  Finished the RDM system, but it doesn't work
+   *  Added a new test program for the RDM system
+   *  Made the chat program work in more environments
+   *  Made miscellaneous documentation updates
+
+
+0.10.0: released 26/01/1999
+
+   *  Made it portable to lots of other operating systems
+   *  Moved most of the docs to Texinfo format, producing versions 
+        in plain text, info format and HTML
+   *  Added some of the RDM system
+   *  Put the HTML format documentation online
+
+
+0.9.13: never released
+
+   *  Made some things in wsock.c static
+   *  Fixed important bug in wsock.c -- thanks to Chris Frolick, who
+        persevered and learned to use several debuggers while 
+        searching for this bug
+
+
+0.9.12: released 05/03/1998
+
+   *  Fixed makefiles which were broken under djgpp in several ways
+   *  Corrected prototype for net_getdrivernames in docs
+   *  Renamed the fake stricmp in core/config.c
+   *  Added missing `#endif' to examples/chat/_coniox.c (FWIW)
+   *  Made version numbering consistent
+   *  Added own IP detection to the Winsock driver
+
+
+0.9.11: released 24/01/1998
+
+   *  Ported to Linux and other Unixes
+   *  Added Berkeley sockets driver for Unixes
+   *  Added changes.txt file, so anything below this point was written 
+        retrospectively
+   *  Fixed ` = { 0 }' bug which was crashing the socks driver
+   *  Moved chat client/server test to `examples' directory
+   *  Fiddled with config settings to allow socks driver and wsock driver
+        to share the default port and force option
+
+
+0.9.10: released 21/01/1998
+
+   *  Added DNS resolver to Winsock driver
+   *  Added the configuration file system
+   *  Improved openinputchannel using the config file
+   *  Modified Winsock driver to use various config settings
+   *  Updated documentation
+
+
+0.9.9: released ??/01/1998  (first visibly numbered version; 00000009)
+
+   *  Core features:
+        init, detectdrivers, getdrivernames, initdrivers, shutdown
+   *  Basic channel support:
+        openchannel, openinputchannel (hackishly), closechannel,
+        assigntarget, getlocaladdress, send, receive, query
+   *  Drivers:
+        wsock, nonet
+   *  Test programs:
+        getdrvnm, gentest, chat
+   *  Documentation nearly up-to-date
+

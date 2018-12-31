@@ -1,0 +1,27 @@
+@c
+@c Various FUAs (Frequently Used Addresses) for DJGPP FAQ
+@c
+
+@macro DJ
+@mail{DJ Delorie, dj@@delorie.com}
+@end macro
+
+@macro CWS
+@mail{Charles Sandmann, sandmann@@clio.rice.edu}
+@end macro
+
+@macro Steve
+@mail{Stephen Turnbull, turnbull@@shako.sk.tsukuba.ac.jp}
+@end macro
+
+@ifclear CCT
+@macro CCT{}
+ftp.coast.net
+@end macro
+@end ifclear
+
+@ifclear SimTel
+@macro SimTel{}
+ftp.simtel.net
+@end macro
+@end ifclear

@@ -1,0 +1,37 @@
+@c
+@c Current versions for DJGPP packages
+@c
+
+@set djgpp-version	201
+@set csdpmi-version	3
+@set gcc-version	2721
+@set bnu-version	27
+@set txi-version	390
+@set lgpp-version	271
+@set gdb-version	416
+@set fsdb-version	104
+@set ldbg-version	100
+@set flx-version	252
+@set bsn-version	124
+@set dif-version	271
+@set mak-version	375
+@set pat-version	21
+@set sed-version	118
+@set grx-version	20
+@set pdc-version	22
+@set f2c-version	94c15
+@set inter-version	53
+@set faq-version	210
+@set grep-version	20
+@set gzp-version	124
+@set find-version	41
+@set wmemu-version	2
+@set less-version       321
+@set emacs-version      1934
+@set rhide-version      10
+@set pmode-version      11
+@set dvips-version      558
+@set fil-version        313
+@set txt-version        119
+@set shl-version        112
+@set bsh-version        1147

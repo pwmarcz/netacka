@@ -1,0 +1,123 @@
+winsock driver docs      fifth revision       by gfoot        04/03/98
+______________________________________________________________________
+
+                            |o|   _  _ . 
+                            |||-.| |/_)|-
+                            '''-'' '`- `-
+
+    libnet is (c) Copyright Chad Catlett and George Foot 1997-1998
+______________________________________________________________________
+
+
+This is supplementary documentation for libnet's Winsock driver.
+
+
+Driver name:    Winsock
+Author:         George Foot (gfoot) <george.foot@merton.oxford.ac.uk>
+Last modified:  04/03/98
+
+
+Description:
+
+    This driver uses the Windows 95 or 3.11 Winsock to communicate
+    over the internet using by default the User Datagram Protocol.
+
+
+Address format(s):
+
+    "a.b.c.d:port", where `a',`b',`c',`d' are integers from 0 to
+    255, forming the IP address required, and `port' is an
+    integer from 0 to 65535, representing the port number on the
+    computer.  If `port' is omitted or zero a default will be 
+    used.  The default value is hardcoded into the library but can
+    be changed in a config file.
+
+    Examples: "127.0.0.1:12345" refers to `localhost' (the 
+    loopback address) port 12345.  "129.67.1.1" refers to a DNS
+    server called oxdns1, using the default port (which happens to
+    be 24785, unless you change it).
+    
+    If the users supply information about their DNS servers they
+    can use a hostname instead of the IP address, for example:
+    "sable.ox.ac.uk:24785" (with the specified port) or 
+    "ftp.cdrom.com" (using the default port).  DNS resolution is a
+    blocking operation though (i.e. it takes time and suspends 
+    your program's execution until it's done).  You can adjust the
+    length of time (in seconds) for which the DNS resolver will 
+    try to get an IP by putting the `dns_timeout' setting in your
+    config file.
+    
+    Note that the time taken to look up a hostname can be very 
+    variable; at worst the operation involves following a chain of
+    referrals from DNS server to DNS server around the world, and
+    at best your local DNS server may have the information 
+    requested in its cache.  Consequently, if a resolution times 
+    out it's often worth trying it again.  IMHO having a short 
+    dns_timeout value (like the default of 10) isn't generally too
+    bad a thing.
+    
+    Ideally it would be nice to make this operation non-blocking;
+    this is of course possible, but the channel cannot be used until
+    its target address is known.  I can think of a number of ways to
+    present this to the user, none of which seem worthwhile at the
+    moment.  I don't think having this operation block is too 
+    serious.  Let me know if you feel strongly about this.
+
+
+Return address:
+
+    At present the return_addr field of the NET_CHANNEL struct
+    (and consequently the string returned by net_getlocaladdress)
+    will not necessarily be correct.  The port number will 
+    definitely be correct, but the IP address might not be.  The
+    process for determining the IP address is as follows:
+    
+        1) If the `ip' setting is in the config file and is not
+           "0.0.0.0", use that;
+    
+        2) Otherwise, if a nameserver is given in the config file
+           and the `auto_get_ip' setting is non-zero, attempt to 
+           establish a connection with a nameserver and query the
+           local address for that connection.
+           
+        3) Failing the above, "0.0.0.0" is used.
+    
+    "Used" is the wrong word really -- the return IP address is 
+    never used (by libnet).  If you try to print it on the screen,
+    though, for the user's reference, note that:
+    
+        1) If the `ip' setting is in the config file it might be
+           wrong (user's fault, really).
+           
+        2) If libnet can't determine the IP through the DNS
+           server, it will show up as "0.0.0.0".
+
+
+Future improvements:
+
+    * IP address and nameserver IP detection     (in progress)
+
+
+
+Credits:
+
+    If you look at drivers/wsock.c, you'll see that it contains
+    parts of a Winsock library. This library is my C Winsock
+    interface, wnsck. A lot of it was removed, since it wasn't
+    being used; notably, all the TCP routines are gone. If you
+    want the original library, please contact me.
+
+    That library was in turn derived from Dan Hedlund's C++
+    Winsock interface. I simply converted the C++ code to C code,
+    and wrapped the functions up using standard (AFAIK) Winsock
+    function names. For a copy of the original C++ library, see
+    ??? URL ???.
+
+    At present I am trying to get values from the registry (such
+    as local IP address and DNS server addresses). This is using
+    code derived from Alfons Hoogervorst's DosSock95 library.
+
+    Many thanks are due to both Dan and Alfons for writing their
+    libraries and letting other people use their code.
+
+

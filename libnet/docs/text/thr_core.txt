@@ -1,0 +1,92 @@
+Thread-safeness of core library routines
+========================================
+
+*** Initialisation:
+  * net_init
+  * net_register_driver
+  * net_loadconfig
+
+These functions must be called in this order.  Calls must not overlap.
+`net_register_driver' may be called as many times as you like.
+
+
+*** Shutdown:
+  * net_shutdown
+
+This must occur last of all, and must not overlap any other call.
+
+
+*** Driver manipulation:
+  * net_getdrivernames
+  * net_driver_class
+
+These functions are thread-safe.
+
+  * net_detectdriver
+  * net_detectdrivers
+  * net_initdriver
+  * net_initdrivers
+
+These functions are not thread-safe -- the return values of some of
+these functions are clobbered by further calls, and Libnet keeps track
+of which drivers are detected or initialised in an unsafe way.
+
+
+*** Driver lists:
+  * net_driverlist_*
+
+These functions are thread-safe, but only one thread may use a
+particular driver list at a time.
+
+
+*** Conn/channel creation/destruction functions:
+  * net_openchannel
+  * net_destroychannel
+  * net_openconn
+  * net_destroyconn
+
+Calls to these functions on different channels/conns may overlap.
+
+
+*** Conn/channel manipulation functions:
+  * net_fixupaddress_channel
+  * net_assigntarget
+  * net_getlocaladdress
+  * net_send
+  * net_receive
+  * net_query
+  * net_channel_driver
+  * net_fixupaddress_conn
+  * net_connect
+  * net_poll_connect
+  * net_listen
+  * net_poll_listen
+  * net_connect_wait_time
+  * net_connect_wait_cb
+  * net_connect_wait_cb_time
+  * net_send_rdm
+  * net_receive_rdm
+  * net_query_rdm
+  * net_ignore_rdm
+  * net_conn_stats
+  * net_getpeer
+  * net_conn_driver
+
+These functions are essentially thread-safe, but two operations on the
+same conn/channel must not overlap.
+
+There may be threading problems within the drivers or the low-level
+implementations they chain to.
+
+
+*** Callback functions
+  * net_set_timer_func
+
+This must be called before `net_init', if at all.  The callback should 
+be thread-safe, but may rely on the first call being unthreaded.
+
+  * net_set_mutex_funcs
+
+This must be called before `net_init', if at all.  All callbacks must be 
+thread-safe.
+

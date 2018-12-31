@@ -1,0 +1,599 @@
+libnet documentation     seventh revision  by gfoot and dwi   28/03/98
+______________________________________________________________________
+
+							|o|   _  _ . 
+							|||-.| |/_)|-
+							'''-'' '`- `-
+
+	libnet is (c) Copyright Chad Catlett and George Foot 1997-1998
+______________________________________________________________________
+
+
+This is the main documentation for libnet.  Most of it is relevant to 
+end-users, but some of it is more relevant to driver authors.  You 
+should read the instructions in readme.txt before this.
+
+
+
+0. Contents
+~~~~~~~~~~~
+   0 - Contents
+   1 - Basic aims
+   2 - Functions
+   3 - Drivers
+   4 - Config files
+   5 - Structs
+	 + a) NET_CHANNEL
+	 + b) NET_DRIVER
+	 + c) NET_DRIVERNAME
+   6 - Improvements
+   7 - Contacting the authors
+
+
+
+1. Basic aims
+~~~~~~~~~~~~~
+   Aims of this project:
+
+
+   * Make a generic interface to a variety of network drivers
+
+	 Such an interface will enable people to write programs with
+	 networking capabilities without having to tie them down to
+	 particular types of network. The same program code will be
+	 able to use any supported network (e.g. Winsock, IPX, 
+	 serial, ...) neither becoming cluttered nor requiring much
+	 effort to adapt.
+
+
+   * Offer basic functionality only
+
+	 Restricting the functionality means that more classes of
+	 network can be implemented and makes it easy for new users
+	 to get used to.
+
+
+   * Make addition of new drivers painless
+
+	 Naturally, writing a new driver will require an amount of
+	 research and testing; however, adding new drivers to the
+	 library should not be a painful process.
+
+
+   * Start with a core library, and a few sample drivers; invite
+	 other people to contribute new drivers.
+
+	 We can test whether the theory is workable, as well as
+	 creating sample programs to show people how to use the
+	 library. Hopefully they will then contribute missing
+	 drivers.
+
+
+
+2. Functions
+~~~~~~~~~~~~
+   The following functions can be used to communicate with the
+   library:
+
+
+   int net_init();
+
+	  This function initialises the library, and should be
+	  called before any others.
+
+
+   int net_loadconfig (char *filename);
+
+	  This loads a configuration file and invites the various
+	  drivers to extract information from it.  If `filename' is
+	  NULL it loads `libnet.cfg' from the program's home 
+	  directory (as in argv[0]).  If `filename' is a directory
+	  the file `libnet.cfg' is loaded from that directory.  If
+	  `filename' is a file, that file is loaded.
+
+	  See the separate chapter on config files for full 
+	  information about them.
+
+
+   NET_DRIVERNAME *net_getdrivernames (int which);
+
+	  This function returns an array of NET_DRIVERNAME structs,
+	  which contain the reference numbers and names of the
+	  drivers specified by `which', plus the `nonet' driver and
+	  a terminating entry with a NULL pointer for the driver 
+	  name. The list is malloced, and should be freed by the 
+	  caller.  If the above description is unclear, please see 
+	  tests/getdrvnm.c for a short example.
+
+
+   int net_detectdrivers (int which);
+
+	  `which' is a combination of the NET_DRIVER_* flags,
+	  indicating which drivers to attempt to detect.
+	  NET_DRIVER_ALL can be given to detect all drivers.  The
+	  function returns a similar bitset showing which of drivers
+	  were actually detected.
+
+	  This function can be called once to detect all drivers at
+	  once, for example, or it can be called several times (e.g.
+	  once per driver to detect).  The return value only shows
+	  which of the drivers specified were detected; in the
+	  latter case this is not the entire list of detected
+	  drivers.
+
+
+   int net_initdrivers (int which);
+
+	  This function operates similarly to the net_detectdrivers
+	  function, but it initialises the specified drivers rather
+	  than detecting them.  Also, it returns the complete list of
+	  initialised (i.e. ready-for-use) drivers.
+
+
+   int net_shutdown();
+
+	  Shuts everything down nicely, returning 0 on success.  This
+	  will close any open channels and shut down all initialised
+	  drivers.
+
+
+   NET_CHANNEL *net_openchannel(int type);
+
+	  Opens a communications channel for use over the specified
+	  network type.  It returns a pointer to the CHANNEL struct
+	  created, or NULL on error.
+
+
+   NET_CHANNEL *net_openinputchannel (int type);
+
+	  Opens a channel in such a way that other computers can
+	  send data, without having any specific information about
+	  the channel.  Only one should exist per driver.
+
+	  In most respects this is just like a normal channel; it
+	  can both send and receive data.  The difference as far as 
+	  the Winsock driver is concerned is that the port is known 
+	  -- it's either the default value or an override value 
+	  from the config file.  This means users don't need to 
+	  know the port address to send data.
+
+
+   int net_closechannel(NET_CHANNEL *channel);
+
+	  Closes a previously opened channel.  This will not
+	  necessarily inform the remote machine; it will simply
+	  discard the channel record, after inviting the network
+	  driver responsible to tidy things up.  Returns 0 on
+	  success.
+
+
+   int net_assigntarget(NET_CHANNEL *channel, char *target);
+
+	  Sets the target of the given channel.  The format of the
+	  target address depends upon the network type being used by
+	  the channel.
+
+
+   char *net_getlocaladdress(NET_CHANNEL *channel);
+
+	  Returns the channel's recorded local address.  This might
+	  be the address to which other computers should send data,
+	  but for some drivers it might not be.  For example, a
+	  serial port driver would have no way of knowing what port
+	  the other computer should use.  The Internet sockets 
+	  drivers have a bit of trouble with this too.
+
+
+   int net_send(CHANNEL *channel,void *buffer,int size);
+
+	  Sends data down a channel, returning zero to indicate
+	  success or non-zero if an error occurs.
+
+
+   int net_receive(CHANNEL *channel,void *buffer,int maxsize,char *from);
+
+	  Receives data from a channel, maximum `maxsize' bytes,
+	  storing the data in `buffer' and, if `from' is not NULL,
+	  putting the source's address in that buffer (which should
+	  be at least NET_MAX_ADDRESS_LENGTH characters in length).
+	  Returns the number of bytes received.  0 is valid; there
+	  was no data to read.  -1 indicates that an error occured.
+
+
+   int net_query(CHANNEL *channel);
+
+	  Returns nonzero if data is ready for reading from the
+	  given channel.
+
+
+   NET_CONN *net_openconn (int type, int listen);
+
+	  Opens a connection to another machine, using the given 
+	  network type.  If `listen' is 1, the connection will 
+	  be a listening connection.  Only one connection should 
+	  listen at a time.  The connection will stop listening 
+	  when it is closed.
+
+
+   int net_connect (NET_CONN *conn, char *target);
+
+	  Connects an open (non-listening) connection to the 
+	  given target (which should be listening).  Returns 
+	  zero if it connects successfully, nonzero otherwise. 
+
+
+   int net_accept (NET_CONN *conn);
+
+	  Causes a listening connection to check for connection 
+	  attempts.  If there has been an attempt, the connection 
+	  stops listening and this function returns zero.  Otherwise 
+	  this function returns nonzero.
+
+
+   int net_send_rdm (NET_CONN *conn, void *buffer, int size);
+   int net_receive_rdm (NET_CONN *conn, void *buffer, int maxsize, char *from);
+   int net_query_rdm (NET_CONN *conn);
+
+	  These functions are the connection-based analogues of the
+	  channel-based functions net_send, net_receive and net_query.
+	  RDM stands for Reliably Delivered Message.
+
+
+   int net_closeconn (NET_CONN *conn);
+
+	  Closes a connection.
+
+
+
+   The following functions are planned but not implemented:
+
+
+   NET_STREAM *net_createstream();
+	  Create new stream.
+
+   int net_stream_addsource (NET_STREAM *stream, int networktype, ...);
+	  Adds an input source to a stream.
+
+   int net_stream_getpacket (NET_STREAM *stream, NET_PACKET *packet);
+	  Gets a packet from a stream.
+
+   int net_closestream();
+	  Closes a stream.
+
+
+
+3. Drivers
+~~~~~~~~~~
+   More information on the drivers can be found in their
+   individual documentation.
+
+   At present, the following drivers are implemented and fully
+   functional:
+
+
+   NET_DRIVER_NONET     -       No networking
+
+	  This driver will return success codes for everything, but
+	  won't actually do anything. It's a dummy driver, in case
+	  no others are available. Target and return addresses are
+	  meaningless; send an empty string to net_assigntarget.
+
+
+   NET_DRIVER_WSOCK     -       Winsock driver
+
+	  This driver uses the UDP protocol over the internet via
+	  Windows 95's or Windows 3.11's Winsock.  The target address
+	  should be given either in IP format as four unsigned chars 
+	  separated by full stops or in hostname format, and either 
+	  type of address can optionally be followed by a colon and
+	  a port number.  If the port number is omitted, the default
+	  port is used (24785 if not overridden in the config file).
+	  For example, setting the target to "127.0.0.1:12345" would
+	  cause data to be looped back to the host, coming in on port
+	  12345, and setting it to "www.lycos.com" would refer to the
+	  Lycos web search engine using the default port of 24785.
+
+	  With this driver, the return address is awkward to complete.
+	  The port number is correct but the IP may not be.  More
+	  information is given in the docs/wsock.txt file; in general
+	  though, clients should connect to a host using any IP 
+	  address that refers to the host, and the port given in the 
+	  return address here.
+
+	  Note that DNS resolution will only work if there are some 
+	  "nameserver = x.x.x.x" lines in the config file.
+
+	  For further information please see docs/wsock.txt.
+
+
+   NET_DRIVER_SOCKETS   -       Unix sockets driver
+
+	  This driver is the Unix counterpart to the Winsock driver. 
+	  It too uses the UDP protocol over the Internet, through
+	  Berkeley sockets.  The address format is the same; DNS
+	  resolution is not yet implemented; nor is any form of 
+	  local IP detection other than the obvious config file 
+	  check.
+
+	  This driver has been tested on Linux (i386) and OSF/1
+	  (DEC Alpha).  To use it, just build Libnet on the machine
+	  in question; the DOSish drivers will be disabled and this 
+	  one will be activated.  Caveat particularly emptor on this
+	  one though, it's far less tested.
+
+
+   An IPX driver is being worked on by Chad Catlett. DOS-based 
+   internet drivers (UDP and TCP) via PPP are being worked on 
+   by Ove Kaaven.
+
+   Serial and modem drivers would be much appreciated, as would 
+   any other useful drivers. Contact dwi or gfoot (see below for 
+   details).
+
+
+
+4. Config files
+~~~~~~~~~~~~~~~
+   The library will work without config files by using hardwired
+   defaults, but if you want to use other settings config files
+   are what you need.
+
+   The system for config files was designed to allow other non-
+   libnet data to be included in the same file.  It uses a 
+   similar system to many other packages, like Windows' *.ini
+   files.
+
+	  - Config files are plain text files
+
+	  - They are split into several sections
+
+	  - Each section starts with a line containing only a title
+		in square brackets (`[',`]') and ends with the next such
+		title
+
+	  - Inside the sections there may be several settings of the
+		form:  option = setting
+
+   In fact what goes on inside the sections is entirely up to the
+   driver that owns the section; the above system is recommended
+   though.
+
+   libnet drivers won't mind at all if you put garbage at the 
+   start or end of the file provided you don't duplicate any of
+   its section headings and the trailing garbage has a section
+   name separating it from the last libnet driver.
+
+   For full details of what sections each driver looks for and
+   which settings within those sections it recognises please see
+   the individual driver documentation.
+
+   To load a config file you use the net_loadconfig function,
+   passing it one of:
+
+	  [a]  a filename (with or without a path) to load
+	  [b]  a path with no filename
+	  [c]  NULL
+
+   For [b] and [c] a default filename of `libnet.cfg' will be
+   used.  For [c] the file will be checked for in the program's
+   home directory (taken from argv[0]).
+
+
+
+5. Structs
+~~~~~~~~~~
+   libnet.h defines three structs - NET_CHANNEL, NET_DRIVER and 
+   NET_DRIVERNAME. NET_CHANNEL is used by user programs and 
+   internally to hold information about a channel. NET_DRIVER is
+   used internally to hold information about network drivers. 
+   NET_DRIVERNAME is used to hold a driver's reference number and
+   name; an array of these is returned by the net_getdrivernames
+   function.
+
+
+   a) The NET_CHANNEL struct
+   """""""""""""""""""""""""
+	  The user should not use the information in this struct
+	  directly; it contains the type of connection, a pointer to
+	  the network driver's NET_DRIVER record, the target address
+	  (if any), the return address (if any), and a data block
+	  for the driver's internal use.
+
+
+	  typedef struct NET_CHANNEL {
+	   int type;                        /* network type */
+	   NET_DRIVER *driver;              /* network driver */
+	   char *target_addr;               /* target address */
+	   char *return_addr;               /* return address */
+	   void *data;
+	  } NET_CHANNEL;
+
+
+
+   b) The NET_DRIVER struct
+   """"""""""""""""""""""""
+	  This struct is used as a virtual function table for the
+	  network drivers. Writing a new driver is as simple as
+	  writing the necessary functions, creating a NET_DRIVER
+	  struct containing their addresses, and updating libnet.h.
+
+
+	  typedef struct NET_DRIVER {
+	   char *name;                                                        /* driver name */
+	   char *desc;                                                        /* description string */
+
+	   int (*detect)();                                                   /* auto-detect function (0 = absent) */
+	   int (*init)();                                                     /* initialise (0 = okay) */
+	   int (*exit)();                                                     /* undo the above initialisation */
+
+	   int (*init_channel) (NET_CHANNEL *chan);                           /* perform low-level initialisation on a channel */
+	   int (*init_inputchannel) (NET_CHANNEL *chan);                      /* initialise a channel to receive connections */
+	   int (*destroy_channel) (NET_CHANNEL *chan);                        /* undo the above initialisation */
+
+	   int (*update_target) (NET_CHANNEL *chan);                          /* update private data for change of target address */
+	   int (*send) (NET_CHANNEL *chan, void *buf, int size);              /* send data */
+	   int (*recv) (NET_CHANNEL *chan, void *buf, int max, char **from);  /* receive data */
+	   int (*query) (NET_CHANNEL *chan);                                  /* query for incoming data */
+
+	   void (*load_config) (FILE *fp);                                    /* load configuration data */
+	  } NET_DRIVER;
+
+
+	  This structure is clearly based on Allegro's handling of
+	  sound, MIDI and graphics drivers. The `name' field should
+	  be statically initialised. `desc' should be set by the
+	  `detect' function to reflect information about the driver.
+
+	  The `detect' function should return NET_DETECT_YES if it
+	  thinks the driver can work. If it is not possible to
+	  detect outright whether the driver can work, it should
+	  return NET_DETECT_MAYBE. Returning NET_DETECT_NO (zero)
+	  indicates that without a doubt the driver cannot operate.
+	  This function should tidy up after itself.
+
+	  The `init' function will be called once to initialise the
+	  driver if the user so requests. This will occur only if
+	  `detect' has already returned non-zero, and will occur
+	  before any functions other than `detect' and `init' are
+	  called. It should return zero to indicate success, or non-
+	  zero on error.
+
+	  The `exit' function exists primarily to undo any
+	  initalisation events which need undoing, such as memory
+	  allocation. It should also deallocate any memory other
+	  functions of this driver have left allocated. No driver
+	  function calls will follow the `exit' call, apart from
+	  `detect' or `init', until `init' is called successfully
+	  again. It should return zero to indicate success, or non-
+	  zero on error.
+
+	  The `init_channel' function invites the driver to prepare
+	  to send or receive data using the given channel. This
+	  function should fill in the return_addr field of the
+	  NET_CHANNEL struct with a suitable value. It may allocate
+	  memory, pointing the `data' member of the NET_CHANNEL
+	  struct to it, if it needs to. It should return zero to
+	  indicate success, or non-zero on error.
+
+	  `init_inputchannel' should behave like `init_channel', but
+	  should make the channel use some sort of default `port' (IP
+	  speak) so that other computers can connect to the channel
+	  given only the computer's address.  Config files come in 
+	  handy here :).
+
+	  The `destroy_channel' function asks the driver to undo
+	  everything the `init_channel' function did. The data block
+	  should be freed neatly. If memory for the `return_addr'
+	  was allocated, it should be freed too. It should return
+	  zero to indicate success, or non-zero on error.
+
+	  The `update_target' function will be called primarily
+	  (only?) after the target address of the channel has been
+	  changed by a call to net_assigntarget. It should do
+	  anything it needs to do to be able to use the given
+	  address (e.g. resolving an internet hostname to an IP
+	  address), and return zero if it can use the given address,
+	  or non-zero if it can't.
+
+	  The `send', `recv' and `query' functions work in exactly
+	  the same way as netlib_send, netlib_receive and
+	  netlib_query.
+
+	  The `load_config' function invites the driver to read 
+	  whatever it wants from the (already open) FILE *.  There
+	  are a few useful functions declared in "config.h":
+
+
+		__libnet_internal__seek_section (FILE *fp, char *section);
+
+		   This searches the file (from the beginning) for a line
+		   containing only "[xxxxx]", where "xxxxx" is the string
+		   `section'.  It leaves the file ready to read the next 
+		   line.  It returns zero if it finds the section, 
+		   non-zero if not.
+
+		__libnet_internal__get_setting (FILE *fp, char **option, char **value);
+
+		   This reads through the file line by line from the 
+		   current position until it finds one containing a `='
+		   sign.  It then sets `*option' to point at whatever is
+		   left of the sign and `*value' to point at the right 
+		   hand side.  Leading and trailing whitespace is 
+		   stripped from both strings, lines beginning with `#'
+		   are ignored, and a line beginning with `[' aborts the
+		   function.  It returns zero if it found an option-value
+		   pair, non-zero if not.
+
+
+	  Technically it doesn't matter what the function reads from
+	  the file or where it leaves the file position, but it ought
+	  to stick to its own section.  For an example of using the 
+	  above two functions see drivers/wsock.c.
+
+
+
+   c) The NET_DRIVERNAME struct
+   """"""""""""""""""""""""""""
+	  This struct holds the reference number and name of a network
+	  driver.
+
+	  typedef struct NET_DRIVERNAME {
+	   int num;                          /* the driver's reference number */
+	   char *name;                       /* the driver's name */
+	  } NET_DRIVERNAME;
+
+	  When you get your array of these from net_getdrivernames, you
+	  can step through it like this:
+
+	  drivernames = net_getdrivernames (NET_DRIVER_ALL);
+
+	  while (drivernames->name) {
+	   /* do something with the data... like: */
+	   printf("%d\t%s\n",drivernames->num,drivernames->name);
+	   /* now increase to point to the next driver */
+	   drivernames++;
+	  }
+
+	  free (drivernames);
+
+	  Note that you should not free the `name' fields; they're static
+	  strings.
+
+
+
+6. Improvements
+~~~~~~~~~~~~~~~
+   Suggestions for improvement are of course always welcome.
+
+
+   - Rather than querying all channels one by one, there could
+	 be a function to query them all at once, perhaps setting a
+	 flag in the NET_CHANNEL struct if data is waiting. The user
+	 program could then issue one query call, and afterwards
+	 just check this flag.
+
+
+   - Option to open a reliable data channel. Currently, 
+	 transmission of information is not guarranteed, although 
+	 some drivers might naturally be reliable. This option would
+	 force all drivers to guarrantee packet delivery and ordering.
+	 Doing so might involve software checks, if it's not supported
+	 by the hardware. Reliable communication will necessarily be 
+	 slower; it's intended more for file transfers, etc, than real-
+	 time game communication.
+
+
+
+7. Contacting the authors
+~~~~~~~~~~~~~~~~~~~~~~~~~
+   Authors' email addresses:
+
+	  George Foot (gfoot): george.foot@merton.oxford.ac.uk
+	  Chad Catlett (dwi): catlettc@canvaslink.com
+
+
+   Before making queries about specific drivers, please see the
+   documentation for the driver in question.
+
+
+

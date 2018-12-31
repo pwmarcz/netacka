@@ -1,0 +1,60 @@
+Serial Driver
+==============
+
+General
+--------
+
+  Select serials ports that you want Libnet to use in `libnet.cfg'.
+  For example:
+
+	[serial]
+	autoports = 0 1
+
+  will selected ports 0 and 1 (COM1 and COM2 to DOS people). These
+  will be opened automatically when you initialise the serial
+  driver.
+
+  The address format is `X:Y' where `X' is the physical port and
+  `Y' is the virtual port.  The following bindings are possible:
+
+	NULL - any virtual port on all physical ports
+	""   - default virtual port on all physical ports
+	X:Y  - virtual port Y on physical port X
+	:Y   - virtual port Y on all physical ports
+	X    - default virtual port on physical port X
+
+Configuration
+--------------
+
+  There can be a separate section for each port, like so:
+
+	[serial port 0]
+	baudrate = 115200
+	bits = 8
+	stopbits = 1
+	parity = none
+	baseaddr = 0x3f8	(DOS only)
+	irq = 4			(DOS only)
+
+  But you shouldn't have to touch any of this.  The options are
+  only included for completeness -- they may not work.
+
+Troubleshooting
+----------------
+
+DOS:
+
+  Check you have not altered the default IRQ numbers in your BIOS
+  settings.  If necessary, you can use the config stuff shown above.
+ 
+Linux:
+
+  Check that you have read-write permissions to /dev/ttySx, and make
+  sure that GPM isn't reading data from the port.
+
+BeOS:
+
+  `chat' and `rdmchat' won't compile under BeOS, yet.
+
+  Bug: sometimes `rdmtest' will queue up packets under BeOS.
+       (has not been tested under new serial driver)

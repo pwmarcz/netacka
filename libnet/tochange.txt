@@ -1,0 +1,27 @@
+This is a sort of to-do list.  Initials down the left hand side mean I
+think somebody is working on the item, or has some ideas about it.
+
+George
+
+
+gf = George Foot
+pw = Peter Wang
+
+
+lib:
+	* help info for classes
+gf	* net_prepare_address etc
+		* aliases
+		* DNS (done?)
+pw	* serial thread-safety
+	* IPX overhaul?
+	* check more drivers for thread-safety
+gf	* handle situation where server closes a conn before duplicate 
+		connection requests from the client arrive
+
+docs:
+	* driver list functions
+	* check up to date
+	* address formats
+	* serial docs
+
