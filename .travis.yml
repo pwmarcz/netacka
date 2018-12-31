@@ -1,3 +1,4 @@
+dist: xenial
 language: c
 script:
   - sudo apt install liballegro4-dev
