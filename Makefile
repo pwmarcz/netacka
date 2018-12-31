@@ -5,23 +5,28 @@ BOTS = bot.o genialny_bot0.o genialny_bot.o
 OBJECTS_EXE = netacka.o net.o $(BOTS)
 
 CC = gcc
-CFLAGS = -s -O2 -Wall -fgnu89-inline
+CFLAGS = -s -O2 -Wall -fgnu89-inline -Ilibnet/lib/include
 #CFLAGS = -g3 -fgnu89-inline
 
 # change these for other systems
-LIB = `allegro-config --libs` -lm -lnet -lpthread
+LIB = `allegro-config --libs` -lm libnet/lib/libnet.a -lpthread
 EXE = netacka
 
 all: $(EXE) $(SERVER)
 
-$(EXE): $(OBJECTS_EXE)
+$(EXE): $(OBJECTS_EXE) libnet/lib/libnet.a
 	$(CC) $(OBJECTS_EXE) -o $(EXE) $(LIB)
 
 clean:
 	rm *.o
+	rm libnet/lib/*.a
 
 netacka.o: netacka.h bots.inc
 
 net.o: netacka.h
 
 $(BOTS): netacka.h
+
+libnet/lib/libnet.a:
+	cp libnet/makfiles/linux.mak libnet/port.mak
+	$(MAKE) -C libnet lib

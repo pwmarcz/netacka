@@ -1,2 +1,4 @@
+libnet/port.mak
 netacka
 *.o
+*.a
