@@ -54,7 +54,7 @@ void _put_gui_buf()
     blit(gui_buf, screen, 0, 0, 0, 0, gui_w, gui_h);
 }
 
-PALETTE pal = {
+unsigned char pal[][3] = {
     {0, 0, 0},                  //  0 black
     {20, 20, 20},               //  1 dark gray
     {50, 50, 50},               //  2 very light gray
@@ -100,8 +100,12 @@ const int player_colors[MAX_PLAYERS][2] = {
     {cRED, cGREEN}
 };
 
+int pal_color(int color) {
+    return makecol(pal[color][0]*4, pal[color][1]*4, pal[color][2]*4);
+}
+
 inline int get_player_color(int i, int j) {
-    return palette_color[player_colors[i][j]];
+    return pal_color(player_colors[i][j]);
 }
 
 #define MOUSE_KEYS 5
@@ -204,11 +208,11 @@ int get_client_players()
 
     escape = 0;
     for (i = 0; welcome[i]; i++)
-        textout_ex(screen, font, welcome[i], 60, 200 + i * 10, palette_color[cLIGHTGRAY],
+        textout_ex(screen, font, welcome[i], 60, 200 + i * 10, pal_color(cLIGHTGRAY),
                    -1);
     for (i = 0; i < CLIENT_PLAYERS; i++) {
         textout_ex(screen, font, client_keys[i].str, 60, 10 + i * 30,
-                   palette_color[cWHITE], -1);
+                   pal_color(cWHITE), -1);
         playing[i] = 0;
     }
     for (;;) {
@@ -217,13 +221,13 @@ int get_client_players()
             if (check_keys(i) == 1 && !playing[i]) {
                 playing[i] = 1;
                 n++;
-                textout_ex(screen, font, "READY", 10, 10 + i * 30, palette_color[cWHITE],
+                textout_ex(screen, font, "READY", 10, 10 + i * 30, pal_color(cWHITE),
                            -1);
             }
             if (check_keys(i) == -1 && playing[i]) {
                 playing[i] = 0;
                 n--;
-                textout_ex(screen, font, "READY", 10, 10 + i * 30, palette_color[cBLACK],
+                textout_ex(screen, font, "READY", 10, 10 + i * 30, pal_color(cBLACK),
                            -1);
             }
         }
@@ -237,7 +241,6 @@ int get_client_players()
             while (key[KEY_SPACE])
                 rest(1);
             clear_keybuf();
-            // TODO GUI (player names)
             for (i = 0; i < n_client_players; i++) {
                 char c = client_players[i].name[0];
                 if (!isdigit(c) || c - '0' >= N_BOTS)
@@ -263,19 +266,19 @@ void draw_score_list(BITMAP * score_list)
         if (players[i].playing && best_score < players[i].score)
             best_score = players[i].score;
     clear_bitmap(score_list);
-    clear_to_color(score_list, gray_bg ? palette_color[cGRAY] : palette_color[cBLACK]);
-//   line(score_list,0,0,0,screen_h-1,palette_color[cWHITE]);
+    clear_to_color(score_list, gray_bg ? pal_color(cGRAY) : pal_color(cBLACK));
+//   line(score_list,0,0,0,screen_h-1,pal_color(cWHITE));
     y = 0;
     for (i = 0; i < MAX_PLAYERS; i++, y += 25) {
         if (!players[i].playing)
             continue;
-        //line(score_list,2,9+y,109,9+y,palette_color[cGRAY]);
+        //line(score_list,2,9+y,109,9+y,pal_color(cGRAY));
         if (!gray_bg) {
             if (!players[i].alive)
-                rectfill(score_list, 2, 9 + y, 109, 9 + y + 24, palette_color[cGRAY]);
+                rectfill(score_list, 2, 9 + y, 109, 9 + y + 24, pal_color(cGRAY));
         } else {
             if (players[i].alive)
-                rectfill(score_list, 2, 9 + y, 109, 9 + y + 24, palette_color[cBLACK]);
+                rectfill(score_list, 2, 9 + y, 109, 9 + y + 24, pal_color(cBLACK));
         }
         if (players[i].name[0]) {
             char *name = (hide_bot_numbers
@@ -283,22 +286,22 @@ void draw_score_list(BITMAP * score_list)
                 name[1] : players[i].name;
             textout_ex(score_list, font, name, 2, 11 + y,
                        (players[i].score ==
-                        best_score) ? palette_color[cWHITE] : palette_color[cVLIGHTGRAY], -1);
+                        best_score) ? pal_color(cWHITE) : pal_color(cVLIGHTGRAY), -1);
         }
         rectfill(score_list, 82, 10 + y, 95, 19 + y, get_player_color(i, 0));
         rectfill(score_list, 96, 10 + y, 108, 19 + y, get_player_color(i, 1));
         textprintf_ex(score_list, font, 83, 11 + y,
-                      palette_color[cBLACK], -1, "%3d", players[i].score);
+                      pal_color(cBLACK), -1, "%3d", players[i].score);
         if (players[i].client == -1) {
             struct client_player *c =
                 &client_players[players[i].client_num];
             textout_ex(score_list, font,
                        (c->bot ==
                         -1) ? client_keys[c->keys].str : bots[c->bot].name,
-                       2, 22 + y, palette_color[cGREEN], -1);
+                       2, 22 + y, pal_color(cGREEN), -1);
         }
         if (players[i].score == best_score)
-            rect(score_list, 1, 9 + y, 108, 9 + y + 24, palette_color[cWHITE]);
+            rect(score_list, 1, 9 + y, 108, 9 + y + 24, pal_color(cWHITE));
     }
 }
 
@@ -351,13 +354,13 @@ void draw_konec(BITMAP * bmp)
         name = (hide_bot_numbers && isdigit(players[tmp].name[0])) ?
             &players[tmp].name[1] : players[tmp].name;
         if (players[tmp].score != last_score) {
-            textprintf_ex(bmp, font, x - 30, 10 + i * 25, palette_color[cGRAY], -1,
+            textprintf_ex(bmp, font, x - 30, 10 + i * 25, pal_color(cGRAY), -1,
                           "%2d.", ++place);
             if (fp)
                 fprintf(fp, "%2d. ", place);
         } else if (fp)
             fprintf(fp, "    ");
-        textprintf_ex(bmp, font, x + 25, 10 + i * 25, palette_color[cWHITE],
+        textprintf_ex(bmp, font, x + 25, 10 + i * 25, pal_color(cWHITE),
                       -1, "%3d", players[tmp].score);
         if (save_log) {
             if (fp)
@@ -368,7 +371,7 @@ void draw_konec(BITMAP * bmp)
                  get_player_color(tmp, 0));
         rectfill(bmp, x + 10, 10 + i * 25, x + 19, 19 + i * 25,
                  get_player_color(tmp, 1));
-        textprintf_ex(bmp, font, x + 55, 10 + i * 25, palette_color[cVLIGHTGRAY], -1,
+        textprintf_ex(bmp, font, x + 55, 10 + i * 25, pal_color(cVLIGHTGRAY), -1,
                       "%10s", name);
         last_score = players[tmp].score;
     }
@@ -553,8 +556,8 @@ inline int __test(BITMAP * arena, int old_x, int old_y, int x, int y)
         return 0;
     if (torus)
         return getpixel(arena, (x + screen_w - 112) % (screen_w - 111) + 1,
-                        (y + screen_h - 3) % (screen_h - 2) + 1) != palette_color[cBLACK];
-    return getpixel(arena, x, y) != palette_color[cBLACK];
+                        (y + screen_h - 3) % (screen_h - 2) + 1) != pal_color(cBLACK);
+    return getpixel(arena, x, y) != pal_color(cBLACK);
 }
 
 int _test(BITMAP * arena, int old_x, int old_y, int x, int y,
@@ -569,7 +572,7 @@ int _test(BITMAP * arena, int old_x, int old_y, int x, int y,
 
     if (!torus)
         if (x < 1 || x > screen_w - 111 || y < 1 || y > screen_h - 2)
-            return palette_color[cWHITE_WALL];
+            return pal_color(cWHITE_WALL);
     if (hole)
         return 0;
     if (!old_hole) {
@@ -685,7 +688,8 @@ void screenshot(BITMAP * buf)
     char fname[256];
     long t = time(0);
     sprintf(fname, "%s%ld.pcx", game_path, t);
-    save_bitmap(fname, buf, pal);
+    // TODO
+    // save_bitmap(fname, buf, pal);
 }
 
 void close_bots()
@@ -732,7 +736,7 @@ int play_round(int is_server)
     if (!is_server)
         save_log = 0;
     clear_bitmap(buf);
-    rect(buf, 0, 0, screen_w - 110, screen_h - 1, palette_color[cWHITE_WALL]);
+    rect(buf, 0, 0, screen_w - 110, screen_h - 1, pal_color(cWHITE_WALL));
     ticks = t = 0;
     escape = 0;
     //for(i=0;i<N_BOTS;i++) bots[i].start();
@@ -801,7 +805,7 @@ int play_round(int is_server)
                 clear_bitmap(buf);
                 close_bots();
                 start_bots();
-                rect(buf, 0, 0, screen_w - 110, screen_h - 1, palette_color[cWHITE_WALL]);
+                rect(buf, 0, 0, screen_w - 110, screen_h - 1, pal_color(cWHITE_WALL));
                 draw_players(arena, i_know, t);
                 ticks = t = 0;
                 new_round =
@@ -1120,7 +1124,7 @@ int play_round(int is_server)
                     close_bots();
                     start_bots();
                     rect(buf, 0, 0, screen_w - 110, screen_h - 1,
-                         palette_color[cWHITE_WALL]);
+                         pal_color(cWHITE_WALL));
                     ticks = t = 0;
                     for (i = 0; i < MAX_PLAYERS; i++)
                         players[i].x = players[i].y = -256;
@@ -1195,8 +1199,6 @@ int set_mode(int w, int h)
              0) != 0)
             return -1;
 
-    set_palette(pal);
-
     if (gui_buf)
         destroy_bitmap(gui_buf);
     gui_buf = create_bitmap(gui_w = h, gui_h = h);
@@ -1235,9 +1237,9 @@ int main()
 
     if (set_mode(640, 480))
         crash("couldn't set video mode");
-    gui_fg_color = palette_color[cWHITE];
-    gui_bg_color = palette_color[cBLACK];
-    gui_mg_color = palette_color[cGRAY];
+    gui_fg_color = pal_color(cWHITE);
+    gui_bg_color = pal_color(cBLACK);
+    gui_mg_color = pal_color(cGRAY);
 
     if (start_net())
         return 1;
