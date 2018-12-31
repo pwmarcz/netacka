@@ -11,7 +11,7 @@ RM_F = rm -f
 CP_F = cp -f
 
 CC = gcc
-WARNING_FLAGS = -Wall -Werror -Wno-unused -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations
+WARNING_FLAGS = -Wall -Wno-unused -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations
 LDLIBS = -lpthread
 LINK_ALLEGRO = `allegro-config --libs`
 ARFLAGS = rs
