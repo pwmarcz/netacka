@@ -5,7 +5,7 @@ BOTS = bot.o genialny_bot0.o genialny_bot.o
 OBJECTS_EXE = netacka.o net.o $(BOTS)
 
 CC = gcc
-CFLAGS = -s -O2 -Wall -fgnu89-inline -Ilibnet/lib/include
+CFLAGS = -s -O2 -Wall -fgnu89-inline -Ilibnet/include
 #CFLAGS = -g3 -fgnu89-inline
 
 # change these for other systems
