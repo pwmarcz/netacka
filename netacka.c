@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <libnet.h>
 
 #include "netacka.h"
@@ -40,18 +40,6 @@ volatile int escape = 0;
 void _escape()
 {
     escape = 1;
-}
-
-BITMAP *gui_buf = NULL;
-int gui_w, gui_h;
-void _get_gui_buf()
-{
-    blit(screen, gui_buf, 0, 0, 0, 0, gui_w, gui_h);
-}
-
-void _put_gui_buf()
-{
-    blit(gui_buf, screen, 0, 0, 0, 0, gui_w, gui_h);
 }
 
 unsigned char pal[][3] = {
@@ -100,11 +88,11 @@ const int player_colors[MAX_PLAYERS][2] = {
     {cRED, cGREEN}
 };
 
-int pal_color(int color) {
-    return makecol(pal[color][0]*4, pal[color][1]*4, pal[color][2]*4);
+ALLEGRO_COLOR pal_color(int color) {
+    return al_map_rgb(pal[color][0]*4, pal[color][1]*4, pal[color][2]*4);
 }
 
-inline int get_player_color(int i, int j) {
+inline ALLEGRO_COLOR get_player_color(int i, int j) {
     return pal_color(player_colors[i][j]);
 }
 
@@ -114,11 +102,11 @@ const struct {
     char str[14];
 } client_keys[CLIENT_PLAYERS] = {
     {
-    KEY_1, KEY_Q, "1      Q"}, {
-    KEY_LCONTROL, KEY_ALT, "L.Ctrl L.Alt"}, {
-    KEY_C, KEY_V, "C      V"}, {
-    KEY_M, KEY_COMMA, "M      ,"}, {
-    KEY_LEFT, KEY_DOWN, "Left   Down"}, {
+    ALLEGRO_KEY_1, ALLEGRO_KEY_Q, "1      Q"}, {
+    ALLEGRO_KEY_LCTRL, ALLEGRO_KEY_ALT, "L.Ctrl L.Alt"}, {
+    ALLEGRO_KEY_C, ALLEGRO_KEY_V, "C      V"}, {
+    ALLEGRO_KEY_M, ALLEGRO_KEY_COMMA, "M      ,"}, {
+    ALLEGRO_KEY_LEFT, ALLEGRO_KEY_DOWN, "Left   Down"}, {
     0, 0, "MOUSE"}
 };
 
@@ -126,15 +114,18 @@ inline int check_keys(int k)
 {
     int a = 0;
     if (k == MOUSE_KEYS) {
-        int mb = mouse_b;
-        if (mb & 2)
+        ALLEGRO_MOUSE_STATE ms;
+        al_get_mouse_state(&ms);
+        if (ms.buttons & 2)
             a--;
-        if (mb & 1)
+        if (ms.buttons & 1)
             a++;
     } else {
-        if (key[client_keys[k].right])
+        ALLEGRO_KEYBOARD_STATE ks;
+        al_get_keyboard_state(&ks);
+        if (al_key_down(&ks, client_keys[k].right))
             a--;
-        if (key[client_keys[k].left])
+        if (al_key_down(&ks, client_keys[k].left))
             a++;
     }
     return a;
@@ -208,11 +199,10 @@ int get_client_players()
 
     escape = 0;
     for (i = 0; welcome[i]; i++)
-        textout_ex(screen, font, welcome[i], 60, 200 + i * 10, pal_color(cLIGHTGRAY),
-                   -1);
+        al_draw_text(font, pal_color(cLIGHTGRAY), welcome[i], 60, 200 + i * 10);
     for (i = 0; i < CLIENT_PLAYERS; i++) {
-        textout_ex(screen, font, client_keys[i].str, 60, 10 + i * 30,
-                   pal_color(cWHITE), -1);
+        al_draw_text(font, pal_color(cWHITE), client_keys[i].str, 60, 10 + i * 30);
+                    -1);
         playing[i] = 0;
     }
     for (;;) {
@@ -221,24 +211,22 @@ int get_client_players()
             if (check_keys(i) == 1 && !playing[i]) {
                 playing[i] = 1;
                 n++;
-                textout_ex(screen, font, "READY", 10, 10 + i * 30, pal_color(cWHITE),
-                           -1);
+                al_draw_text(font, pal_color(cWHITE), "READY", 10, 10 + i * 30, );
             }
             if (check_keys(i) == -1 && playing[i]) {
                 playing[i] = 0;
                 n--;
-                textout_ex(screen, font, "READY", 10, 10 + i * 30, pal_color(cBLACK),
-                           -1);
+                al_draw_text(font, pal_color(cBLACK), "READY", 10, 10 + i * 30);
             }
         }
-        if (key[KEY_SPACE] /* && n */ ) {
+        if (key[ALLEGRO_KEY_SPACE] /* && n */ ) {
             int j = 0;
             n_client_players = n;
             for (i = 0; i < CLIENT_PLAYERS; i++) {
                 if (playing[i])
                     client_players[j++].keys = i;
             }
-            while (key[KEY_SPACE])
+            while (key[ALLEGRO_KEY_SPACE])
                 rest(1);
             clear_keybuf();
             /* Now get player names */
@@ -268,11 +256,10 @@ int get_client_players()
                 set_dialog_color(the_names, gui_fg_color, /*gui_bg_color */
                                  pal_color(cGRAY));
                 dialog_player = init_dialog(the_names, 0);
-                textout_ex(screen, font,
-                           "Type bot number before player name", 320, 20,
-                           pal_color(cLIGHTGRAY), -1);
-                textout_ex(screen, font, "to start a bot", 320, 30,
-                           pal_color(cLIGHTGRAY), -1);
+                al_draw_text(font, pal_color(cLIGHTGRAY),
+                             "Type bot number before player name", 320, 20);
+
+                al_draw_text(font, pal_color(cLIGHTGRAY), "to start a bot", 320, 30);
 
                 for (i = 0; i < N_BOTS; i++) {
                     textprintf_ex(screen, font, 330, 50 + 10 * i,
@@ -285,7 +272,7 @@ int get_client_players()
                 for (;;) {
                     update_dialog(dialog_player);
                     rest(1);
-                    if (key[KEY_ESC] || escape)
+                    if (key[ALLEGRO_KEY_ESC] || escape)
                         return 0;
                     if (the_names[0].flags & D_SELECTED)
                         break;
@@ -303,12 +290,12 @@ int get_client_players()
             }
             return 1;
         }
-        if (key[KEY_ESC] || escape)
+        if (key[ALLEGRO_KEY_ESC] || escape)
             return 0;
     }
 }
 
-void draw_score_list(BITMAP * score_list)
+void draw_score_list(ALLEGRO_BITMAP * score_list)
 {
     int i;
     int y;
@@ -336,7 +323,7 @@ void draw_score_list(BITMAP * score_list)
             char *name = (hide_bot_numbers
                           && isdigit(players[i].name[0])) ? &players[i].
                 name[1] : players[i].name;
-            textout_ex(score_list, font, name, 2, 11 + y,
+            al_draw_text(score_list, font, name, 2, 11 + y,
                        (players[i].score ==
                         best_score) ? pal_color(cWHITE) : pal_color(cVLIGHTGRAY), -1);
         }
@@ -357,7 +344,7 @@ void draw_score_list(BITMAP * score_list)
     }
 }
 
-void draw_konec(BITMAP * bmp)
+void draw_konec(ALLEGRO_BITMAP * bmp)
 {
     int i, j;
     int place = 0, last_score = -1;
@@ -601,7 +588,7 @@ void send_names_to_server()
         send_name(client_players[i].num, chan);
 }
 
-inline int __test(BITMAP * arena, int old_x, int old_y, int x, int y)
+inline int __test(ALLEGRO_BITMAP * arena, int old_x, int old_y, int x, int y)
 {
     int dox = x - old_x, doy = y - old_y;
     if ((dox == 0 || dox == 1) && (doy == 0 || doy == 1))
@@ -612,7 +599,7 @@ inline int __test(BITMAP * arena, int old_x, int old_y, int x, int y)
     return getpixel(arena, x, y) != pal_color(cBLACK);
 }
 
-int _test(BITMAP * arena, int old_x, int old_y, int x, int y,
+int _test(ALLEGRO_BITMAP * arena, int old_x, int old_y, int x, int y,
           int hole, int old_hole)
 {
     int half_x = (x + old_x) / 512,
@@ -675,7 +662,7 @@ void _update_tron(int x, int y, int a, int *x1, int *y1)
     *y1 = y - 768 * dy;
 }
 
-void _put(BITMAP * arena, int x, int y, int c)
+void _put(ALLEGRO_BITMAP * arena, int x, int y, int c)
 {
     if (torus) {
 
@@ -691,7 +678,7 @@ void _put(BITMAP * arena, int x, int y, int c)
         rectfill(arena, x, y, x + 1, y + 1, c);
 }
 
-void draw_players(BITMAP * arena, int i_know, int t)
+void draw_players(ALLEGRO_BITMAP * arena, int i_know, int t)
 {
     int i;
     for (i = 0; i < MAX_PLAYERS; i++) {
@@ -735,7 +722,7 @@ void revise_pos()
     }
 }
 
-void screenshot(BITMAP * buf)
+void screenshot(ALLEGRO_BITMAP * buf)
 {
     char fname[256];
     long t = time(0);
@@ -771,9 +758,9 @@ void start_bots()
 #define STARTING_TIME (1.5+0.2*n_players)
 int play_round(int is_server)
 {
-    BITMAP *buf = create_bitmap(screen_w, screen_h);
-    BITMAP *arena = create_sub_bitmap(buf, 0, 0, screen_w - 110, screen_h);
-    BITMAP *score_list =
+    ALLEGRO_BITMAP *buf = create_bitmap(screen_w, screen_h);
+    ALLEGRO_BITMAP *arena = create_sub_bitmap(buf, 0, 0, screen_w - 110, screen_h);
+    ALLEGRO_BITMAP *score_list =
         create_sub_bitmap(buf, screen_w - 109, 0, 110, screen_h);
 
     int t, new_round = 0, new_round_announce = 0;
@@ -792,10 +779,10 @@ int play_round(int is_server)
     escape = 0;
     //for(i=0;i<N_BOTS;i++) bots[i].start();
     start_bots();
-    while (!key[KEY_ESC] && !escape && !done) {
+    while (!key[ALLEGRO_KEY_ESC] && !escape && !done) {
         rest(1);
         if (is_server && wait_for_key)
-            if (key[KEY_SPACE])
+            if (key[ALLEGRO_KEY_SPACE])
                 wait_for_key = 0;
         if (((n_alive < 2 && n_players > 1)
              || (n_players == 1 && n_alive == 0))
@@ -883,7 +870,7 @@ int play_round(int is_server)
         }
         if (!konec) {
             draw_score_list(score_list);
-            blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
+            al_draw_bitmap(buf, 0, 0, 0);
         }
 
         if (t <= ticks && playing) {
@@ -1250,13 +1237,8 @@ int set_mode(int w, int h)
              0) != 0)
             return -1;
 
-    if (gui_buf)
-        destroy_bitmap(gui_buf);
-    gui_buf = create_bitmap(gui_w = h, gui_h = h);
     if (set_display_switch_mode(SWITCH_BACKGROUND)) {
         set_display_switch_mode(SWITCH_BACKAMNESIA);
-        /*set_display_switch_callback(SWITCH_OUT,_get_gui_buf);
-           set_display_switch_callback(SWITCH_IN,_put_gui_buf); */
     }
     disable_hardware_cursor();
     show_mouse(NULL);
@@ -1325,7 +1307,6 @@ int main()
             send_byte(chan, clGOODBYE);
     }
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-    destroy_bitmap(gui_buf);
     net_closechannel(chan);
     return 0;
 }
@@ -1591,7 +1572,7 @@ int start()
 
             restart_server_list = 0;
         }
-        if (key[KEY_ESC] || escape) {
+        if (key[ALLEGRO_KEY_ESC] || escape) {
             done = 0;
             break;
         }

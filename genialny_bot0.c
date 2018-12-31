@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <stdio.h>
 #include <math.h>
 #include "netacka.h"
@@ -13,10 +13,10 @@ static int tab2[2*64+1];
 static int indeks, max, przeszlismy, gdzie_max;
 static int i,alfa;
 
-static BITMAP *arena2=NULL;
+static ALLEGRO_BITMAP *arena2=NULL;
 
 
-static inline int na_wprost(BITMAP *arena,BITMAP *arena2, int x, int y, int a){
+static inline int na_wprost(ALLEGRO_BITMAP *arena,ALLEGRO_BITMAP *arena2, int x, int y, int a){
   int d=0,l=JAK_DALEKO,xa,ya;
   while(d++,l--)
      {
@@ -27,7 +27,7 @@ static inline int na_wprost(BITMAP *arena,BITMAP *arena2, int x, int y, int a){
    return d;
 }
 
-static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int y, int a)
+static inline int find_the_way_n (ALLEGRO_BITMAP *arena,ALLEGRO_BITMAP *arena2,int m, int x, int y, int a)
 {
 
 
@@ -146,7 +146,7 @@ static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int
 
 static int dummy[]={0};
 
-int check_bot_d0 (BITMAP *arena, int m, void *data)
+int check_bot_d0 (ALLEGRO_BITMAP *arena, int m, void *data)
 {
   return find_the_way_n (arena,arena2,m,players[m].x,players[m].y,players[m].a);
 }
