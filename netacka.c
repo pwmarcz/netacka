@@ -741,7 +741,7 @@ int play_round(int is_server)
     if (!is_server)
         save_log = 0;
     al_set_target_bitmap(buf);
-    al_clear_to_color(buf, pal_color(cBLACK));
+    al_clear_to_color(pal_color(cBLACK));
     rect(buf, 0, 0, screen_w - 110, screen_h - 1, pal_color(cWHITE_WALL));
     ticks = t = 0;
     escape = 0;
@@ -809,7 +809,7 @@ int play_round(int is_server)
                 server_start_new_round();
                 i_know = 0;
                 al_set_target_bitmap(buf);
-                al_clear_to_color(buf, pal_color(cBLACK));
+                al_clear_to_color(pal_color(cBLACK));
                 close_bots();
                 start_bots();
                 rect(buf, 0, 0, screen_w - 110, screen_h - 1, pal_color(cWHITE_WALL));
@@ -1128,7 +1128,7 @@ int play_round(int is_server)
                     i_know = 0;
                     first = 1;
                     al_set_target_bitmap(buf);
-                    al_clear_to_color(buf, pal_color(cBLACK));
+                    al_clear_to_color(pal_color(cBLACK));
                     close_bots();
                     start_bots();
                     rect(buf, 0, 0, screen_w - 110, screen_h - 1,
