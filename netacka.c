@@ -42,18 +42,6 @@ void _escape()
     escape = 1;
 }
 
-BITMAP *gui_buf = NULL;
-int gui_w, gui_h;
-void _get_gui_buf()
-{
-    blit(screen, gui_buf, 0, 0, 0, 0, gui_w, gui_h);
-}
-
-void _put_gui_buf()
-{
-    blit(gui_buf, screen, 0, 0, 0, 0, gui_w, gui_h);
-}
-
 unsigned char pal[][3] = {
     {0, 0, 0},                  //  0 black
     {20, 20, 20},               //  1 dark gray
@@ -1199,9 +1187,6 @@ int set_mode(int w, int h)
              0) != 0)
             return -1;
 
-    if (gui_buf)
-        destroy_bitmap(gui_buf);
-    gui_buf = create_bitmap(gui_w = h, gui_h = h);
     if (set_display_switch_mode(SWITCH_BACKGROUND)) {
         set_display_switch_mode(SWITCH_BACKAMNESIA);
         /*set_display_switch_callback(SWITCH_OUT,_get_gui_buf);
@@ -1274,7 +1259,6 @@ int main()
             send_byte(chan, clGOODBYE);
     }
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-    destroy_bitmap(gui_buf);
     net_closechannel(chan);
     return 0;
 }
@@ -1347,26 +1331,6 @@ char *_mode_getter(int index, int *list_size)
 }
 
 char server_addr[31], str_score_limit[4], str_fps[3], port[6];
-
-#define POS_SERVER_LIST     0
-#define POS_TRY_SERVER      1
-#define POS_RELOAD_LIST     2
-#define POS_CONNECT         4
-#define POS_START_SERVER    5
-#define POS_RES_LIST        10
-#define POS_MODE_LIST       15
-#define POS_ONEGAME         16
-#define POS_SAVELOG         17
-#define POS_WAITFORKEY      22
-#define POS_TORUS           23
-
-#define POS_SCORELIMIT      7
-#define POS_FPS             9
-
-int to_disable[] = { POS_SCORELIMIT, POS_FPS, POS_WAITFORKEY,
-    POS_SAVELOG, POS_ONEGAME, POS_RES_LIST,
-    -1
-};
 
 char *try_to_connect(const char *server_addr, int wait_time);
 
