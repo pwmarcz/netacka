@@ -10,7 +10,7 @@
 
 
 
-static int longest_path (BITMAP *arena, int x, int y, int a, int da)
+static int longest_path (ALLEGRO_BITMAP *arena, int x, int y, int a, int da)
 {
    int d=0,l=SEARCHING_DISTANCE;
    int x1,y1;
@@ -32,7 +32,7 @@ static int longest_path (BITMAP *arena, int x, int y, int a, int da)
 
 /* Kod pozostawiony ku przestrodze - jako przyklad POTWORNOSCI.
    Tak wlasnie nie nalezy pisac w C. */
-/*int t_test(BITMAP *arena, int x, int y, int a)
+/*int t_test(ALLEGRO_BITMAP *arena, int x, int y, int a)
 {
     if (torus)
     {
@@ -69,7 +69,7 @@ static int longest_path (BITMAP *arena, int x, int y, int a, int da)
     }
 }
 
-int longest_path_t (BITMAP *arena, int x, int y, int a, int l)
+int longest_path_t (ALLEGRO_BITMAP *arena, int x, int y, int a, int l)
 {
     if ( t_test (arena,x,y,a)) return 0;
     int x1=x,y1=y;
@@ -86,7 +86,7 @@ int longest_path_t (BITMAP *arena, int x, int y, int a, int l)
 }*/
 
 
-static inline int find_the_way_n (BITMAP *arena, int x, int y, int a,int spaczenie)
+static inline int find_the_way_n (ALLEGRO_BITMAP *arena, int x, int y, int a,int spaczenie)
 {
     int l0,l1,l2;
     l0=longest_path(arena,x,y,a,-1);
@@ -98,7 +98,7 @@ static inline int find_the_way_n (BITMAP *arena, int x, int y, int a,int spaczen
     return 0;
 }
 
-static inline int find_the_way_o (BITMAP *arena, int x, int y, int a,int spaczenie)
+static inline int find_the_way_o (ALLEGRO_BITMAP *arena, int x, int y, int a,int spaczenie)
 {
     int l0=longest_path(arena,x,y,a,-1),
         l2=longest_path(arena,x,y,a,1);
@@ -107,7 +107,7 @@ static inline int find_the_way_o (BITMAP *arena, int x, int y, int a,int spaczen
     return 1;
 }
 
-static inline int find_the_way_t(BITMAP *arena, int x, int y, int a, int last_da,int spaczenie)
+static inline int find_the_way_t(ALLEGRO_BITMAP *arena, int x, int y, int a, int last_da,int spaczenie)
 {
     int l0,l1,l2;
     l1=longest_path(arena,x,y,a,0);
@@ -123,7 +123,7 @@ static inline int find_the_way_t(BITMAP *arena, int x, int y, int a, int last_da
     return 0;
 }
 
-int check_bot (BITMAP *arena, int m,void *data)
+int check_bot (ALLEGRO_BITMAP *arena, int m,void *data)
 {
    int spaczenie=(m%2)?-1:1;
     switch(game_mode)

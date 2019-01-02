@@ -244,7 +244,7 @@ int get_client_players()
     }
 }
 
-void draw_score_list(BITMAP * score_list)
+void draw_score_list(ALLEGRO_BITMAP * score_list)
 {
     int i;
     int y;
@@ -293,7 +293,7 @@ void draw_score_list(BITMAP * score_list)
     }
 }
 
-void draw_konec(BITMAP * bmp)
+void draw_konec(ALLEGRO_BITMAP * bmp)
 {
     int i, j;
     int place = 0, last_score = -1;
@@ -537,7 +537,7 @@ void send_names_to_server()
         send_name(client_players[i].num, chan);
 }
 
-inline int __test(BITMAP * arena, int old_x, int old_y, int x, int y)
+inline int __test(ALLEGRO_BITMAP * arena, int old_x, int old_y, int x, int y)
 {
     int dox = x - old_x, doy = y - old_y;
     if ((dox == 0 || dox == 1) && (doy == 0 || doy == 1))
@@ -548,7 +548,7 @@ inline int __test(BITMAP * arena, int old_x, int old_y, int x, int y)
     return getpixel(arena, x, y) != pal_color(cBLACK);
 }
 
-int _test(BITMAP * arena, int old_x, int old_y, int x, int y,
+int _test(ALLEGRO_BITMAP * arena, int old_x, int old_y, int x, int y,
           int hole, int old_hole)
 {
     int half_x = (x + old_x) / 512,
@@ -611,7 +611,7 @@ void _update_tron(int x, int y, int a, int *x1, int *y1)
     *y1 = y - 768 * dy;
 }
 
-void _put(BITMAP * arena, int x, int y, int c)
+void _put(ALLEGRO_BITMAP * arena, int x, int y, int c)
 {
     if (torus) {
 
@@ -627,7 +627,7 @@ void _put(BITMAP * arena, int x, int y, int c)
         rectfill(arena, x, y, x + 1, y + 1, c);
 }
 
-void draw_players(BITMAP * arena, int i_know, int t)
+void draw_players(ALLEGRO_BITMAP * arena, int i_know, int t)
 {
     int i;
     for (i = 0; i < MAX_PLAYERS; i++) {
@@ -671,7 +671,7 @@ void revise_pos()
     }
 }
 
-void screenshot(BITMAP * buf)
+void screenshot(ALLEGRO_BITMAP * buf)
 {
     char fname[256];
     long t = time(0);
@@ -708,9 +708,9 @@ void start_bots()
 #define STARTING_TIME (1.5+0.2*n_players)
 int play_round(int is_server)
 {
-    BITMAP *buf = create_bitmap(screen_w, screen_h);
-    BITMAP *arena = create_sub_bitmap(buf, 0, 0, screen_w - 110, screen_h);
-    BITMAP *score_list =
+    ALLEGRO_BITMAP *buf = create_bitmap(screen_w, screen_h);
+    ALLEGRO_BITMAP *arena = create_sub_bitmap(buf, 0, 0, screen_w - 110, screen_h);
+    ALLEGRO_BITMAP *score_list =
         create_sub_bitmap(buf, screen_w - 109, 0, 110, screen_h);
 
     int t, new_round = 0, new_round_announce = 0;

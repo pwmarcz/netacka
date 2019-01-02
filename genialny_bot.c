@@ -31,7 +31,7 @@ static punkt pkt;
 static punkt bot;
 static punkt gdzie_bot[JAK_DALEKO];
 static int nr;
-static BITMAP *arena2=NULL;
+static ALLEGRO_BITMAP *arena2=NULL;
 static int wynik;
 typedef struct moje_dane {
     int kier;
@@ -96,7 +96,7 @@ static inline void czysta_arena ()
     killed=0;
     kiedy_killed=-1;
 }
-static inline void rusz_wrogow (BITMAP *arena)
+static inline void rusz_wrogow (ALLEGRO_BITMAP *arena)
 {
     if (przeszlismy>=WROG-1) return;
     int dzeta,delta,xif,yif;
@@ -145,7 +145,7 @@ static inline void rusz_wrogow (BITMAP *arena)
 	//  if (pu[delta]) rysuj(xif,yif,2);
     }
 }
-static inline int idz(BITMAP *arena,int zm_kier,int dyst)
+static inline int idz(ALLEGRO_BITMAP *arena,int zm_kier,int dyst)
 {
     int d=0,len=dyst,xa,ya;
     while(len && przeszlismy<JAK_DALEKO-1 && wynik==-2)
@@ -196,7 +196,7 @@ static inline void zwroc(int w)
 {
     if (wynik==-2) wynik=w;
 }
-static inline int find_the_way_n (BITMAP *arena,moje_dane *dane)
+static inline int find_the_way_n (ALLEGRO_BITMAP *arena,moje_dane *dane)
 {
     inicjuj();
     wiazkapom[0]=idz(arena,PROSTO,JAK_DALEKO);
@@ -274,7 +274,7 @@ static inline int find_the_way_n (BITMAP *arena,moje_dane *dane)
     return wynik;
 }
 
-int check_bot_d (BITMAP *arena, int m, void *data)
+int check_bot_d (ALLEGRO_BITMAP *arena, int m, void *data)
 {
     moje_dane *dane=data;
     nr=m;
