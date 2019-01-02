@@ -86,5 +86,9 @@ void send_byte(NET_CHANNEL *chan,unsigned char a);
 void rect(ALLEGRO_BITMAP *bitmap, int x1, int y1, int x2, int y2, ALLEGRO_COLOR c);
 void rectfill(ALLEGRO_BITMAP *bitmap, int x1, int y1, int x2, int y2, ALLEGRO_COLOR c);
 int test_pixel(ALLEGRO_BITMAP *bitmap, int x, int y);
+int get_config_int(const ALLEGRO_CONFIG *cfg,
+                   const char *section, const char *key, int def);
+const char *get_config_string(const ALLEGRO_CONFIG *cfg,
+                              const char *section, const char *key, const char *def);
 
 #endif

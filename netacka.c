@@ -1180,17 +1180,6 @@ void send_client_players(NET_CHANNEL * chan)
     net_send(chan, data, 2 + strlen(server_passwd) + 1);
 }
 
-
-void set_the_damn_config()
-{
-    char str[256];
-    get_executable_name(str, 240);
-    replace_filename(game_path, str, "", 240);
-    strcpy(str, game_path);
-    strcat(str, "netacka.ini");
-    set_config_file(str);
-}
-
 // 1 = client, -1 = server, 0 = Escape'd
 
 int set_mode(int w, int h)
@@ -1231,6 +1220,9 @@ int start();
 
 int main()
 {
+
+    ALLEGRO_CONFIG* cfg = al_load_config_file("netacka.ini");
+
     int is_server = 0;
     int success = 0;
 
@@ -1239,8 +1231,7 @@ int main()
     allegro_init();
     al_init_primitives_addon();
 
-    set_the_damn_config();
-    windowed = get_config_int(0, "windowed", 1);
+    windowed = get_config_int(cfg, 0, "windowed", 1);
     if (getenv("NETACKA_WINDOWED"))
         windowed = 1;
 
@@ -1366,30 +1357,30 @@ char *try_to_connect(const char *server_addr, int wait_time);
 
 int start_server(const char *port);
 
-int start()
+int start(ALLEGRO_CONFIG *cfg)
 {
     // TODO GUI
-    screen_w = get_config_int("server", "screen_w", 800);
-    screen_h = get_config_int("server", "screen_h", 600);
-    FPS = get_config_int("server", "fps", 30);
+    screen_w = get_config_int(cfg, "server", "screen_w", 800);
+    screen_h = get_config_int(cfg, "server", "screen_h", 600);
+    FPS = get_config_int(cfg, "server", "fps", 30);
     if (FPS < 1 || FPS > MAX_FPS)
         FPS = 30;
-    score_limit = get_config_int("server", "score_limit", 0);
+    score_limit = get_config_int(cfg, "server", "score_limit", 0);
     if (score_limit < 0 || score_limit > 999)
         score_limit = 0;
     strncpy(server_addr,
-            get_config_string("client", "server", "127.0.0.1:6789"), 30);
-    strncpy(port, get_config_string("server", "port", "6789"), 5);
+            get_config_string(cfg, "client", "server", "127.0.0.1:6789"), 30);
+    strncpy(port, get_config_string(cfg, "server", "port", "6789"), 5);
     strncpy(server_name,
-            get_config_string("server", "name", "Netacka ver " VER_STRING),
+            get_config_string(cfg, "server", "name", "Netacka ver " VER_STRING),
             15);
 
-    one_game = get_config_int("server", "one_game", 0);
-    save_log = get_config_int("server", "save_log", 0);
-    wait_for_key = get_config_int("server", "wait_for_key", 0);
-    hide_bot_numbers = get_config_int(0, "hide_bot_numbers", 0);
-    gray_bg = get_config_int(0, "gray_bg", 0);
-    instant_start = get_config_int("server", "instant_start", 0);
+    one_game = get_config_int(cfg, "server", "one_game", 0);
+    save_log = get_config_int(cfg, "server", "save_log", 0);
+    wait_for_key = get_config_int(cfg, "server", "wait_for_key", 0);
+    hide_bot_numbers = get_config_int(cfg, 0, "hide_bot_numbers", 0);
+    gray_bg = get_config_int(cfg, 0, "gray_bg", 0);
+    instant_start = get_config_int(cfg, "server", "instant_start", 0);
 
     if (!start_server(port))
         crash("Couldn't start server");
@@ -1476,4 +1467,24 @@ int is_pixel_set(ALLEGRO_BITMAP *bitmap, int x, int y)
 {
     c = al_get_pixel(bitmap, x, y);
     return !(c.r == 0 && c.g == 0 && c.b == 0);
+}
+
+int get_config_int(const ALLEGRO_CONFIG *cfg,
+                   const char *section, const char *key, int def)
+{
+    char *val = al_get_config_value(cfg, section, key);
+    if (val)
+        return atoi(val);
+    else
+        return def;
+}
+
+const char *get_config_string(const ALLEGRO_CONFIG *cfg,
+                              const char *section, const char *key, const char *def)
+{
+    char *val = al_get_config_value(cfg, section, key);
+    if (val)
+        return val;
+    else
+        return def;
 }
