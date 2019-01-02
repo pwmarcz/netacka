@@ -291,8 +291,11 @@ void *start_bot_d (int m)
    if(!dane) return NULL;
       /* tu inicjuj strukture */
    dane->kier=0;
-  if(!arena2)
-    clear_bitmap(arena2=create_bitmap(screen_w-110,screen_h));
+   if(!arena2) {
+       arena2 = al_create_bitmap(screen_w-110,screen_h);
+       al_set_target_bitmap(arena2);
+       al_clear_to_color(pal_color(cBLACK));
+   }
   return dane;
 }
 
@@ -300,7 +303,7 @@ void close_bot_d (void *data)
 {
     if(arena2)
     {
-      destroy_bitmap(arena2);
+        al_destroy_bitmap(arena2);
       arena2=NULL;
     }
     free(data);

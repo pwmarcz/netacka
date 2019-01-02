@@ -13,6 +13,8 @@
 #define textout_ex(...)
 #define textprintf_ex(...)
 
+ALLEGRO_DISPLAY *display;
+
 int gray_bg = 0;
 int windowed = 0;
 
@@ -266,8 +268,8 @@ void draw_score_list(ALLEGRO_BITMAP * score_list)
     for (i = 0; i < MAX_PLAYERS; i++)
         if (players[i].playing && best_score < players[i].score)
             best_score = players[i].score;
-    clear_bitmap(score_list);
-    clear_to_color(score_list, gray_bg ? pal_color(cGRAY) : pal_color(cBLACK));
+    al_set_target_bitmap(score_list);
+    al_clear_to_color(gray_bg ? pal_color(cGRAY) : pal_color(cBLACK));
 //   line(score_list,0,0,0,screen_h-1,pal_color(cWHITE));
     y = 0;
     for (i = 0; i < MAX_PLAYERS; i++, y += 25) {
@@ -333,7 +335,8 @@ void draw_konec(ALLEGRO_BITMAP * bmp)
             break;
         }
     }
-    clear_bitmap(bmp);
+    al_set_target_bitmap(bmp);
+    al_clear_to_color(pal_color(cBLACK));
     for (i = 0; i < MAX_PLAYERS; i++)
         order[i] = i;
     for (i = 0; i < n_players; i++) {
@@ -721,10 +724,10 @@ void start_bots()
 #define STARTING_TIME (1.5+0.2*n_players)
 int play_round(int is_server)
 {
-    ALLEGRO_BITMAP *buf = create_bitmap(screen_w, screen_h);
-    ALLEGRO_BITMAP *arena = create_sub_bitmap(buf, 0, 0, screen_w - 110, screen_h);
+    ALLEGRO_BITMAP *buf = al_create_bitmap(screen_w, screen_h);
+    ALLEGRO_BITMAP *arena = al_create_sub_bitmap(buf, 0, 0, screen_w - 110, screen_h);
     ALLEGRO_BITMAP *score_list =
-        create_sub_bitmap(buf, screen_w - 109, 0, 110, screen_h);
+        al_create_sub_bitmap(buf, screen_w - 109, 0, 110, screen_h);
 
     int t, new_round = 0, new_round_announce = 0;
     int i;
@@ -736,7 +739,8 @@ int play_round(int is_server)
 
     if (!is_server)
         save_log = 0;
-    clear_bitmap(buf);
+    al_set_target_bitmap(buf);
+    al_clear_to_color(buf, pal_color(cBLACK));
     rect(buf, 0, 0, screen_w - 110, screen_h - 1, pal_color(cWHITE_WALL));
     ticks = t = 0;
     escape = 0;
@@ -803,7 +807,8 @@ int play_round(int is_server)
             } else {
                 server_start_new_round();
                 i_know = 0;
-                clear_bitmap(buf);
+                al_set_target_bitmap(buf);
+                al_clear_to_color(buf, pal_color(cBLACK));
                 close_bots();
                 start_bots();
                 rect(buf, 0, 0, screen_w - 110, screen_h - 1, pal_color(cWHITE_WALL));
@@ -1121,7 +1126,8 @@ int play_round(int is_server)
                     playing = 1;
                     i_know = 0;
                     first = 1;
-                    clear_bitmap(buf);
+                    al_set_target_bitmap(buf);
+                    al_clear_to_color(buf, pal_color(cBLACK));
                     close_bots();
                     start_bots();
                     rect(buf, 0, 0, screen_w - 110, screen_h - 1,
@@ -1154,9 +1160,9 @@ int play_round(int is_server)
     }
     close_bots();
 
-    destroy_bitmap(score_list);
-    destroy_bitmap(arena);
-    destroy_bitmap(buf);
+    al_destroy_bitmap(score_list);
+    al_destroy_bitmap(arena);
+    al_destroy_bitmap(buf);
     return 0;
 }
 
@@ -1207,7 +1213,13 @@ int set_mode(int w, int h)
     }
     disable_hardware_cursor();
     show_mouse(NULL);
-    clear_bitmap(screen);
+
+    display = al_get_current_display();
+
+    al_set_target_bitmap(buf);
+    al_clear_to_color(pal_color(cBLACK));
+    al_set_target_backbuffer(display);
+    al_clear_to_color(pal_color(cBLACK));
     return 0;
 }
 

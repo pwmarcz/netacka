@@ -30,8 +30,8 @@ static inline int na_wprost(ALLEGRO_BITMAP *arena,ALLEGRO_BITMAP *arena2, int x,
 static inline int find_the_way_n (ALLEGRO_BITMAP *arena,ALLEGRO_BITMAP *arena2,int m, int x, int y, int a)
 {
 
-
-    clear_bitmap(arena2);
+    al_set_target_bitmap(arena2);
+    al_clear_to_color(arena2, pal_color(cBLACK));
 
 
 
@@ -155,7 +155,7 @@ int check_bot_d0 (ALLEGRO_BITMAP *arena, int m, void *data)
 void *start_bot_d0 (int m)
 {
   if(!arena2)
-    arena2=create_bitmap(screen_w-110,screen_h);
+    arena2=al_create_bitmap(screen_w-110,screen_h);
   return &dummy;
 }
 
@@ -163,7 +163,7 @@ void close_bot_d0 (void *data)
 {
   if(arena2)
     {
-      destroy_bitmap(arena2);
+      al_destroy_bitmap(arena2);
       arena2=NULL;
     }
 }
