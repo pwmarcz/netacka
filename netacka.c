@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h>
 #include <libnet.h>
 
 #include "netacka.h"
@@ -1233,6 +1234,7 @@ int main()
     srand(time(0));
 
     allegro_init();
+    al_init_primitives_addon();
 
     set_the_damn_config();
     windowed = get_config_int(0, "windowed", 1);
@@ -1453,4 +1455,16 @@ int start_server(const char *port)
     }
 
     return 1;
+}
+
+void rect(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR c)
+{
+    al_set_target_bitmap(bitmap);
+    al_draw_rectangle(x, y, x + w, y + h, c);
+}
+
+void rectfill(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR c)
+{
+    al_set_target_bitmap(bitmap);
+    al_draw_filled_rectangle(x, y, x + w, y + h, c);
 }
