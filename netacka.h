@@ -83,8 +83,8 @@ static inline void _update_angle(int *a,int da)
 extern int net_driver;
 int start_net();
 void send_byte(NET_CHANNEL *chan,unsigned char a);
-void rect(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR c);
-void rectfill(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR c);
+void rect(ALLEGRO_BITMAP *bitmap, int x1, int y1, int x2, int y2, ALLEGRO_COLOR c);
+void rectfill(ALLEGRO_BITMAP *bitmap, int x1, int y1, int x2, int y2, ALLEGRO_COLOR c);
 int test_pixel(ALLEGRO_BITMAP *bitmap, int x, int y);
 
 #endif

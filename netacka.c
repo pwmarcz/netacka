@@ -1458,16 +1458,16 @@ int start_server(const char *port)
     return 1;
 }
 
-void rect(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR c)
+void rect(ALLEGRO_BITMAP *bitmap, int x1, int y1, int x2, int y2, ALLEGRO_COLOR c)
 {
     al_set_target_bitmap(bitmap);
-    al_draw_rectangle(x, y, x + w, y + h, c);
+    al_draw_rectangle(x1, y1, x2 + 1, y2 + 1, c);
 }
 
-void rectfill(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR c)
+void rectfill(ALLEGRO_BITMAP *bitmap, int x1, int y1, int x2, int y2, ALLEGRO_COLOR c)
 {
     al_set_target_bitmap(bitmap);
-    al_draw_filled_rectangle(x, y, x + w, y + h, c);
+    al_draw_filled_rectangle(x1, y1, x2 + 1, y2 + 1, c);
 }
 
 int is_pixel_set(ALLEGRO_BITMAP *bitmap, int x, int y)
