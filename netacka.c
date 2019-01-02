@@ -237,58 +237,7 @@ int get_client_players()
             while (key[KEY_SPACE])
                 rest(1);
             clear_keybuf();
-            /* Now get player names */
-//        DIALOG the_list[] =
-            // { d_edit_proc,       325,  260,  200,   10,  0,  0,    0,      0,       30,  0,    server_addr,            0,    NULL  },
-
-            {
-                /* (dialog proc)     (x)   (y)   (w)   (h) (fg)(bg) (key) (flags)     (d1) (d2)    (dp)                   (dp2) (dp3) */
-                DIALOG the_names[8] = {
-                    {d_button_proc, 320, 150, 200, 30, 0, 0, 0, 0, 0, 0,
-                     "Proceed", 0, NULL}
-                    ,
-                };
-                int i;
-                DIALOG_PLAYER *dialog_player;
-
-                for (i = 0; i < n; i++) {
-                    the_names[i + 1].proc = d_edit_proc;
-                    the_names[i + 1].x = 180;
-                    the_names[i + 1].y = 10 + client_players[i].keys * 30;
-                    the_names[i + 1].w = 90;
-                    the_names[i + 1].h = 10;
-                    the_names[i + 1].d1 = 10;
-                    the_names[i + 1].dp = client_players[i].name;
-                }
-                the_names[i + 1].proc = 0;
-                set_dialog_color(the_names, gui_fg_color, /*gui_bg_color */
-                                 palette_color[cGRAY]);
-                dialog_player = init_dialog(the_names, 0);
-                textout_ex(screen, font,
-                           "Type bot number before player name", 320, 20,
-                           palette_color[cLIGHTGRAY], -1);
-                textout_ex(screen, font, "to start a bot", 320, 30,
-                           palette_color[cLIGHTGRAY], -1);
-
-                for (i = 0; i < N_BOTS; i++) {
-                    textprintf_ex(screen, font, 330, 50 + 10 * i,
-                                  palette_color[cVLIGHTGRAY], -1, "%d %s", i,
-                                  bots[i].name);
-                    textprintf_ex(screen, font, 450, 50 + 10 * i, palette_color[cGRAY],
-                                  -1, "%s", bots[i].descr);
-                }
-                show_mouse(screen);
-                for (;;) {
-                    update_dialog(dialog_player);
-                    rest(1);
-                    if (key[KEY_ESC] || escape)
-                        return 0;
-                    if (the_names[0].flags & D_SELECTED)
-                        break;
-                }
-                show_mouse(NULL);
-                shutdown_dialog(dialog_player);
-            }
+            // TODO GUI (player names)
             for (i = 0; i < n_client_players; i++) {
                 char c = client_players[i].name[0];
                 if (!isdigit(c) || c - '0' >= N_BOTS)
@@ -1378,23 +1327,6 @@ const int res_list[N_RES][2] = {
     {1600, 1200}
 };
 
-int def_res_x, def_res_y;
-
-char *_res_getter(int index, int *list_size)
-{
-    static char str[40];
-    if (index == -1) {
-        *list_size = N_RES + 1;
-        return 0;
-    }
-    if (index == 0)
-        sprintf(str, "%4d x %4d (from config file)", def_res_x, def_res_y);
-    else
-        sprintf(str, "%4d x %4d", res_list[index - 1][0],
-                res_list[index - 1][1]);
-    return str;
-}
-
 const struct {
     int modenum;
     char *name;
@@ -1434,99 +1366,21 @@ int to_disable[] = { POS_SCORELIMIT, POS_FPS, POS_WAITFORKEY,
     -1
 };
 
-DIALOG the_list[] = {
-    /* (dialog proc)     (x)   (y)   (w)   (h) (fg)(bg) (key) (flags)     (d1) (d2)    (dp)                   (dp2) (dp3) */
-    {d_list_proc, 10, 50, 620, 180, 0, 0, 0, 0, 0, 0, _getter, 0, NULL},
-    {d_button_proc, 10, 260, 305, 30, 0, 0, 0, 0, 0, 0,
-     "Try selected server", 0, NULL},
-    {d_button_proc, 325, 10, 305, 30, 0, 0, 0, 0, 0, 0,
-     "Reload server list", 0, NULL},
-
-    {d_edit_proc, 325, 260, 200, 10, 0, 0, 0, 0, 30, 0, server_addr, 0,
-     NULL},
-    {d_button_proc, 325, 275, 200, 30, 0, 0, 0, 0, 0, 0, "Try this server",
-     0, NULL},
-
-    {d_button_proc, 325, 430, 305, 30, 0, 0, 0, 0, 0, 0, "Start Server", 0,
-     NULL},
-    {d_text_proc, 10, 370, 0, 0, 0, 0, 0, 0, 0, 0, "Score limit:", 0,
-     NULL},
-    {d_edit_proc, 200, 370, 100, 10, 0, 0, 0, 0, 3, 0, str_score_limit, 0,
-     NULL},
-    {d_text_proc, 10, 390, 0, 0, 0, 0, 0, 0, 0, 0, "FPS (game speed):", 0,
-     NULL},
-    {d_edit_proc, 200, 390, 100, 10, 0, 0, 0, 0, 3, 0, str_fps, 0, NULL},
-    {d_list_proc, 10, 410, 260, 55, 0, 0, 0, 0, 0, 0, _res_getter, 0,
-     NULL},
-    {d_text_proc, 325, 380, 0, 0, 0, 0, 0, 0, 0, 0, "Server name:", 0,
-     NULL},
-    {d_edit_proc, 455, 380, 170, 10, 0, 0, 0, 0, 15, 0, server_name, 0,
-     NULL},
-    {d_text_proc, 325, 395, 0, 0, 0, 0, 0, 0, 0, 0, "Server port:", 0,
-     NULL},
-    {d_edit_proc, 455, 395, 170, 10, 0, 0, 0, 0, 5, 0, port, 0, NULL},
-
-    {d_list_proc, 10, 315, 260, 40, 0, 0, 0, 0, 0, 0, _mode_getter, 0,
-     NULL},
-
-    {d_check_proc, 325, 315, 200, 10, 0, 0, 0, 0, 1, 0, "Only one game", 0,
-     NULL},
-    {d_check_proc, 325, 330, 200, 10, 0, 0, 0, 0, 1, 0,
-     "Save log && screenshots", 0, NULL},
-
-    {d_text_proc, 325, 345, 0, 0, 0, 0, 0, 0, 0, 0, "Password:", 0, NULL},
-    {d_edit_proc, 455, 345, 170, 10, 0, 0, 0, 0, 6, 0, server_passwd, 0,
-     NULL},
-
-    {d_text_proc, 10, 240, 0, 0, 0, 0, 0, 0, 0, 0, "Password:", 0, NULL},
-    {d_edit_proc, 140, 240, 170, 10, 0, 0, 0, 0, 6, 0, server_passwd, 0,
-     NULL},
-
-    {d_check_proc, 325, 360, 200, 10, 0, 0, 0, 0, 1, 0,
-     "Wait for key (SPACE)", 0, NULL},
-
-    {d_check_proc, 10, 355, 200, 10, 0, 0, 0, 0, 1, 0, "Torus Mode", 0,
-     NULL},
-
-    {0}
-};
-
 char *try_to_connect(const char *server_addr, int wait_time);
 
 int start_server(const char *port);
 
-inline int check_button(DIALOG * d, int n)
-{
-    return d[n].flags & D_SELECTED;
-}
-
-inline void unselect_button(DIALOG * d, int n)
-{
-    d[n].flags &= ~D_SELECTED;
-    d[n].flags |= D_DIRTY;
-}
-
 int start()
 {
-    DIALOG_PLAYER *dialog_player;
-    NET_CHANNEL *chan = net_openchannel(net_driver, 0),
-        *chan2 = net_openchannel(net_driver, 0);
-    int done = 0, i = 0;
-    int fps;
-    int restart_server_list = 1;
-
-    clear_keybuf();
-
-    def_res_x = get_config_int("server", "screen_w", 800);
-    def_res_y = get_config_int("server", "screen_h", 600);
-    fps = get_config_int("server", "fps", 30);
-    if (fps < 1 || fps > MAX_FPS)
-        fps = 30;
-    sprintf(str_fps, "%d", fps);
+    // TODO GUI
+    screen_w = get_config_int("server", "screen_w", 800);
+    screen_h = get_config_int("server", "screen_h", 600);
+    FPS = get_config_int("server", "fps", 30);
+    if (FPS < 1 || FPS > MAX_FPS)
+        FPS = 30;
     score_limit = get_config_int("server", "score_limit", 0);
     if (score_limit < 0 || score_limit > 999)
         score_limit = 0;
-    sprintf(str_score_limit, "%d", score_limit);
     strncpy(server_addr,
             get_config_string("client", "server", "127.0.0.1:6789"), 30);
     strncpy(port, get_config_string("server", "port", "6789"), 5);
@@ -1534,157 +1388,16 @@ int start()
             get_config_string("server", "name", "Netacka ver " VER_STRING),
             15);
 
-    if (get_config_int("server", "one_game", 0))
-        the_list[POS_ONEGAME].flags |= D_SELECTED;
-    if (get_config_int("server", "save_log", 0))
-        the_list[POS_SAVELOG].flags |= D_SELECTED;
-    if (get_config_int("server", "wait_for_key", 0))
-        the_list[POS_WAITFORKEY].flags |= D_SELECTED;
-
+    one_game = get_config_int("server", "one_game", 0);
+    save_log = get_config_int("server", "save_log", 0);
+    wait_for_key = get_config_int("server", "wait_for_key", 0);
     hide_bot_numbers = get_config_int(0, "hide_bot_numbers", 0);
     gray_bg = get_config_int(0, "gray_bg", 0);
     instant_start = get_config_int("server", "instant_start", 0);
-    clear_bitmap(screen);
-    hline(screen, 0, 310, 639, gui_fg_color);
-    set_dialog_color(the_list, gui_fg_color, gui_bg_color);
-    for (i = 0; the_list[i].proc; i++)
-        if (the_list[i].proc == d_edit_proc)
-            the_list[i].bg = palette_color[cDARKGRAY];
-    the_list[POS_TRY_SERVER].bg = palette_color[cDARKGRAY];
-    the_list[POS_START_SERVER].bg = palette_color[cDARKGRAY];
 
-    if (get_config_int("server", "disable_changes", 0)) {
-        int i;
-        for (i = 0; to_disable[i] != -1; i++) {
-            the_list[to_disable[i]].flags |= D_DISABLED;
-        }
-    }
-
-    dialog_player = init_dialog(the_list, 0);
-
-    escape = 0;
-
-    show_mouse(screen);
-    for (;;) {
-        //show_mouse(NULL);
-        update_dialog(dialog_player);
-        rest(1);
-        if (restart_server_list) {
-            char data[2];
-
-            n_servers = 0;
-
-            for (i = 0; i < SERVER_LIST_SIZE; i++) {
-                servers[i].active = 0;
-                servers[i].n_players = -1;
-            }
-            the_list[POS_SERVER_LIST].flags |= D_DIRTY;
-
-            net_assigntarget(chan2, "255.255.255.255:6789");
-            send_byte(chan2, clKNOCKKNOCK);
-
-            // Also send to localhost, for testing.
-            net_assigntarget(chan2, "127.0.0.1:6789");
-            send_byte(chan2, clKNOCKKNOCK);
-
-            restart_server_list = 0;
-        }
-        if (key[KEY_ESC] || escape) {
-            done = 0;
-            break;
-        }
-        if (check_button(the_list, POS_RELOAD_LIST)) {
-            unselect_button(the_list, POS_RELOAD_LIST);
-            restart_server_list = 1;
-        }
-        if (check_button(the_list, POS_TRY_SERVER)) {
-            unselect_button(the_list, POS_TRY_SERVER);
-            i = the_list[0].d1;
-            if (servers[i].active) {
-                char *err;
-
-                if (!(err = try_to_connect(servers[i].addr, FPS * 2))) {
-                    done = 1;
-                    break;
-                } else
-                    alert(err, 0, 0, "OK", 0, 0, 0);
-            }
-        }
-
-        if (check_button(the_list, POS_CONNECT)) {
-            char *err;
-
-            unselect_button(the_list, POS_CONNECT);
-            if (!(err = try_to_connect(server_addr, FPS * 2))) {
-                done = 1;
-                break;
-            } else
-                alert(err, 0, 0, "OK", 0, 0, 0);
-        }
-        if (check_button(the_list, POS_START_SERVER)) {
-            int res_num = the_list[POS_RES_LIST].d1;
-
-            if (res_num == 0) {
-                screen_w = def_res_x;
-                screen_h = def_res_y;
-            } else {
-                screen_w = res_list[res_num - 1][0];
-                screen_h = res_list[res_num - 1][1];
-            }
-            unselect_button(the_list, POS_START_SERVER);
-            score_limit = atoi(str_score_limit);
-            if (score_limit < 0 || score_limit > 999)
-                score_limit = 0;
-            fps = atoi(str_fps);
-            if (fps < 1 || fps > MAX_FPS)
-                fps = 30;
-            FPS = fps;
-            game_mode = game_modes[the_list[POS_MODE_LIST].d1].modenum;
-            if (start_server(port)) {
-                done = -1;
-                break;
-            } else {
-                alert("Couldn't start server", 0, 0, "OK", 0, 0, 0);
-                FPS = 20;
-            }
-        }
-        while (net_query(chan2)) {
-            char data[20];
-            char from[50];
-            int n;
-
-            n = net_receive(chan2, data, 20, from);
-            for (i = 0; i < n_servers; i++) {
-                if (servers[i].active)
-                    if (!strcmp(from, servers[i].addr))
-                        break;
-            }
-            if (*data == seMYINFO) {
-                if (i == n_servers && n_servers < SERVER_LIST_SIZE) {
-                    n_servers++;
-                    strcpy(servers[i].addr, from);
-                    servers[i].active = 1;
-                }
-                if (i != n_servers) {
-                    servers[i].n_players = data[1];
-                    strcpy(servers[i].name, &data[2]);
-                    the_list[POS_SERVER_LIST].flags |= D_DIRTY;
-                }
-            }
-        }
-    }
-    one_game = (the_list[POS_ONEGAME].flags & D_SELECTED) ? 1 : 0;
-    save_log = (the_list[POS_SAVELOG].flags & D_SELECTED) ? 1 : 0;
-    wait_for_key = (the_list[POS_WAITFORKEY].flags & D_SELECTED) ? 1 : 0;
-    if (done == -1)
-        torus = (the_list[POS_TORUS].flags & D_SELECTED) ? 1 : 0;
-    show_mouse(NULL);
-    shutdown_dialog(dialog_player);
-    clear_bitmap(screen);
-    net_closechannel(chan);
-    net_closechannel(chan2);
-
-    return done;
+    if (!start_server(port))
+        crash("Couldn't start server");
+    return -1; // server
 }
 
 char *try_to_connect(const char *server_addr, int wait_time)
