@@ -599,8 +599,8 @@ int _test(ALLEGRO_BITMAP * arena, int old_x, int old_y, int x, int y,
 
 void _update(int x, int y, int a, int *x1, int *y1)
 {
-    *x1 = x + (768) * fixtof(fixcos(itofix(a)));
-    *y1 = y - (768) * fixtof(fixsin(itofix(a)));
+    *x1 = x + (768) * cos(a);
+    *y1 = y - (768) * sin(a);
 }
 
 void _update_tron(int x, int y, int a, int *x1, int *y1)
