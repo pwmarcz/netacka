@@ -211,7 +211,7 @@ int get_client_players()
         playing[i] = 0;
     }
     for (;;) {
-        rest(1);
+        al_rest(0.001);
         for (i = 0; i < CLIENT_PLAYERS; i++) {
             if (check_keys(i) == 1 && !playing[i]) {
                 playing[i] = 1;
@@ -234,7 +234,7 @@ int get_client_players()
                     client_players[j++].keys = i;
             }
             while (key[ALLEGRO_KEY_SPACE])
-                rest(1);
+                al_rest(0.001);
             clear_keybuf();
             for (i = 0; i < n_client_players; i++) {
                 char c = client_players[i].name[0];
@@ -737,7 +737,7 @@ int play_round(int is_server)
     //for(i=0;i<N_BOTS;i++) bots[i].start();
     start_bots();
     while (!key[ALLEGRO_KEY_ESC] && !escape && !done) {
-        rest(1);
+        al_rest(0.001);
         if (is_server && wait_for_key)
             if (key[ALLEGRO_KEY_SPACE])
                 wait_for_key = 0;
@@ -1382,7 +1382,7 @@ char *try_to_connect(const char *server_addr, int wait_time)
     send_client_players(chan);
     ticks = 0;
     while (ticks <= wait_time) {
-        rest(1);
+        al_rest(0.001);
         if (net_query(chan)) {
             unsigned char data[40];
             net_receive(chan, data, 40, 0);
