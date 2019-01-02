@@ -309,7 +309,7 @@ void draw_score_list(ALLEGRO_BITMAP * score_list)
     }
 }
 
-void draw_konec(ALLEGRO_BITMAP * bmp)
+void draw_konec()
 {
     int i, j;
     int place = 0, last_score = -1;
@@ -336,7 +336,7 @@ void draw_konec(ALLEGRO_BITMAP * bmp)
             break;
         }
     }
-    al_set_target_bitmap(bmp);
+    al_set_target_backbuffer(display);
     al_clear_to_color(pal_color(cBLACK));
     for (i = 0; i < MAX_PLAYERS; i++)
         order[i] = i;
@@ -804,7 +804,7 @@ int play_round(int is_server)
                     }
                 ticks = t = 0;
                 new_round_announce = FPS * (0.5 + STARTING_TIME);
-                draw_konec(screen);
+                draw_konec();
             } else {
                 server_start_new_round();
                 i_know = 0;
@@ -839,7 +839,8 @@ int play_round(int is_server)
         }
         if (!konec) {
             draw_score_list(score_list);
-            blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
+            al_set_target_backbuffer(display);
+            al_draw_bitmap(buf, 0, 0, 0);
         }
 
         if (t <= ticks && playing) {
@@ -1119,7 +1120,7 @@ int play_round(int is_server)
                             players[j].score =
                                 (data[i + 1] << 8) + data[i + 2];
                         }
-                        draw_konec(screen);
+                        draw_konec();
                         break;
                     }
                 case seNEWROUND:
