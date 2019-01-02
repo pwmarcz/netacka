@@ -38,34 +38,34 @@ static int longest_path (ALLEGRO_BITMAP *arena, int x, int y, int a, int da)
     {
       switch (a)
       {
-        case 0:return (getpixel(arena, (x+screen_w-112)%(screen_w-111)+1,  (y+screen_h-1)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-111)%(screen_w-111)+1,  (y+screen_h-1)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-112)%(screen_w-111)+1,  (y+screen_h+1)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-111)%(screen_w-111)+1,  (y+screen_h+1)%(screen_h-2)+1) );
-        case 1:return (getpixel(arena, (x+screen_w-110)%(screen_w-111)+1,  (y+screen_h-3)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-110)%(screen_w-111)+1,  (y+screen_h-2)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-108)%(screen_w-111)+1,  (y+screen_h-3)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-108)%(screen_w-111)+1,  (y+screen_h-2)%(screen_h-2)+1) );
-        case 2:return (getpixel(arena, (x+screen_w-112)%(screen_w-111)+1,  (y+screen_h-4)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-111)%(screen_w-111)+1,  (y+screen_h-4)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-112)%(screen_w-111)+1,  (y+screen_h-6)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-111)%(screen_w-111)+1,  (y+screen_h-6)%(screen_h-2)+1) );
-        default:return(getpixel(arena, (x+screen_w-113)%(screen_w-111)+1,  (y+screen_h-3)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-113)%(screen_w-111)+1,  (y+screen_h-2)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-115)%(screen_w-111)+1,  (y+screen_h-3)%(screen_h-2)+1) ||
-                      getpixel(arena,  (x+screen_w-115)%(screen_w-111)+1,  (y+screen_h-2)%(screen_h-2)+1) );
+        case 0:return (test_pixel(arena, (x+screen_w-112)%(screen_w-111)+1,  (y+screen_h-1)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-111)%(screen_w-111)+1,  (y+screen_h-1)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-112)%(screen_w-111)+1,  (y+screen_h+1)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-111)%(screen_w-111)+1,  (y+screen_h+1)%(screen_h-2)+1) );
+        case 1:return (test_pixel(arena, (x+screen_w-110)%(screen_w-111)+1,  (y+screen_h-3)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-110)%(screen_w-111)+1,  (y+screen_h-2)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-108)%(screen_w-111)+1,  (y+screen_h-3)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-108)%(screen_w-111)+1,  (y+screen_h-2)%(screen_h-2)+1) );
+        case 2:return (test_pixel(arena, (x+screen_w-112)%(screen_w-111)+1,  (y+screen_h-4)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-111)%(screen_w-111)+1,  (y+screen_h-4)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-112)%(screen_w-111)+1,  (y+screen_h-6)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-111)%(screen_w-111)+1,  (y+screen_h-6)%(screen_h-2)+1) );
+        default:return(test_pixel(arena, (x+screen_w-113)%(screen_w-111)+1,  (y+screen_h-3)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-113)%(screen_w-111)+1,  (y+screen_h-2)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-115)%(screen_w-111)+1,  (y+screen_h-3)%(screen_h-2)+1) ||
+                      test_pixel(arena,  (x+screen_w-115)%(screen_w-111)+1,  (y+screen_h-2)%(screen_h-2)+1) );
       }
     }
     switch (a)
     {
-        case 0:return (getpixel(arena,x,y+2)||getpixel(arena,x+1,y+2)||
-            getpixel(arena,x,y+4)||getpixel(arena,x+1,y+4));
-        case 1:return (getpixel(arena,x+2,y)||getpixel(arena,x+2,y+1)||
-            getpixel(arena,x+4,y)||getpixel(arena,x+4,y+1));
-        case 2:return (getpixel(arena,x,y-1)||getpixel(arena,x+1,y-1)||
-            getpixel(arena,x,y-3)||getpixel(arena,x+1,y-3));
-        default:return(getpixel(arena,x-1,y)||getpixel(arena,x-1,y+1)||
-            getpixel(arena,x-3,y)||getpixel(arena,x-3,y+1));
+        case 0:return (test_pixel(arena,x,y+2)||test_pixel(arena,x+1,y+2)||
+            test_pixel(arena,x,y+4)||test_pixel(arena,x+1,y+4));
+        case 1:return (test_pixel(arena,x+2,y)||test_pixel(arena,x+2,y+1)||
+            test_pixel(arena,x+4,y)||test_pixel(arena,x+4,y+1));
+        case 2:return (test_pixel(arena,x,y-1)||test_pixel(arena,x+1,y-1)||
+            test_pixel(arena,x,y-3)||test_pixel(arena,x+1,y-3));
+        default:return(test_pixel(arena,x-1,y)||test_pixel(arena,x-1,y+1)||
+            test_pixel(arena,x-3,y)||test_pixel(arena,x-3,y+1));
     }
 }
 

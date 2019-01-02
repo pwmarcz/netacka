@@ -85,5 +85,6 @@ int start_net();
 void send_byte(NET_CHANNEL *chan,unsigned char a);
 void rect(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR c);
 void rectfill(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR c);
+int test_pixel(ALLEGRO_BITMAP *bitmap, int x, int y);
 
 #endif

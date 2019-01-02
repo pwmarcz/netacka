@@ -560,9 +560,9 @@ inline int __test(ALLEGRO_BITMAP * arena, int old_x, int old_y, int x, int y)
     if ((dox == 0 || dox == 1) && (doy == 0 || doy == 1))
         return 0;
     if (torus)
-        return getpixel(arena, (x + screen_w - 112) % (screen_w - 111) + 1,
-                        (y + screen_h - 3) % (screen_h - 2) + 1) != pal_color(cBLACK);
-    return getpixel(arena, x, y) != pal_color(cBLACK);
+        return test_pixel(arena, (x + screen_w - 112) % (screen_w - 111) + 1,
+                          (y + screen_h - 3) % (screen_h - 2) + 1);
+    return test_pixel(arena, x, y);
 }
 
 int _test(ALLEGRO_BITMAP * arena, int old_x, int old_y, int x, int y,
@@ -577,7 +577,7 @@ int _test(ALLEGRO_BITMAP * arena, int old_x, int old_y, int x, int y,
 
     if (!torus)
         if (x < 1 || x > screen_w - 111 || y < 1 || y > screen_h - 2)
-            return pal_color(cWHITE_WALL);
+            return 1;
     if (hole)
         return 0;
     if (!old_hole) {
@@ -1467,4 +1467,10 @@ void rectfill(ALLEGRO_BITMAP *bitmap, int x, int y, int w, int h, ALLEGRO_COLOR 
 {
     al_set_target_bitmap(bitmap);
     al_draw_filled_rectangle(x, y, x + w, y + h, c);
+}
+
+int is_pixel_set(ALLEGRO_BITMAP *bitmap, int x, int y)
+{
+    c = al_get_pixel(bitmap, x, y);
+    return !(c.r == 0 && c.g == 0 && c.b == 0);
 }
