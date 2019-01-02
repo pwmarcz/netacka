@@ -9,6 +9,10 @@
 #include "netacka.h"
 #include "bots.inc"
 
+// TODO
+#define textout_ex(...)
+#define textprintf_ex(...)
+
 int gray_bg = 0;
 int windowed = 0;
 
