@@ -102,11 +102,11 @@ const struct {
     char str[14];
 } client_keys[CLIENT_PLAYERS] = {
     {
-    KEY_1, KEY_Q, "1      Q"}, {
-    KEY_LCONTROL, KEY_ALT, "L.Ctrl L.Alt"}, {
-    KEY_C, KEY_V, "C      V"}, {
-    KEY_M, KEY_COMMA, "M      ,"}, {
-    KEY_LEFT, KEY_DOWN, "Left   Down"}, {
+    ALLEGRO_KEY_1, ALLEGRO_KEY_Q, "1      Q"}, {
+    ALLEGRO_KEY_LCTRL, ALLEGRO_KEY_ALT, "L.Ctrl L.Alt"}, {
+    ALLEGRO_KEY_C, ALLEGRO_KEY_V, "C      V"}, {
+    ALLEGRO_KEY_M, ALLEGRO_KEY_COMMA, "M      ,"}, {
+    ALLEGRO_KEY_LEFT, ALLEGRO_KEY_DOWN, "Left   Down"}, {
     0, 0, "MOUSE"}
 };
 
@@ -219,14 +219,14 @@ int get_client_players()
                            -1);
             }
         }
-        if (key[KEY_SPACE] /* && n */ ) {
+        if (key[ALLEGRO_KEY_SPACE] /* && n */ ) {
             int j = 0;
             n_client_players = n;
             for (i = 0; i < CLIENT_PLAYERS; i++) {
                 if (playing[i])
                     client_players[j++].keys = i;
             }
-            while (key[KEY_SPACE])
+            while (key[ALLEGRO_KEY_SPACE])
                 rest(1);
             clear_keybuf();
             for (i = 0; i < n_client_players; i++) {
@@ -239,7 +239,7 @@ int get_client_players()
             }
             return 1;
         }
-        if (key[KEY_ESC] || escape)
+        if (key[ALLEGRO_KEY_ESC] || escape)
             return 0;
     }
 }
@@ -729,10 +729,10 @@ int play_round(int is_server)
     escape = 0;
     //for(i=0;i<N_BOTS;i++) bots[i].start();
     start_bots();
-    while (!key[KEY_ESC] && !escape && !done) {
+    while (!key[ALLEGRO_KEY_ESC] && !escape && !done) {
         rest(1);
         if (is_server && wait_for_key)
-            if (key[KEY_SPACE])
+            if (key[ALLEGRO_KEY_SPACE])
                 wait_for_key = 0;
         if (((n_alive < 2 && n_players > 1)
              || (n_players == 1 && n_alive == 0))
