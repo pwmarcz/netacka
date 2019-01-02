@@ -114,6 +114,12 @@ const struct {
     0, 0, "MOUSE"}
 };
 
+int key_down(int key) {
+    ALLEGRO_KEYBOARD_STATE ks;
+    al_get_keyboard_state(&ks);
+    return al_key_down(&ks, key);
+}
+
 inline int check_keys(int k)
 {
     int a = 0;
@@ -226,14 +232,14 @@ int get_client_players()
                            -1);
             }
         }
-        if (key[ALLEGRO_KEY_SPACE] /* && n */ ) {
+        if (key_down(ALLEGRO_KEY_SPACE) /* && n */ ) {
             int j = 0;
             n_client_players = n;
             for (i = 0; i < CLIENT_PLAYERS; i++) {
                 if (playing[i])
                     client_players[j++].keys = i;
             }
-            while (key[ALLEGRO_KEY_SPACE])
+            while (key_down(ALLEGRO_KEY_SPACE))
                 al_rest(0.001);
             clear_keybuf();
             for (i = 0; i < n_client_players; i++) {
@@ -246,7 +252,7 @@ int get_client_players()
             }
             return 1;
         }
-        if (key[ALLEGRO_KEY_ESC] || escape)
+        if (key_down(ALLEGRO_KEY_ESCAPE) || escape)
             return 0;
     }
 }
@@ -736,10 +742,10 @@ int play_round(int is_server)
     escape = 0;
     //for(i=0;i<N_BOTS;i++) bots[i].start();
     start_bots();
-    while (!key[ALLEGRO_KEY_ESC] && !escape && !done) {
+    while (!key_down(ALLEGRO_KEY_ESCAPE) && !escape && !done) {
         al_rest(0.001);
         if (is_server && wait_for_key)
-            if (key[ALLEGRO_KEY_SPACE])
+            if (key_down(ALLEGRO_KEY_SPACE))
                 wait_for_key = 0;
         if (((n_alive < 2 && n_players > 1)
              || (n_players == 1 && n_alive == 0))
