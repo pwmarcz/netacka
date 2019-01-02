@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
-#include <allegro.h>
+#include <allegro5/allegro.h>
 #include <libnet.h>
 
 #include "netacka.h"

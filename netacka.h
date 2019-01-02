@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <libnet.h>
-#include <allegro.h>
+#include <allegro5/allegro.h>
 
 #define VER_MAJOR 4
 #define VER_MINOR 0
