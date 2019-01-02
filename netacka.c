@@ -38,16 +38,8 @@ void crash(const char *msg);
 #define HOLE_SIZE (rand()%2+rand()%2)
 
 volatile int ticks = 0;
-void _tick()
-{
-    ticks++;
-}
 
 volatile int escape = 0;
-void _escape()
-{
-    escape = 1;
-}
 
 unsigned char pal[][3] = {
     {0, 0, 0},                  //  0 black
@@ -1184,33 +1176,17 @@ void send_client_players(NET_CHANNEL * chan)
 
 int set_mode(int w, int h)
 {
-    int depth = desktop_color_depth();
-    if (depth == 0)
-        crash("couldn't determine color depth");
-    if (depth != 24 && depth != 32)
-        crash("expecting 24-bit or 32-bit color depth");
-
-    set_color_depth(depth);
-
-    if (set_gfx_mode(windowed ? GFX_AUTODETECT_WINDOWED : GFX_AUTODETECT,
-                     w, h, 0, 0) != 0)
-        if (set_gfx_mode
-            (windowed ? GFX_AUTODETECT : GFX_AUTODETECT_WINDOWED, w, h, 0,
-             0) != 0)
-            return -1;
-
-    if (set_display_switch_mode(SWITCH_BACKGROUND)) {
-        set_display_switch_mode(SWITCH_BACKAMNESIA);
-        /*set_display_switch_callback(SWITCH_OUT,_get_gui_buf);
-           set_display_switch_callback(SWITCH_IN,_put_gui_buf); */
+    if (display) {
+        al_destroy_display(display);
+        display = NULL;
     }
-    disable_hardware_cursor();
-    show_mouse(NULL);
 
-    display = al_get_current_display();
+    display = al_create_display(w, h);
+    if (!display)
+        crash("couldn't set mode");
 
-    al_set_target_bitmap(buf);
-    al_clear_to_color(pal_color(cBLACK));
+    // TODO fullscreen
+
     al_set_target_backbuffer(display);
     al_clear_to_color(pal_color(cBLACK));
     return 0;
@@ -1228,24 +1204,19 @@ int main()
 
     srand(time(0));
 
-    allegro_init();
+    al_init();
     al_init_primitives_addon();
 
     windowed = get_config_int(cfg, 0, "windowed", 1);
     if (getenv("NETACKA_WINDOWED"))
         windowed = 1;
 
-    install_keyboard();
-    install_mouse();
-    install_timer();
-    install_int_ex(_tick, BPS_TO_TIMER(FPS));
-    set_close_button_callback(_escape);
+    al_install_keyboard();
+    al_install_mouse();
+    // TODO timer
 
     if (set_mode(640, 480))
         crash("couldn't set video mode");
-    gui_fg_color = pal_color(cWHITE);
-    gui_bg_color = pal_color(cBLACK);
-    gui_mg_color = pal_color(cGRAY);
 
     if (start_net())
         return 1;
@@ -1266,8 +1237,7 @@ int main()
         }
     }
     if (success) {
-        remove_int(_tick);
-        install_int_ex(_tick, BPS_TO_TIMER(FPS));
+        // TODO timer
 
         if (!(screen_w == 640 && screen_h == 480)) {
             if (set_mode(screen_w, screen_h))
@@ -1279,16 +1249,14 @@ int main()
         if (!is_server)
             send_byte(chan, clGOODBYE);
     }
-    set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+    al_destroy_display(display);
     net_closechannel(chan);
     return 0;
 }
 
-END_OF_MAIN()
-
 void crash(const char *msg)
 {
-    set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+    al_destroy_display(display);
     allegro_message("Error: %s", msg);
     exit(1);
 }
