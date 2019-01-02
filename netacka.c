@@ -372,10 +372,12 @@ void draw_konec()
                 fprintf(fp, "#%2d %10s (%3d)\n", tmp, name,
                         players[tmp].score);
         }
-        rectfill(bmp, x, 10 + i * 25, x + 9, 19 + i * 25,
-                 get_player_color(tmp, 0));
-        rectfill(bmp, x + 10, 10 + i * 25, x + 19, 19 + i * 25,
-                 get_player_color(tmp, 1));
+        al_draw_filled_rectangle(
+            x, 10 + i * 25, x + 10, 20 + i * 25,
+            get_player_color(tmp, 0));
+        al_draw_filled_rectangle(
+            x + 10, 10 + i * 25, x + 20, 20 + i * 25,
+            get_player_color(tmp, 1));
         textprintf_ex(bmp, font, x + 55, 10 + i * 25, pal_color(cVLIGHTGRAY), -1,
                       "%10s", name);
         last_score = players[tmp].score;
