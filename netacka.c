@@ -114,15 +114,18 @@ inline int check_keys(int k)
 {
     int a = 0;
     if (k == MOUSE_KEYS) {
-        int mb = mouse_b;
-        if (mb & 2)
+        ALLEGRO_MOUSE_STATE ms;
+        al_get_mouse_state(&ms);
+        if (ms.buttons & 2)
             a--;
-        if (mb & 1)
+        if (ms.buttons & 1)
             a++;
     } else {
-        if (key[client_keys[k].right])
+        ALLEGRO_KEYBOARD_STATE ks;
+        al_get_keyboard_state(&ks);
+        if (al_key_down(&ks, client_keys[k].right))
             a--;
-        if (key[client_keys[k].left])
+        if (al_key_down(&ks, client_keys[k].left))
             a++;
     }
     return a;
