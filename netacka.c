@@ -241,7 +241,7 @@ int get_client_players()
             }
             while (key_down(ALLEGRO_KEY_SPACE))
                 al_rest(0.001);
-            clear_keybuf();
+            // clear_keybuf(); // TODO
             for (i = 0; i < n_client_players; i++) {
                 char c = client_players[i].name[0];
                 if (!isdigit(c) || c - '0' >= N_BOTS)
