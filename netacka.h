@@ -74,7 +74,7 @@ int _test(ALLEGRO_BITMAP *arena,int old_x,int old_y,int x,int y,
                  int hole,int old_hole);
 void _update(int x,int y,int a,int *x1,int *y1);
 void _update_tron(int x,int y,int a,int *x1,int *y1);
-void _put(ALLEGRO_BITMAP *arena,int x,int y,int c);
+void _put(ALLEGRO_BITMAP *arena,int x,int y,ALLEGRO_COLOR c);
 static inline void _update_angle(int *a,int da)
 {
    *a=(*a+256+4*da)%256;

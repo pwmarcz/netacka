@@ -628,17 +628,17 @@ void _update_tron(int x, int y, int a, int *x1, int *y1)
     *y1 = y - 768 * dy;
 }
 
-void _put(ALLEGRO_BITMAP * arena, int x, int y, int c)
+void _put(ALLEGRO_BITMAP * arena, int x, int y, ALLEGRO_COLOR c)
 {
     if (torus) {
-
-        putpixel(arena, (x + screen_w - 112) % (screen_w - 111) + 1,
+        al_set_target_bitmap(arena);
+        al_put_pixel((x + screen_w - 112) % (screen_w - 111) + 1,
                  (y + screen_h - 3) % (screen_h - 2) + 1, c);
-        putpixel(arena, (x + screen_w - 111) % (screen_w - 111) + 1,
+        al_put_pixel((x + screen_w - 111) % (screen_w - 111) + 1,
                  (y + screen_h - 3) % (screen_h - 2) + 1, c);
-        putpixel(arena, (x + screen_w - 112) % (screen_w - 111) + 1,
+        al_put_pixel((x + screen_w - 112) % (screen_w - 111) + 1,
                  (y + screen_h - 2) % (screen_h - 2) + 1, c);
-        putpixel(arena, (x + screen_w - 111) % (screen_w - 111) + 1,
+        al_put_pixel((x + screen_w - 111) % (screen_w - 111) + 1,
                  (y + screen_h - 2) % (screen_h - 2) + 1, c);
     } else
         rectfill(arena, x, y, x + 1, y + 1, c);
