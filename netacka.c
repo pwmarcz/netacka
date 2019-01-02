@@ -88,11 +88,11 @@ const int player_colors[MAX_PLAYERS][2] = {
     {cRED, cGREEN}
 };
 
-int pal_color(int color) {
-    return makecol(pal[color][0]*4, pal[color][1]*4, pal[color][2]*4);
+ALLEGRO_COLOR pal_color(int color) {
+    return al_map_rgb(pal[color][0]*4, pal[color][1]*4, pal[color][2]*4);
 }
 
-inline int get_player_color(int i, int j) {
+ALLEGRO_COLOR get_player_color(int i, int j) {
     return pal_color(player_colors[i][j]);
 }
 
