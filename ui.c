@@ -71,6 +71,7 @@ void ui_init() {
     ui.font.height = 8;
     ui.font.width = font_get_width;
     gui_config_default(&ui.config, GUI_DEFAULT_ALL, &ui.font);
+    gui_config_push_color(&ui.config, GUI_COLOR_PANEL, gui_rgba(0, 0, 0, 255));
     gui_config_push_color(&ui.config, GUI_COLOR_TEXT, gui_rgba(180, 180, 180, 255));
     gui_config_push_property(&ui.config, GUI_PROPERTY_ITEM_SPACING, ((struct gui_vec2) {2, 2}));
     gui_config_push_property(&ui.config, GUI_PROPERTY_ITEM_PADDING, ((struct gui_vec2) {2, 2}));

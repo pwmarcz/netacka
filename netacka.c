@@ -199,10 +199,13 @@ int get_client_players()
     int playing[CLIENT_PLAYERS];
     int n = 0;
 
+    struct gui_panel welcome_panel;
+    struct gui_panel_layout layout;
+    gui_panel_init(&welcome_panel, 60, 200, 500, 350,
+                   0,
+                   &ui.queue, &ui.config, &ui.input);
+
     escape = 0;
-    for (i = 0; welcome[i]; i++)
-        textout_ex(screen, font, welcome[i], 60, 200 + i * 10, palette_color[cLIGHTGRAY],
-                   -1);
     for (i = 0; i < CLIENT_PLAYERS; i++) {
         textout_ex(screen, font, client_keys[i].str, 60, 10 + i * 30,
                    palette_color[cWHITE], -1);
@@ -210,6 +213,17 @@ int get_client_players()
     }
     for (;;) {
         rest(1);
+
+        gui_panel_begin(&layout, &welcome_panel);
+        for (i = 0; welcome[i]; i++) {
+            gui_panel_row_static(&layout, 10, 450, 1);
+            gui_panel_text(&layout, welcome[i], strlen(welcome[i]), GUI_TEXT_LEFT);
+        }
+        gui_panel_end(&layout, &welcome_panel);
+
+        ui_draw(screen);
+        readkey();
+
         for (i = 0; i < CLIENT_PLAYERS; i++) {
             if (check_keys(i) == 1 && !playing[i]) {
                 playing[i] = 1;
