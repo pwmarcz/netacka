@@ -1464,16 +1464,17 @@ gui_command_queue_next(struct gui_command_queue *queue, const struct gui_command
  *
  * ===============================================================
  */
-static void
+static int
 gui_edit_buffer_append(gui_edit_buffer *buffer, const char *str, gui_size len)
 {
     char *mem;
     GUI_ASSERT(buffer);
     GUI_ASSERT(str);
-    if (!buffer || !str || !len) return;
+    if (!buffer || !str || !len) return 0;
     mem = (char*)gui_buffer_alloc(buffer, len * sizeof(char), 0);
-    if (!mem) return;
+    if (!mem) return 0;
     gui_memcopy(mem, str, len * sizeof(char));
+    return 1;
 }
 
 static int
@@ -1490,8 +1491,7 @@ gui_edit_buffer_insert(gui_edit_buffer *buffer, gui_size pos,
 
     copylen = buffer->allocated - pos;
     if (!copylen) {
-        gui_edit_buffer_append(buffer, str, len);
-        return 1;
+        return gui_edit_buffer_append(buffer, str, len);
     }
 
     mem = gui_buffer_alloc(buffer, len * sizeof(char), 0);
@@ -6694,4 +6694,3 @@ gui_layout_slot_panel_bounds(struct gui_rect *bounds, const struct gui_layout *l
         bounds->y = slot_bounds.y + (gui_float)index * bounds->h;
     }
 }
-
