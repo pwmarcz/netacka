@@ -2,15 +2,10 @@
 #define _UI_H
 
 #include <allegro.h>
-#include "gui/gui.h"
+#include "nuklear_flags.h"
+#include "nuklear.h"
 
-extern struct ui {
-    void *memory;
-    struct gui_command_queue queue;
-    struct gui_font font;
-    struct gui_config config;
-    struct gui_input input;
-} ui;
+extern struct nk_context ui;
 
 void ui_init();
 void ui_handle_input();

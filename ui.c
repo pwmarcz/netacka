@@ -4,13 +4,11 @@
 #include <string.h>
 #include <allegro.h>
 
-#include "gui/gui.h"
-
 #include "ui.h"
 
 #define MEMORY_SIZE 1024*1024
 
-static int color(struct gui_color c) {
+static int color(struct nk_color c) {
     return makeacol(c.r, c.g, c.b, c.a);
 }
 
@@ -18,165 +16,153 @@ static void scissor(BITMAP *bmp, float x, float y, float w, float h) {
     set_clip_rect(bmp, x, y, x+w, y+h);
 }
 
-static gui_size
-font_get_width(gui_handle handle, const gui_char *text, gui_size len) {
+static float
+font_get_width(nk_handle handle, float height, const char *text, int len) {
     return len * 8;
 }
 
 static void
-draw_rect(BITMAP *bmp, float x, float y, float w, float h, float r, struct gui_color c)
-{
-    rectfill(bmp, x, y, x+w, y+h, color(c));
-}
-
-static void
 draw_text(BITMAP *bmp, float x, float y, float w, float h,
-    struct gui_color c, struct gui_color bg, const gui_char *string, gui_size len)
+    struct nk_color c, struct nk_color bg, const nk_char *string, nk_size len)
 {
     rectfill(bmp, x, y, x+w, y+h, color(bg));
-    textout_ex(bmp, font, string, x, y + h / 2 - 8/2, color(c), -1);
+    textout_ex(bmp, font, string, x, y, color(c), -1);
 }
 
 static void
-draw_line(BITMAP *bmp, float x0, float y0, float x1, float y1, struct gui_color c)
-{
-    line(bmp, x0, y0, x1, y1, color(c));
-}
-
-static void
-draw_circle(BITMAP *bmp, float x, float y, float r, struct gui_color c)
-{
-    circlefill(bmp, x + r, y + r, r, color(c));
-}
-
-static void
-draw_triangle(BITMAP *bmp, float x0, float y0, float x1, float y1,
-    float x2, float y2, struct gui_color c)
-{
-    triangle(bmp, x0, y0, x1, y1, x2, y2, color(c));
-}
-
-static void
-draw_image(BITMAP *bmp, gui_handle img, float x, float y, float w, float h, float r)
+draw_image(BITMAP *bmp, nk_handle img, float x, float y, float w, float h, float r)
 {
     // ...
 }
 
-struct ui ui;
+struct nk_context ui;
+
+static struct nk_user_font ui_font;
 
 void ui_init() {
-    ui.memory = malloc(MEMORY_SIZE);
-    gui_command_queue_init_fixed(&ui.queue, ui.memory, MEMORY_SIZE);
+    ui_font.height = 8;
+    ui_font.width = font_get_width;
 
+    nk_init_default(&ui, &ui_font);
+
+    /*
     // font.userdata.ptr = ...;
-    ui.font.height = 8;
-    ui.font.width = font_get_width;
-    gui_config_default(&ui.config, GUI_DEFAULT_ALL, &ui.font);
-    gui_config_push_color(&ui.config, GUI_COLOR_PANEL, gui_rgba(0, 0, 0, 255));
-    gui_config_push_color(&ui.config, GUI_COLOR_TEXT, gui_rgba(180, 180, 180, 255));
-    gui_config_push_property(&ui.config, GUI_PROPERTY_ITEM_SPACING, ((struct gui_vec2) {2, 2}));
-    gui_config_push_property(&ui.config, GUI_PROPERTY_ITEM_PADDING, ((struct gui_vec2) {2, 2}));
-    gui_config_push_property(&ui.config, GUI_PROPERTY_PADDING, ((struct gui_vec2) {5, 5}));
-
+    nk_config_default(&ui.config, NK_DEFAULT_ALL, &ui.font);
+    nk_config_push_color(&ui.config, NK_COLOR_PANEL, nk_rgba(0, 0, 0, 255));
+    nk_config_push_color(&ui.config, NK_COLOR_TEXT, nk_rgba(180, 180, 180, 255));
+    nk_config_push_property(&ui.config, NK_PROPERTY_ITEM_SPACING, ((struct nk_vec2) {2, 2}));
+    nk_config_push_property(&ui.config, NK_PROPERTY_ITEM_PADDING, ((struct nk_vec2) {2, 2}));
+    nk_config_push_property(&ui.config, NK_PROPERTY_PADDING, ((struct nk_vec2) {5, 5}));
+    */
 }
 
 
 void ui_demo() {
-    struct gui_panel panel;
-    gui_panel_init(&panel, 50, 50, 220, 180,
-                   GUI_PANEL_BORDER|GUI_PANEL_MOVEABLE|GUI_PANEL_SCALEABLE,
-                   &ui.queue, &ui.config, &ui.input);
-
     enum {EASY, HARD};
-    gui_size option = EASY;
-    gui_size item = 0;
+    int option = EASY;
+    int item = 0;
 
-    struct gui_panel_layout layout;
-    gui_panel_begin(&layout, &panel);
+    nk_begin(&ui, "Demo", nk_rect(50, 50, 200, 200),
+             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+             NK_WINDOW_CLOSABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE);
     {
         const char *items[] = {"Fist", "Pistol", "Railgun", "BFG"};
-        gui_panel_row_static(&layout, 20, 80, 1);
-        if (gui_panel_button_text(&layout, "button", GUI_BUTTON_DEFAULT)) {
+        nk_layout_row_static(&ui, 20, 80, 1);
+        if (nk_button_label(&ui, "button")) {
             /* event handling */
         }
-        gui_panel_row_dynamic(&layout, 20, 2);
-        if (gui_panel_option(&layout, "easy", option == EASY)) option = EASY;
-        if (gui_panel_option(&layout, "hard", option == HARD)) option = HARD;
-        gui_panel_label(&layout, "Weapon:", GUI_TEXT_LEFT);
-        item = gui_panel_selector(&layout, items, 4, item);
+        nk_layout_row_dynamic(&ui, 20, 2);
+        if (nk_option_label(&ui, "easy", option == EASY)) option = EASY;
+        if (nk_option_label(&ui, "hard", option == HARD)) option = HARD;
+
+        nk_layout_row_dynamic(&ui, 22, 1);
+        nk_property_int(&ui, "Compression:", 0, &item, 100, 10, 1);
     }
-    gui_panel_end(&layout, &panel);
+    nk_end(&ui);
 
     ui_draw(screen);
     readkey();
 }
 
 void ui_draw(BITMAP *bmp) {
-    const struct gui_command *cmd;
-    gui_foreach_command(cmd, &ui.queue) {
+    const struct nk_command *cmd;
+    nk_foreach(cmd, &ui) {
         switch (cmd->type) {
-            case GUI_COMMAND_NOP: break;
-            case GUI_COMMAND_SCISSOR: {
-                const struct gui_command_scissor *s = gui_command(scissor, cmd);
+            case NK_COMMAND_NOP: break;
+            case NK_COMMAND_SCISSOR: {
+                const struct nk_command_scissor *s = (const struct nk_command_scissor*) cmd;
                 scissor(bmp, s->x, s->y, s->w, s->h);
             } break;
-            case GUI_COMMAND_LINE: {
-                const struct gui_command_line *l = gui_command(line, cmd);
-                draw_line(bmp, l->begin.x, l->begin.y, l->end.x, l->end.y, l->color);
+            case NK_COMMAND_LINE: {
+                const struct nk_command_line *l = (const struct nk_command_line*) cmd;
+                line(bmp, l->begin.x, l->begin.y, l->end.x, l->end.y, color(l->color));
             } break;
-            case GUI_COMMAND_RECT: {
-                const struct gui_command_rect *r = gui_command(rect, cmd);
-                draw_rect(bmp, r->x, r->y, r->w, r->h, r->rounding, r->color);
+            case NK_COMMAND_RECT: {
+                const struct nk_command_rect *r = (const struct nk_command_rect*) cmd;
+                rect(bmp, r->x, r->y, r->x + r->w, r->y + r->h, color(r->color));
             } break;
-            case GUI_COMMAND_CIRCLE: {
-                const struct gui_command_circle *c = gui_command(circle, cmd);
-                draw_circle(bmp, c->x, c->y, (float)c->w / 2.0f, c->color);
+            case NK_COMMAND_RECT_FILLED: {
+                const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled*) cmd;
+                rectfill(bmp, r->x, r->y, r->x + r->w, r->y + r->h, color(r->color));
             } break;
-            case GUI_COMMAND_TRIANGLE: {
-                const struct gui_command_triangle *t = gui_command(triangle, cmd);
-                draw_triangle(bmp, t->a.x, t->a.y, t->b.x, t->b.y, t->c.x,
-                              t->c.y, t->color);
+            case NK_COMMAND_CIRCLE: {
+                const struct nk_command_circle *c = (const struct nk_command_circle*) cmd;
+                circle(bmp, c->x + c->w / 2, c->y + c->w / 2, (float)c->w / 2.0f, color(c->color));
             } break;
-            case GUI_COMMAND_TEXT: {
-                const struct gui_command_text *t = gui_command(text, cmd);
+            case NK_COMMAND_CIRCLE_FILLED: {
+                const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled*) cmd;
+                circlefill(bmp, c->x + c->w / 2, c->y + c->w / 2, (float)c->w / 2.0f, color(c->color));
+            } break;
+            case NK_COMMAND_TRIANGLE: {
+                const struct nk_command_triangle *c = (const struct nk_command_triangle*)cmd;
+                triangle(bmp, c->a.x, c->a.y, c->b.x, c->b.y, c->c.x, c->c.y, color(c->color));
+            }
+            case NK_COMMAND_TRIANGLE_FILLED: {
+                const struct nk_command_triangle_filled *c = (const struct nk_command_triangle_filled*)cmd;
+                triangle(bmp, c->a.x, c->a.y, c->b.x, c->b.y, c->c.x, c->c.y, color(c->color));
+            }
+            case NK_COMMAND_TEXT: {
+                const struct nk_command_text *t = (const struct nk_command_text*) cmd;
                 draw_text(bmp, t->x, t->y, t->w, t->h, t->foreground, t->background, t->string, t->length);
             } break;
-            case GUI_COMMAND_IMAGE: {
-                const struct gui_command_image *i = gui_command(image, cmd);
+            case NK_COMMAND_IMAGE: {
+                const struct nk_command_image *i = (const struct nk_command_image*) cmd;
                 draw_image(bmp, i->img.handle, i->x, i->y, i->w, i->h, 1);
             } break;
-            case GUI_COMMAND_MAX:
             default: break;
         }
     }
-    gui_command_queue_clear(&ui.queue);
+    nk_clear(&ui);
     set_clip_rect(bmp, 0, 0, -1, -1);
 }
 
 void ui_shutdown() {
-    free(ui.memory);
+    nk_free(&ui);
+    memset(&ui, 0, sizeof(ui));
 }
 
+
+
 void ui_handle_input() {
-    gui_input_begin(&ui.input);
+    nk_input_begin(&ui);
 
-    gui_input_motion(&ui.input, mouse_x, mouse_y);
-    gui_input_button(&ui.input, mouse_x, mouse_y, mouse_b & 1);
+    nk_input_motion(&ui, mouse_x, mouse_y);
+    nk_input_button(&ui, NK_BUTTON_LEFT, mouse_x, mouse_y, mouse_b & 1);
+    nk_input_button(&ui, NK_BUTTON_RIGHT, mouse_x, mouse_y, mouse_b & 2);
 
-    gui_input_key(&ui.input, GUI_KEY_SHIFT, key[KEY_LSHIFT]);
-    gui_input_key(&ui.input, GUI_KEY_DEL, key[KEY_DEL]);
-    gui_input_key(&ui.input, GUI_KEY_ENTER, key[KEY_ENTER]);
-    gui_input_key(&ui.input, GUI_KEY_SPACE, key[KEY_SPACE]);
-    gui_input_key(&ui.input, GUI_KEY_BACKSPACE, key[KEY_BACKSPACE]);
-    gui_input_key(&ui.input, GUI_KEY_LEFT, key[KEY_LEFT]);
-    gui_input_key(&ui.input, GUI_KEY_RIGHT, key[KEY_RIGHT]);
+    nk_input_key(&ui, NK_KEY_SHIFT, key[KEY_LSHIFT]);
+    nk_input_key(&ui, NK_KEY_DEL, key[KEY_DEL]);
+    nk_input_key(&ui, NK_KEY_ENTER, key[KEY_ENTER]);
+    nk_input_key(&ui, NK_KEY_BACKSPACE, key[KEY_BACKSPACE]);
+    nk_input_key(&ui, NK_KEY_LEFT, key[KEY_LEFT]);
+    nk_input_key(&ui, NK_KEY_RIGHT, key[KEY_RIGHT]);
     while (keypressed()) {
         int val = ureadkey(NULL);
         if (val > 0x20 && val < 0x80) {
-            gui_input_char(&ui.input, val);
+            nk_input_char(&ui, val);
         }
     }
     clear_keybuf();
 
-    gui_input_end(&ui.input);
+    nk_input_end(&ui);
 }

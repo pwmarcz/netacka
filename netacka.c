@@ -206,7 +206,7 @@ int get_client_players()
     // TODO destroy
     BITMAP *buf = create_bitmap(screen_w, screen_h);
 
-    struct gui_panel welcome_panel;
+    /*struct gui_panel welcome_panel;
     struct gui_panel players_panel;
     struct gui_panel help_panel;
     struct gui_panel_layout layout;
@@ -219,80 +219,75 @@ int get_client_players()
                    &ui.queue, &ui.config, &ui.input);
     gui_panel_init(&help_panel, 320, 10, 300, 200,
                    0,
-                   &ui.queue, &ui.config, &ui.input);
+                   &ui.queue, &ui.config, &ui.input);*/
 
     escape = 0;
     for (i = 0; i < CLIENT_PLAYERS; i++) {
         playing[i] = 0;
-        gui_edit_box_init_fixed(&edit_boxes[i], &players[i].name, 10, NULL, gui_filter_default);
+        //gui_edit_box_init_fixed(&edit_boxes[i], &players[i].name, 10, NULL, gui_filter_default);
     }
     while (!(done || key[KEY_ESC] || escape)) {
         rest(1);
 
-        gui_panel_begin(&layout, &welcome_panel);
+        nk_begin(&ui, "welcome", nk_rect(62, 220, 500, 220), 0);
         {
-            gui_panel_row_dynamic(&layout, 10, 1);
+            nk_layout_row_dynamic(&ui, 10, 1);
             for (i = 0; welcome[i]; i++) {
-                gui_panel_label(&layout, welcome[i], GUI_TEXT_LEFT);
+                nk_label(&ui, welcome[i], NK_TEXT_LEFT);
             }
         }
-        gui_panel_end(&layout, &welcome_panel);
+        nk_end(&ui);
 
-        gui_panel_begin(&layout, &players_panel);
+        // Players
+        nk_begin(&ui, "players", nk_rect(10, 10, 300, 200), 0);
         {
             for (i = 0; i < CLIENT_PLAYERS; i++) {
-                gui_panel_row_begin(&layout, GUI_PANEL_LAYOUT_STATIC, 25, 3);
+                nk_layout_row_begin(&ui, NK_LAYOUT_STATIC, 25, 3);
                 {
                     // TODO white color
-                    gui_panel_row_push(&layout, 50);
-                    gui_panel_label(&layout, playing[i] ? "READY" : "", GUI_TEXT_LEFT);
+                    nk_layout_row_push(&ui, 50);
+                    nk_label(&ui, playing[i] ? "READY" : "", NK_TEXT_LEFT);
 
-                    gui_panel_row_push(&layout, 120);
-                    gui_panel_label(&layout, client_keys[i].str, GUI_TEXT_LEFT);
+                    nk_layout_row_push(&ui, 120);
+                    nk_label(&ui, client_keys[i].str, NK_TEXT_LEFT);
 
                     if (playing[i] && confirmed) {
-                        gui_panel_row_push(&layout, 100);
-                        gui_panel_editbox(&layout, &edit_boxes[i]);
+                        nk_layout_row_push(&ui, 100);
+                        nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, players[i].name, 10, nk_filter_default);
                     }
                 }
-                gui_panel_row_end(&layout);
+                nk_layout_row_end(&ui);
             }
         }
-        gui_panel_end(&layout, &players_panel);
-
-        clear_bitmap(buf);
-        ui_draw(buf);
-        blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
+        nk_end(&ui);
 
         if (confirmed) {
-            gui_panel_begin(&layout, &help_panel);
+            nk_begin(&ui, "help", nk_rect(320, 10, 300, 200), 0);
             {
                 // TODO colors
-                gui_panel_row_dynamic(&layout, 10, 1);
-                gui_panel_label(&layout, "Type bot number before player name", GUI_TEXT_LEFT);
-                gui_panel_label(&layout, "to start a bot", GUI_TEXT_LEFT);
-                gui_panel_row_dynamic(&layout, 10, 1);
+                nk_layout_row_dynamic(&ui, 10, 1);
+                nk_label(&ui, "Type bot number before player name", NK_TEXT_LEFT);
+                nk_label(&ui, "to start a bot", NK_TEXT_LEFT);
+                nk_layout_row_dynamic(&ui, 10, 1);
 
                 for (i = 0; i < N_BOTS; i++) {
-                    gui_panel_row_begin(&layout, GUI_PANEL_LAYOUT_STATIC, 10, 2);
+                    nk_layout_row_begin(&ui, NK_LAYOUT_STATIC, 10, 2);
 
-                    char s[21];
-                    snprintf(s, 20, "%d %s", i, bots[i].name);
-                    gui_panel_row_push(&layout, 120);
-                    gui_panel_label(&layout, s, GUI_TEXT_LEFT);
+                    nk_layout_row_push(&ui, 120);
+                    nk_labelf(&ui, NK_TEXT_LEFT, "%d %s", i, bots[i].name);
 
-                    gui_panel_row_push(&layout, 120);
-                    gui_panel_label(&layout, bots[i].descr, GUI_TEXT_LEFT);
-                    gui_panel_row_end(&layout);
+                    nk_layout_row_push(&ui, 120);
+                    nk_label(&ui, bots[i].descr, NK_TEXT_LEFT);
+                    nk_layout_row_end(&ui);
                 }
-                gui_panel_row_dynamic(&layout, 20, 1);
-                gui_panel_row_dynamic(&layout, 20, 1);
-                if (gui_panel_button_text(&layout, "Proceed", GUI_BUTTON_DEFAULT)) {
+                nk_layout_row_dynamic(&ui, 20, 1);
+                nk_layout_row_dynamic(&ui, 20, 1);
+                if (nk_button_label(&ui, "Proceed")) {
                     success = 1;
                     done = 1;
                 }
             }
-            gui_panel_end(&layout, &help_panel);
+            nk_end(&ui);
 
             ui_handle_input();
         } else {
@@ -315,6 +310,10 @@ int get_client_players()
         }
 
         rest(1);
+
+        clear_bitmap(buf);
+        ui_draw(buf);
+        blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
         continue;
 
 
@@ -395,6 +394,7 @@ int get_client_players()
     }
     destroy_bitmap(buf);
     return success;
+    return 0;
 }
 
 void draw_score_list(BITMAP * score_list)
@@ -1371,6 +1371,7 @@ int main()
         return 1;
 
     ui_init();
+    // ui_demo();
 
     if (get_client_players()) {
         switch (start()) {
