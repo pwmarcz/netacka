@@ -13,6 +13,7 @@ extern struct ui {
 } ui;
 
 void ui_init();
+void ui_handle_input();
 void ui_draw(BITMAP *bmp);
 void ui_demo();
 void ui_shutdown();

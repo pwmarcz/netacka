@@ -156,3 +156,27 @@ void ui_draw(BITMAP *bmp) {
 void ui_shutdown() {
     free(ui.memory);
 }
+
+void ui_handle_input() {
+    gui_input_begin(&ui.input);
+
+    gui_input_motion(&ui.input, mouse_x, mouse_y);
+    gui_input_button(&ui.input, mouse_x, mouse_y, mouse_b & 1);
+
+    gui_input_key(&ui.input, GUI_KEY_SHIFT, key[KEY_LSHIFT]);
+    gui_input_key(&ui.input, GUI_KEY_DEL, key[KEY_DEL]);
+    gui_input_key(&ui.input, GUI_KEY_ENTER, key[KEY_ENTER]);
+    gui_input_key(&ui.input, GUI_KEY_SPACE, key[KEY_SPACE]);
+    gui_input_key(&ui.input, GUI_KEY_BACKSPACE, key[KEY_BACKSPACE]);
+    gui_input_key(&ui.input, GUI_KEY_LEFT, key[KEY_LEFT]);
+    gui_input_key(&ui.input, GUI_KEY_RIGHT, key[KEY_RIGHT]);
+    while (keypressed()) {
+        int val = ureadkey(NULL);
+        if (val > 0x20 && val < 0x80) {
+            gui_input_char(&ui.input, val);
+        }
+    }
+    clear_keybuf();
+
+    gui_input_end(&ui.input);
+}

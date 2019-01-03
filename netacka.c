@@ -200,6 +200,8 @@ int get_client_players()
     int n = 0;
 
     int confirmed = 0;
+    int done = 0;
+    int success = 0;
 
     // TODO destroy
     BITMAP *buf = create_bitmap(screen_w, screen_h);
@@ -222,9 +224,9 @@ int get_client_players()
     escape = 0;
     for (i = 0; i < CLIENT_PLAYERS; i++) {
         playing[i] = 0;
-        gui_edit_box_init_fixed(&edit_boxes[i], &players[i].name, 10, NULL, NULL);
+        gui_edit_box_init_fixed(&edit_boxes[i], &players[i].name, 10, NULL, gui_filter_default);
     }
-    for (;;) {
+    while (!(done || key[KEY_ESC] || escape)) {
         rest(1);
 
         gui_panel_begin(&layout, &welcome_panel);
@@ -286,11 +288,13 @@ int get_client_players()
                 gui_panel_row_dynamic(&layout, 20, 1);
                 gui_panel_row_dynamic(&layout, 20, 1);
                 if (gui_panel_button_text(&layout, "Proceed", GUI_BUTTON_DEFAULT)) {
-                    exit(1);
+                    success = 1;
+                    done = 1;
                 }
             }
             gui_panel_end(&layout, &help_panel);
-            // TODO handle input
+
+            ui_handle_input();
         } else {
             for (i = 0; i < CLIENT_PLAYERS; i++) {
                 if (check_keys(i) == 1 && !playing[i]) {
@@ -306,6 +310,7 @@ int get_client_players()
                     rest(1);
                 clear_keybuf();
                 confirmed = 1;
+                show_mouse(screen);
             }
         }
 
@@ -388,6 +393,8 @@ int get_client_players()
         if (key[KEY_ESC] || escape)
             return 0;
     }
+    destroy_bitmap(buf);
+    return success;
 }
 
 void draw_score_list(BITMAP * score_list)
