@@ -352,21 +352,9 @@ void draw_konec(BITMAP * bmp)
     if (save_log) {
         long t = time(0);
         char fname[256];
-        char *mode;
 
         sprintf(fname, "%s%ld.txt", game_path, t);
         fp = fopen(fname, "w");
-        switch (game_mode) {
-        case gTRON:
-            mode = ", tron";
-            break;
-        case gONEFINGER:
-            mode = ", onefinger";
-            break;
-        default:
-            mode = "";
-            break;
-        }
     }
     clear_bitmap(bmp);
     for (i = 0; i < MAX_PLAYERS; i++)
@@ -765,7 +753,6 @@ int play_round(int is_server)
     int playing = 1, announcing = 0, done = 0;
     int i_know = 0, first = 0;
     int konec = 0;
-    int next_report = time(0);
     int change_time = FPS / 3;
 
     if (!is_server)
@@ -1552,8 +1539,6 @@ int start()
         update_dialog(dialog_player);
         rest(1);
         if (restart_server_list) {
-            char data[2];
-
             n_servers = 0;
 
             for (i = 0; i < SERVER_LIST_SIZE; i++) {
@@ -1633,9 +1618,8 @@ int start()
         while (net_query(chan2)) {
             char data[20];
             char from[50];
-            int n;
 
-            n = net_receive(chan2, data, 20, from);
+            net_receive(chan2, data, 20, from);
             for (i = 0; i < n_servers; i++) {
                 if (servers[i].active)
                     if (!strcmp(from, servers[i].addr))
