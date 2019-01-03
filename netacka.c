@@ -42,18 +42,6 @@ void _escape()
     escape = 1;
 }
 
-BITMAP *gui_buf = NULL;
-int gui_w, gui_h;
-void _get_gui_buf()
-{
-    blit(screen, gui_buf, 0, 0, 0, 0, gui_w, gui_h);
-}
-
-void _put_gui_buf()
-{
-    blit(gui_buf, screen, 0, 0, 0, 0, gui_w, gui_h);
-}
-
 PALETTE pal = {
     {0, 0, 0},                  //  0 black
     {20, 20, 20},               //  1 dark gray
@@ -1248,13 +1236,8 @@ int set_mode(int w, int h)
 
     set_palette(pal);
 
-    if (gui_buf)
-        destroy_bitmap(gui_buf);
-    gui_buf = create_bitmap(gui_w = h, gui_h = h);
     if (set_display_switch_mode(SWITCH_BACKGROUND)) {
         set_display_switch_mode(SWITCH_BACKAMNESIA);
-        /*set_display_switch_callback(SWITCH_OUT,_get_gui_buf);
-           set_display_switch_callback(SWITCH_IN,_put_gui_buf); */
     }
     disable_hardware_cursor();
     show_mouse(NULL);
@@ -1323,7 +1306,6 @@ int main()
             send_byte(chan, clGOODBYE);
     }
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-    destroy_bitmap(gui_buf);
     net_closechannel(chan);
     return 0;
 }
