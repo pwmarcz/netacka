@@ -8,6 +8,7 @@
 
 #include "netacka.h"
 #include "bots.inc"
+#include "ui.h"
 
 int gray_bg = 0;
 int windowed = 0;
@@ -1271,6 +1272,7 @@ int main()
     if (start_net())
         return 1;
 
+    ui();
 
     if (get_client_players()) {
         switch (start()) {

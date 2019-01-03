@@ -2,7 +2,7 @@
 .PHONY = all clean
 
 BOTS = bot.o genialny_bot0.o genialny_bot.o
-OBJECTS_EXE = netacka.o net.o $(BOTS)
+OBJECTS_EXE = netacka.o net.o ui.c gui/gui.o $(BOTS)
 
 CC = gcc
 CFLAGS = -s -O2 -Wall -fgnu89-inline -Ilibnet/include
@@ -21,7 +21,9 @@ clean:
 	rm *.o
 	rm libnet/lib/*.a
 
-netacka.o: netacka.h bots.inc
+netacka.o: netacka.h ui.h bots.inc
+
+ui.io: ui.h
 
 net.o: netacka.h
 
