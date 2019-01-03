@@ -1272,7 +1272,7 @@ int main()
     if (start_net())
         return 1;
 
-    ui();
+    ui_init();
 
     if (get_client_players()) {
         switch (start()) {
@@ -1302,6 +1302,7 @@ int main()
         if (!is_server)
             send_byte(chan, clGOODBYE);
     }
+    ui_shutdown();
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
     net_closechannel(chan);
     return 0;
