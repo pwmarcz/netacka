@@ -6,7 +6,12 @@
 
 #define MEMORY_SIZE 1024
 
+static int color(struct gui_color c) {
+    return makeacol(c.r, c.g, c.b, c.a);
+}
+
 static void scissor(float x, float y, float w, float h) {
+    set_clip_rect(screen, x, y, x+w, y+h);
 }
 
 static gui_size
@@ -17,66 +22,40 @@ font_get_width(gui_handle handle, const gui_char *text, gui_size len) {
 static void
 draw_rect(float x, float y, float w, float h, float r, struct gui_color c)
 {
-    rectfill(screen, x, y, x+w, y+h, makeacol(c.r, c.g, c.b, c.a));
+    rectfill(screen, x, y, x+w, y+h, color(c));
 }
 
 static void
 draw_text(float x, float y, float w, float h,
     struct gui_color c, struct gui_color bg, const gui_char *string, gui_size len)
 {
-    /*draw_rect(ctx, x,y,w,h,0, bg);
-    nvgBeginPath(ctx);
-    nvgFillColor(ctx, nvgRGBA(c.r, c.g, c.b, c.a));
-    nvgTextAlign(ctx, NVG_ALIGN_MIDDLE);
-    nvgText(ctx, x, y + h * 0.5f, string, &string[len]);
-    nvgFill(ctx);*/
+    rectfill(screen, x, y, x+w, y+h, color(bg));
+    textout_ex(screen, font, string, x, y + h / 2 - 8/2, color(c), -1);
 }
 
 static void
 draw_line(float x0, float y0, float x1, float y1, struct gui_color c)
 {
-    /*
-    nvgBeginPath(ctx);
-    nvgMoveTo(ctx, x0, y0);
-    nvgLineTo(ctx, x1, y1);
-    nvgFillColor(ctx, nvgRGBA(c.r, c.g, c.b, c.a));
-    nvgFill(ctx);*/
+    line(screen, x0, y0, x1, y1, color(c));
 }
 
 static void
 draw_circle(float x, float y, float r, struct gui_color c)
 {
-    /*
-    nvgBeginPath(ctx);
-    nvgCircle(ctx, x + r, y + r, r);
-    nvgFillColor(ctx, nvgRGBA(c.r, c.g, c.b, c.a));
-    nvgFill(ctx);*/
+    circlefill(screen, x + r, y + r, r, color(c));
 }
 
 static void
 draw_triangle(float x0, float y0, float x1, float y1,
     float x2, float y2, struct gui_color c)
 {
-    /*
-    nvgBeginPath(ctx);
-    nvgMoveTo(ctx, x0, y0);
-    nvgLineTo(ctx, x1, y1);
-    nvgLineTo(ctx, x2, y2);
-    nvgLineTo(ctx, x0, y0);
-    nvgFillColor(ctx, nvgRGBA(c.r, c.g, c.b, c.a));
-    nvgFill(ctx);*/
+    triangle(screen, x0, y0, x1, y1, x2, y2, color(c));
 }
 
 static void
 draw_image(gui_handle img, float x, float y, float w, float h, float r)
 {
-    /*
-    NVGpaint imgpaint;
-    imgpaint = nvgImagePattern(ctx, x, y, w, h, 0, img.id, 1.0f);
-    nvgBeginPath(ctx);
-    nvgRoundedRect(ctx, x, y, w, h, r);
-    nvgFillPaint(ctx, imgpaint);
-    nvgFill(ctx);*/
+    // ...
 }
 
 void ui() {
@@ -90,6 +69,10 @@ void ui() {
     font.height = 8;
     font.width = font_get_width;
     gui_config_default(&config, GUI_DEFAULT_ALL, &font);
+    gui_config_push_color(&config, GUI_COLOR_TEXT, gui_rgba(200, 200, 200, 200));
+    gui_config_push_property(&config, GUI_PROPERTY_ITEM_SPACING, ((struct gui_vec2) {2, 2}));
+    gui_config_push_property(&config, GUI_PROPERTY_ITEM_PADDING, ((struct gui_vec2) {2, 2}));
+    gui_config_push_property(&config, GUI_PROPERTY_PADDING, ((struct gui_vec2) {5, 5}));
 
     struct gui_input input = {0};
 
@@ -107,12 +90,11 @@ void ui() {
         gui_panel_begin(&layout, &panel);
         {
             const char *items[] = {"Fist", "Pistol", "Railgun", "BFG"};
-            gui_panel_header(&layout, "Demo", GUI_CLOSEABLE, 0, GUI_HEADER_LEFT);
-            gui_panel_row_static(&layout, 30, 80, 1);
+            gui_panel_row_static(&layout, 20, 80, 1);
             if (gui_panel_button_text(&layout, "button", GUI_BUTTON_DEFAULT)) {
                 /* event handling */
             }
-            gui_panel_row_dynamic(&layout, 30, 2);
+            gui_panel_row_dynamic(&layout, 20, 2);
             if (gui_panel_option(&layout, "easy", option == EASY)) option = EASY;
             if (gui_panel_option(&layout, "hard", option == HARD)) option = HARD;
             gui_panel_label(&layout, "Weapon:", GUI_TEXT_LEFT);
@@ -156,7 +138,11 @@ void ui() {
                 case GUI_COMMAND_MAX:
                 default: break;
             }
-        }       gui_command_queue_clear(&queue);
+        }
+        gui_command_queue_clear(&queue);
+        set_clip_rect(screen, 0, 0, -1, -1);
+        readkey();
+        break;
     }
     free(memory);
 }
