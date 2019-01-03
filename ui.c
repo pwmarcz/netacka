@@ -1,4 +1,5 @@
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <allegro.h>
@@ -7,7 +8,7 @@
 
 #include "ui.h"
 
-#define MEMORY_SIZE 1024
+#define MEMORY_SIZE 1024*1024
 
 static int color(struct gui_color c) {
     return makeacol(c.r, c.g, c.b, c.a);

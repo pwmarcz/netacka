@@ -199,45 +199,120 @@ int get_client_players()
     int playing[CLIENT_PLAYERS];
     int n = 0;
 
+    int confirmed = 0;
+
+    // TODO destroy
+    BITMAP *buf = create_bitmap(screen_w, screen_h);
+
     struct gui_panel welcome_panel;
+    struct gui_panel players_panel;
+    struct gui_panel help_panel;
     struct gui_panel_layout layout;
-    gui_panel_init(&welcome_panel, 60, 200, 500, 350,
+    struct gui_edit_box edit_boxes[CLIENT_PLAYERS];
+    gui_panel_init(&welcome_panel, 62, 220, 500, 350,
+                   0,
+                   &ui.queue, &ui.config, &ui.input);
+    gui_panel_init(&players_panel, 10, 10, 300, 200,
+                   0,
+                   &ui.queue, &ui.config, &ui.input);
+    gui_panel_init(&help_panel, 320, 10, 300, 200,
                    0,
                    &ui.queue, &ui.config, &ui.input);
 
     escape = 0;
     for (i = 0; i < CLIENT_PLAYERS; i++) {
-        textout_ex(screen, font, client_keys[i].str, 60, 10 + i * 30,
-                   palette_color[cWHITE], -1);
         playing[i] = 0;
+        gui_edit_box_init_fixed(&edit_boxes[i], &players[i].name, 10, NULL, NULL);
     }
     for (;;) {
         rest(1);
 
         gui_panel_begin(&layout, &welcome_panel);
-        for (i = 0; welcome[i]; i++) {
-            gui_panel_row_static(&layout, 10, 450, 1);
-            gui_panel_text(&layout, welcome[i], strlen(welcome[i]), GUI_TEXT_LEFT);
+        {
+            gui_panel_row_dynamic(&layout, 10, 1);
+            for (i = 0; welcome[i]; i++) {
+                gui_panel_label(&layout, welcome[i], GUI_TEXT_LEFT);
+            }
         }
         gui_panel_end(&layout, &welcome_panel);
 
-        ui_draw(screen);
-        readkey();
+        gui_panel_begin(&layout, &players_panel);
+        {
+            for (i = 0; i < CLIENT_PLAYERS; i++) {
+                gui_panel_row_begin(&layout, GUI_PANEL_LAYOUT_STATIC, 25, 3);
+                {
+                    // TODO white color
+                    gui_panel_row_push(&layout, 50);
+                    gui_panel_label(&layout, playing[i] ? "READY" : "", GUI_TEXT_LEFT);
 
-        for (i = 0; i < CLIENT_PLAYERS; i++) {
-            if (check_keys(i) == 1 && !playing[i]) {
-                playing[i] = 1;
-                n++;
-                textout_ex(screen, font, "READY", 10, 10 + i * 30, palette_color[cWHITE],
-                           -1);
-            }
-            if (check_keys(i) == -1 && playing[i]) {
-                playing[i] = 0;
-                n--;
-                textout_ex(screen, font, "READY", 10, 10 + i * 30, palette_color[cBLACK],
-                           -1);
+                    gui_panel_row_push(&layout, 120);
+                    gui_panel_label(&layout, client_keys[i].str, GUI_TEXT_LEFT);
+
+                    if (playing[i] && confirmed) {
+                        gui_panel_row_push(&layout, 100);
+                        gui_panel_editbox(&layout, &edit_boxes[i]);
+                    }
+                }
+                gui_panel_row_end(&layout);
             }
         }
+        gui_panel_end(&layout, &players_panel);
+
+        clear_bitmap(buf);
+        ui_draw(buf);
+        blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
+
+        if (confirmed) {
+            gui_panel_begin(&layout, &help_panel);
+            {
+                // TODO colors
+                gui_panel_row_dynamic(&layout, 10, 1);
+                gui_panel_label(&layout, "Type bot number before player name", GUI_TEXT_LEFT);
+                gui_panel_label(&layout, "to start a bot", GUI_TEXT_LEFT);
+                gui_panel_row_dynamic(&layout, 10, 1);
+
+                for (i = 0; i < N_BOTS; i++) {
+                    gui_panel_row_begin(&layout, GUI_PANEL_LAYOUT_STATIC, 10, 2);
+
+                    char s[21];
+                    snprintf(s, 20, "%d %s", i, bots[i].name);
+                    gui_panel_row_push(&layout, 120);
+                    gui_panel_label(&layout, s, GUI_TEXT_LEFT);
+
+                    gui_panel_row_push(&layout, 120);
+                    gui_panel_label(&layout, bots[i].descr, GUI_TEXT_LEFT);
+                    gui_panel_row_end(&layout);
+                }
+                gui_panel_row_dynamic(&layout, 20, 1);
+                gui_panel_row_dynamic(&layout, 20, 1);
+                if (gui_panel_button_text(&layout, "Proceed", GUI_BUTTON_DEFAULT)) {
+                    exit(1);
+                }
+            }
+            gui_panel_end(&layout, &help_panel);
+            // TODO handle input
+        } else {
+            for (i = 0; i < CLIENT_PLAYERS; i++) {
+                if (check_keys(i) == 1 && !playing[i]) {
+                    playing[i] = 1;
+                }
+                if (check_keys(i) == -1) {
+                    playing[i] = 0;
+                }
+            }
+
+            if (key[KEY_SPACE]) {
+                while (key[KEY_SPACE])
+                    rest(1);
+                clear_keybuf();
+                confirmed = 1;
+            }
+        }
+
+        rest(1);
+        continue;
+
+
         if (key[KEY_SPACE] /* && n */ ) {
             int j = 0;
             n_client_players = n;
@@ -1277,6 +1352,8 @@ int main()
     install_int_ex(_tick, BPS_TO_TIMER(FPS));
     set_close_button_callback(_escape);
 
+    screen_w = 640;
+    screen_h = 480;
     if (set_mode(640, 480))
         crash("couldn't set video mode");
     gui_fg_color = palette_color[cWHITE];
