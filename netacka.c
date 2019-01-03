@@ -124,7 +124,15 @@ inline int check_keys(int k)
     return a;
 }
 
-struct player players[MAX_PLAYERS];
+struct player {
+   char name[11];
+   int x,y,old_x,old_y;
+   int hole,old_hole,to_change;
+   int a,last_da,da,da_change_time;
+   int playing,alive;
+   int client,client_num;
+   int score;
+} players[MAX_PLAYERS];
 int n_players;
 int n_alive;
 int score_limit = 0;
@@ -734,8 +742,8 @@ void start_bots()
     for (i = 0; i < n_client_players; i++) {
         if (client_players[i].bot != -1)
             if (!(client_players[i].bot_data =
-                  bots[client_players[i].bot].start(client_players[i].
-                                                    num)))
+                  bots[client_players[i].bot].start(client_players[i].num,
+                                                    screen_w, screen_h)))
                 client_players[i].bot = -1;
     }
 }
@@ -1715,4 +1723,28 @@ int start_server(const char *port)
     }
 
     return 1;
+}
+
+int get_game_mode() {
+    return game_mode;
+}
+
+int get_torus() {
+    return torus;
+}
+
+void get_player_data(int i, int *x, int *y, int *a, int *last_da)
+{
+    if (x)
+        *x = players[i].x;
+    if (y)
+        *y = players[i].y;
+    if (a)
+        *a = players[i].a;
+    if (last_da)
+        *last_da = players[i].last_da;
+}
+
+int is_player_active(int i) {
+    return players[i].alive && players[i].playing;
 }

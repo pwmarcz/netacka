@@ -51,9 +51,7 @@ static inline void inicjuj ()
     kiedy_killed=-1;
     ile_kasuj=0;
     wynik=-2;
-    bot.x=players[nr].x;
-    bot.y=players[nr].y;
-    bot.a=players[nr].a;
+    get_player_data(nr, &bot.x, &bot.y, &bot.a, NULL);
     gdzie_bot[0]=bot;
     chwile[0]=0;
     przeszlismy=0;
@@ -61,10 +59,12 @@ static inline void inicjuj ()
     {
 	for (delta=0; delta<3; delta++)
 	{
-	    gdzie_wrog[dzeta][delta][0].x=players[dzeta].x;
-	    gdzie_wrog[dzeta][delta][0].y=players[dzeta].y;
-	    gdzie_wrog[dzeta][delta][0].a=players[dzeta].a;
-	    zyje_wrog[dzeta][delta][0]=players[dzeta].alive;
+            get_player_data(dzeta,
+                            &gdzie_wrog[dzeta][delta][0].x,
+                            &gdzie_wrog[dzeta][delta][0].y,
+                            &gdzie_wrog[dzeta][delta][0].a,
+                            NULL);
+	    zyje_wrog[dzeta][delta][0]=is_player_active(dzeta);
 	    for (teta=1; teta<WROG; teta++)
 		zyje_wrog[dzeta][delta][teta]=0;
 	}
@@ -81,15 +81,15 @@ static inline void czysta_arena ()
     {
 	for (delta=0; delta<3; delta++)
 	{
-	gdzie_wrog[dzeta][delta][0].x=players[dzeta].x;
-	gdzie_wrog[dzeta][delta][0].y=players[dzeta].y;
-	gdzie_wrog[dzeta][delta][0].a=players[dzeta].a;
-	zyje_wrog[dzeta][delta][0]=players[dzeta].alive;
+            get_player_data(dzeta,
+                            &gdzie_wrog[dzeta][delta][0].x,
+                            &gdzie_wrog[dzeta][delta][0].y,
+                            &gdzie_wrog[dzeta][delta][0].a,
+                            NULL);
+	    zyje_wrog[dzeta][delta][0]=is_player_active(dzeta);
 	}
     }
-    bot.x=players[nr].x;
-    bot.y=players[nr].y;
-    bot.a=players[nr].a;
+    get_player_data(nr, &bot.x, &bot.y, &bot.a, NULL);
     gdzie_bot[0]=bot;
     chwile[0]=0;
     przeszlismy=0;
@@ -280,12 +280,12 @@ int check_bot_d (BITMAP *arena, int m, void *data)
     nr=m;
     /* cos tam mozesz z tym robic, np. przekazac do find_the_way_n... */
     int wynik=find_the_way_n (arena,dane);
-    if (game_mode==gONEFINGER) return (wynik>=0)?1:0;
+    if (get_game_mode()==gONEFINGER) return (wynik>=0)?1:0;
     else return wynik;
 }
 
 
-void *start_bot_d (int m)
+void *start_bot_d (int m, int screen_w, int screen_h)
 {
    moje_dane *dane=malloc(sizeof(moje_dane));
    if(!dane) return NULL;

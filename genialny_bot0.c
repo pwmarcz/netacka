@@ -37,12 +37,10 @@ static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int
 
     for (i=0; i<MAX_CLIENTS; i++)
       {
-	if (players[i].alive && players[i].playing && i!=m)
+          if (is_player_active(i) && i!=m)
 	  {
 	    int xi,yi,ai,xip,yip;
-	    xi=players[i].x;
-	    yi=players[i].y;
-	    ai=players[i].a;
+            get_player_data(i, &xi, &yi, &ai, NULL);
 	    for(alfa=1; alfa<ELO; alfa++){
 	      ai-=4;
 	      _update(xi,yi,ai,&xip,&yip);
@@ -51,9 +49,7 @@ static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int
 	      xi=xip; yi=yip;
 
 	    }
-	    xi=players[i].x;
-	    yi=players[i].y;
-	    ai=players[i].a;
+            get_player_data(i, &xi, &yi, &ai, NULL);
 	    for(alfa=1; alfa<ELO; alfa++){
 	      ai+=4;
 	      _update(xi,yi,ai,&xip,&yip);
@@ -61,9 +57,7 @@ static inline int find_the_way_n (BITMAP *arena,BITMAP *arena2,int m, int x, int
 	      _put(arena2,xip>>8,yip>>8,alfa);
 	       xi=xip; yi=yip;
 	    }
-	    xi=players[i].x;
-	    yi=players[i].y;
-	    ai=players[i].a;
+            get_player_data(i, &xi, &yi, &ai, NULL);
 	    for(alfa=1; alfa<ELO; alfa++){
 	      _update(xi,yi,ai,&xip,&yip);
 	      if(_test(arena,xi,yi,xip,yip,0,0) ) break;
@@ -148,11 +142,13 @@ static int dummy[]={0};
 
 int check_bot_d0 (BITMAP *arena, int m, void *data)
 {
-  return find_the_way_n (arena,arena2,m,players[m].x,players[m].y,players[m].a);
+    int x, y, a;
+    get_player_data(m, &x, &y, &a, NULL);
+  return find_the_way_n (arena,arena2,m,x,y,a);
 }
 
 
-void *start_bot_d0 (int m)
+void *start_bot_d0 (int m, int screen_w, int screen_h)
 {
   if(!arena2)
     arena2=create_bitmap(screen_w-110,screen_h);

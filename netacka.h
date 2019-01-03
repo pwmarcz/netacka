@@ -56,20 +56,10 @@
 #define cWHITE 15
 #define cWHITE_WALL 16
 
-
-extern int game_mode, torus;
-extern int screen_w,screen_h;
-
-extern struct player {
-   char name[11];
-   int x,y,old_x,old_y;
-   int hole,old_hole,to_change;
-   int a,last_da,da,da_change_time;
-   int playing,alive;
-   int client,client_num;
-   int score;
-} players[];
-
+int get_game_mode();
+int get_torus();
+void get_player_data(int i, int *x, int *y, int *a, int *last_da);
+int is_player_active(int i);
 int _test(BITMAP *arena,int old_x,int old_y,int x,int y,
                  int hole,int old_hole);
 void _update(int x,int y,int a,int *x1,int *y1);

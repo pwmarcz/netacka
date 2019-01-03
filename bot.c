@@ -14,10 +14,10 @@ static int longest_path (BITMAP *arena, int x, int y, int a, int da)
 {
    int d=0,l=SEARCHING_DISTANCE;
    int x1,y1;
-   if(game_mode==gTRON) a+=da;
+   if(get_game_mode()==gTRON) a+=da;
    while(d++,l--)
    {
-    if(game_mode!=gTRON)
+    if(get_game_mode()!=gTRON)
     {
       _update_angle(&a,da);
       _update(x,y,a,&x1,&y1);
@@ -34,7 +34,7 @@ static int longest_path (BITMAP *arena, int x, int y, int a, int da)
    Tak wlasnie nie nalezy pisac w C. */
 /*int t_test(BITMAP *arena, int x, int y, int a)
 {
-    if (torus)
+    if (get_torus())
     {
       switch (a)
       {
@@ -125,22 +125,23 @@ static inline int find_the_way_t(BITMAP *arena, int x, int y, int a, int last_da
 
 int check_bot (BITMAP *arena, int m,void *data)
 {
+    int x, y, a, last_da;
+    get_player_data(m, &x, &y, &a, &last_da);
    int spaczenie=(m%2)?-1:1;
-    switch(game_mode)
+    switch(get_game_mode())
    {
       case gONEFINGER:
-       return find_the_way_o (arena,players[m].x,players[m].y,players[m].a,spaczenie)==1?1:0;
+       return find_the_way_o (arena,x,y,a,spaczenie)==1?1:0;
       case gTRON:
-       return find_the_way_t (arena,players[m].x,players[m].y,players[m].a,
-          players[m].last_da,spaczenie);
+       return find_the_way_t (arena,x,y,a,last_da,spaczenie);
       default:
-       return find_the_way_n (arena,players[m].x,players[m].y,players[m].a,spaczenie);
+       return find_the_way_n (arena,x,y,a,spaczenie);
    }
 }
 
 static int dummy[]={0};
 
-void *start_bot (int m)
+void *start_bot (int m, int screen_w, int screen_h)
 {
   //fprintf(stderr,"start %d\n",m);
   return &dummy;
