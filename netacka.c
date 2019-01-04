@@ -1877,15 +1877,15 @@ int start()
 
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 20, 1);
-            nk_combobox(&ui, game_mode_names, 3, &game_mode, 15, nk_vec2(250, 70));
-            nk_layout_row_dynamic(&ui, 20, 1);
-            nk_checkbox_label(&ui, "Torus Mode", &torus);
-
-            nk_layout_row_dynamic(&ui, 10, 1);
-            nk_layout_row_dynamic(&ui, 20, 1);
             nk_label(&ui, "Resolution:", NK_TEXT_LEFT);
             nk_layout_row_dynamic(&ui, 20, 1);
             nk_combobox_callback(&ui, get_res_label, NULL, &res_num, N_RES+1, 15, nk_vec2(300, 120));
+
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 20, 1);
+            nk_combobox(&ui, game_mode_names, 3, &game_mode, 15, nk_vec2(250, 70));
+            nk_layout_row_dynamic(&ui, 20, 1);
+            nk_checkbox_label(&ui, "Torus Mode", &torus);
 
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 30, 1);
