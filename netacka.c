@@ -214,8 +214,6 @@ int get_client_players()
         names[i][0] = '\0';
     }
     while (!(done || key[KEY_ESC] || escape)) {
-        rest(1);
-
         nk_begin(&ui, "welcome", nk_rect(60, 220, 500, 220), 0);
         {
             nk_layout_row_dynamic(&ui, 10, 1);
@@ -278,8 +276,6 @@ int get_client_players()
                 }
             }
             nk_end(&ui);
-
-            ui_handle_input();
         } else {
             for (i = 0; i < CLIENT_PLAYERS; i++) {
                 if (check_keys(i) == 1 && !playing[i]) {
@@ -299,7 +295,9 @@ int get_client_players()
         }
 
         rest(1);
-
+        if (confirmed) {
+            ui_handle_input();
+        }
         clear_bitmap(buf);
         ui_draw(buf);
         blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
@@ -1515,7 +1513,7 @@ inline void unselect_button(DIALOG * d, int n)
     d[n].flags |= D_DIRTY;
 }
 
-int start()
+int start_old()
 {
     DIALOG_PLAYER *dialog_player;
     NET_CHANNEL *chan = net_openchannel(net_driver, 0),
@@ -1779,4 +1777,48 @@ void get_player_data(int i, int *x, int *y, int *a, int *last_da)
 
 int is_player_active(int i) {
     return players[i].alive && players[i].playing;
+}
+
+int start()
+{
+    BITMAP *buf = create_bitmap(screen_w, screen_h);
+    show_os_cursor(1);
+
+    int done = 0;
+    while (!(done || key[KEY_ESC] || escape)) {
+        nk_begin(&ui, "client", nk_rect(0, 0, 318, 479), NK_WINDOW_BORDER);
+        {
+            // servers
+            // reload server list
+            // try selected server
+            // server_addr, try this server
+        }
+        nk_end(&ui);
+        nk_begin(&ui, "server", nk_rect(320, 0, 318, 479), NK_WINDOW_BORDER);
+        {
+            // score limit
+            // fps (game speed)
+            // resolution
+            // server name
+            // server port
+            // mode (normal, one finger, tron)
+            // only one game
+            // save log & screenshots
+            // password
+            // wait for key (space)
+            // torus mode
+            // start server
+        }
+        nk_end(&ui);
+
+        rest(1);
+        ui_handle_input();
+        clear_bitmap(buf);
+        ui_draw(buf);
+        blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
+    }
+
+    show_mouse(NULL);
+    destroy_bitmap(buf);
+    return 0;
 }
