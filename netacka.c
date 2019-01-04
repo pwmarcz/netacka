@@ -230,7 +230,11 @@ int get_client_players()
                 nk_layout_row_begin(&ui, NK_LAYOUT_STATIC, 25, 3);
                 {
                     nk_layout_row_push(&ui, 70);
-                    nk_checkbox_label(&ui, playing[i] ? " READY" : "", &playing[i]);
+                    if (confirmed) {
+                        nk_checkbox_label(&ui, playing[i] ? " READY" : "", &playing[i]);
+                    } else {
+                        nk_label(&ui, playing[i] ? " READY" : "", NK_TEXT_LEFT);
+                    }
 
                     nk_layout_row_push(&ui, 120);
                     nk_label(&ui, client_keys[i].str, NK_TEXT_LEFT);
