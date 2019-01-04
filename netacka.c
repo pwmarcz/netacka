@@ -205,6 +205,8 @@ int get_client_players()
     int success = 0;
 
     BITMAP *buf = create_bitmap(screen_w, screen_h);
+    //show_mouse(buf);
+    show_os_cursor(1);
 
     escape = 0;
     for (i = 0; i < CLIENT_PLAYERS; i++) {
@@ -293,7 +295,6 @@ int get_client_players()
                     rest(1);
                 clear_keybuf();
                 confirmed = 1;
-                show_mouse(screen);
             }
         }
 
@@ -380,6 +381,7 @@ int get_client_players()
         if (key[KEY_ESC] || escape)
             return 0;
     }
+    show_mouse(NULL);
     destroy_bitmap(buf);
 
 
