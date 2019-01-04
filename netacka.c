@@ -303,87 +303,9 @@ int get_client_players()
         clear_bitmap(buf);
         ui_draw(buf);
         blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
-        continue;
-
-
-        if (key[KEY_SPACE] /* && n */ ) {
-            int j = 0;
-            n_client_players = n;
-            for (i = 0; i < CLIENT_PLAYERS; i++) {
-                if (playing[i])
-                    client_players[j++].keys = i;
-            }
-            while (key[KEY_SPACE])
-                rest(1);
-            clear_keybuf();
-            /* Now get player names */
-//        DIALOG the_list[] =
-            // { d_edit_proc,       325,  260,  200,   10,  0,  0,    0,      0,       30,  0,    server_addr,            0,    NULL  },
-
-            {
-                /* (dialog proc)     (x)   (y)   (w)   (h) (fg)(bg) (key) (flags)     (d1) (d2)    (dp)                   (dp2) (dp3) */
-                DIALOG the_names[8] = {
-                    {d_button_proc, 320, 150, 200, 30, 0, 0, 0, 0, 0, 0,
-                     "Proceed", 0, NULL}
-                    ,
-                };
-                int i;
-                DIALOG_PLAYER *dialog_player;
-
-                for (i = 0; i < n; i++) {
-                    the_names[i + 1].proc = d_edit_proc;
-                    the_names[i + 1].x = 180;
-                    the_names[i + 1].y = 10 + client_players[i].keys * 30;
-                    the_names[i + 1].w = 90;
-                    the_names[i + 1].h = 10;
-                    the_names[i + 1].d1 = 10;
-                    the_names[i + 1].dp = client_players[i].name;
-                }
-                the_names[i + 1].proc = 0;
-                set_dialog_color(the_names, gui_fg_color, /*gui_bg_color */
-                                 palette_color[cGRAY]);
-                dialog_player = init_dialog(the_names, 0);
-                textout_ex(screen, font,
-                           "Type bot number before player name", 320, 20,
-                           palette_color[cLIGHTGRAY], -1);
-                textout_ex(screen, font, "to start a bot", 320, 30,
-                           palette_color[cLIGHTGRAY], -1);
-
-                for (i = 0; i < N_BOTS; i++) {
-                    textprintf_ex(screen, font, 330, 50 + 10 * i,
-                                  palette_color[cVLIGHTGRAY], -1, "%d %s", i,
-                                  bots[i].name);
-                    textprintf_ex(screen, font, 450, 50 + 10 * i, palette_color[cGRAY],
-                                  -1, "%s", bots[i].descr);
-                }
-                show_mouse(screen);
-                for (;;) {
-                    update_dialog(dialog_player);
-                    rest(1);
-                    if (key[KEY_ESC] || escape)
-                        return 0;
-                    if (the_names[0].flags & D_SELECTED)
-                        break;
-                }
-                show_mouse(NULL);
-                shutdown_dialog(dialog_player);
-            }
-            for (i = 0; i < n_client_players; i++) {
-                char c = client_players[i].name[0];
-                if (!isdigit(c) || c - '0' >= N_BOTS)
-                    client_players[i].bot = -1;
-                else
-                    client_players[i].bot = c - '0';
-                client_players[i].bot_data = NULL;
-            }
-            return 1;
-        }
-        if (key[KEY_ESC] || escape)
-            return 0;
     }
     show_mouse(NULL);
     destroy_bitmap(buf);
-
 
     if (success) {
         int j = 0;
