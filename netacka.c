@@ -197,63 +197,47 @@ int get_client_players()
 {
     int i;
     int playing[CLIENT_PLAYERS];
+    char names[CLIENT_PLAYERS][11];
     int n = 0;
 
     int confirmed = 0;
     int done = 0;
     int success = 0;
 
-    // TODO destroy
     BITMAP *buf = create_bitmap(screen_w, screen_h);
-
-    /*struct gui_panel welcome_panel;
-    struct gui_panel players_panel;
-    struct gui_panel help_panel;
-    struct gui_panel_layout layout;
-    struct gui_edit_box edit_boxes[CLIENT_PLAYERS];
-    gui_panel_init(&welcome_panel, 62, 220, 500, 350,
-                   0,
-                   &ui.queue, &ui.config, &ui.input);
-    gui_panel_init(&players_panel, 10, 10, 300, 200,
-                   0,
-                   &ui.queue, &ui.config, &ui.input);
-    gui_panel_init(&help_panel, 320, 10, 300, 200,
-                   0,
-                   &ui.queue, &ui.config, &ui.input);*/
 
     escape = 0;
     for (i = 0; i < CLIENT_PLAYERS; i++) {
         playing[i] = 0;
-        //gui_edit_box_init_fixed(&edit_boxes[i], &players[i].name, 10, NULL, gui_filter_default);
+        names[i][0] = '\0';
     }
     while (!(done || key[KEY_ESC] || escape)) {
         rest(1);
 
-        nk_begin(&ui, "welcome", nk_rect(62, 220, 500, 220), 0);
+        nk_begin(&ui, "welcome", nk_rect(60, 220, 500, 220), 0);
         {
             nk_layout_row_dynamic(&ui, 10, 1);
             for (i = 0; welcome[i]; i++) {
-                nk_label(&ui, welcome[i], NK_TEXT_LEFT);
+                nk_label_colored(&ui, welcome[i], NK_TEXT_LEFT, UI_LIGHT);
             }
         }
         nk_end(&ui);
 
         // Players
-        nk_begin(&ui, "players", nk_rect(10, 10, 300, 200), 0);
+        nk_begin(&ui, "players", nk_rect(5, 10, 320, 200), 0);
         {
             for (i = 0; i < CLIENT_PLAYERS; i++) {
                 nk_layout_row_begin(&ui, NK_LAYOUT_STATIC, 25, 3);
                 {
-                    // TODO white color
-                    nk_layout_row_push(&ui, 50);
-                    nk_label(&ui, playing[i] ? "READY" : "", NK_TEXT_LEFT);
+                    nk_layout_row_push(&ui, 70);
+                    nk_checkbox_label(&ui, playing[i] ? " READY" : "", &playing[i]);
 
                     nk_layout_row_push(&ui, 120);
                     nk_label(&ui, client_keys[i].str, NK_TEXT_LEFT);
 
                     if (playing[i] && confirmed) {
                         nk_layout_row_push(&ui, 100);
-                        nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, players[i].name, 10, nk_filter_default);
+                        nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, names[i], 10, nk_filter_default);
                     }
                 }
                 nk_layout_row_end(&ui);
@@ -262,26 +246,26 @@ int get_client_players()
         nk_end(&ui);
 
         if (confirmed) {
-            nk_begin(&ui, "help", nk_rect(320, 10, 300, 200), 0);
+            nk_begin(&ui, "help", nk_rect(340, 10, 300, 200), 0);
             {
                 // TODO colors
                 nk_layout_row_dynamic(&ui, 10, 1);
-                nk_label(&ui, "Type bot number before player name", NK_TEXT_LEFT);
-                nk_label(&ui, "to start a bot", NK_TEXT_LEFT);
+                nk_label_colored(&ui, "Type bot number before player name", NK_TEXT_LEFT, UI_LIGHT);
+                nk_label_colored(&ui, "to start a bot", NK_TEXT_LEFT, UI_LIGHT);
                 nk_layout_row_dynamic(&ui, 10, 1);
 
                 for (i = 0; i < N_BOTS; i++) {
                     nk_layout_row_begin(&ui, NK_LAYOUT_STATIC, 10, 2);
 
                     nk_layout_row_push(&ui, 120);
-                    nk_labelf(&ui, NK_TEXT_LEFT, "%d %s", i, bots[i].name);
+                    nk_labelf_colored(&ui, NK_TEXT_LEFT, UI_VERY_LIGHT, "%d %s", i, bots[i].name);
 
                     nk_layout_row_push(&ui, 120);
-                    nk_label(&ui, bots[i].descr, NK_TEXT_LEFT);
+                    nk_label_colored(&ui, bots[i].descr, NK_TEXT_LEFT, UI_MEDIUM);
                     nk_layout_row_end(&ui);
                 }
                 nk_layout_row_dynamic(&ui, 20, 1);
-                nk_layout_row_dynamic(&ui, 20, 1);
+                nk_layout_row_dynamic(&ui, 30, 1);
                 if (nk_button_label(&ui, "Proceed")) {
                     success = 1;
                     done = 1;
@@ -393,8 +377,26 @@ int get_client_players()
             return 0;
     }
     destroy_bitmap(buf);
+
+
+    if (success) {
+        int j = 0;
+        for (i = 0; i < CLIENT_PLAYERS; i++) {
+            if (playing[i]) {
+                client_players[j].keys = i;
+                strcpy(client_players[j].name, names[i]);
+                char c = names[i][0];
+                if (!isdigit(c) || c - '0' >= N_BOTS)
+                    client_players[j].bot = -1;
+                else
+                    client_players[j].bot = c - '0';
+                j++;
+            }
+        }
+        n_client_players = j;
+    }
+
     return success;
-    return 0;
 }
 
 void draw_score_list(BITMAP * score_list)

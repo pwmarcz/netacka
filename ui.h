@@ -7,6 +7,13 @@
 
 extern struct nk_context ui;
 
+extern const struct nk_color UI_BLACK;
+extern const struct nk_color UI_DARK;
+extern const struct nk_color UI_MEDIUM;
+extern const struct nk_color UI_LIGHT;
+extern const struct nk_color UI_VERY_LIGHT;
+extern const struct nk_color UI_WHITE;
+
 void ui_init();
 void ui_handle_input();
 void ui_draw(BITMAP *bmp);

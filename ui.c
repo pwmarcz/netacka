@@ -8,6 +8,13 @@
 
 #define MEMORY_SIZE 1024*1024
 
+const struct nk_color UI_BLACK = {0, 0, 0, 255};
+const struct nk_color UI_DARK = {80, 80, 80, 255};
+const struct nk_color UI_MEDIUM = {120, 120, 120, 255};
+const struct nk_color UI_LIGHT = {160, 160, 160, 255};
+const struct nk_color UI_VERY_LIGHT = {200, 200, 200, 255};
+const struct nk_color UI_WHITE = {255, 255, 255, 255};
+
 static int color(struct nk_color c) {
     return makeacol(c.r, c.g, c.b, c.a);
 }
@@ -45,15 +52,39 @@ void ui_init() {
 
     nk_init_default(&ui, &ui_font);
 
-    /*
-    // font.userdata.ptr = ...;
-    nk_config_default(&ui.config, NK_DEFAULT_ALL, &ui.font);
-    nk_config_push_color(&ui.config, NK_COLOR_PANEL, nk_rgba(0, 0, 0, 255));
-    nk_config_push_color(&ui.config, NK_COLOR_TEXT, nk_rgba(180, 180, 180, 255));
-    nk_config_push_property(&ui.config, NK_PROPERTY_ITEM_SPACING, ((struct nk_vec2) {2, 2}));
-    nk_config_push_property(&ui.config, NK_PROPERTY_ITEM_PADDING, ((struct nk_vec2) {2, 2}));
-    nk_config_push_property(&ui.config, NK_PROPERTY_PADDING, ((struct nk_vec2) {5, 5}));
-    */
+
+    struct nk_color table[NK_COLOR_COUNT];
+
+    table[NK_COLOR_TEXT] = UI_WHITE;
+    table[NK_COLOR_WINDOW] = UI_BLACK;
+    table[NK_COLOR_HEADER] = UI_DARK;
+    table[NK_COLOR_BORDER] = UI_LIGHT;
+    table[NK_COLOR_BUTTON] = UI_MEDIUM;
+    table[NK_COLOR_BUTTON_HOVER] = UI_DARK;
+    table[NK_COLOR_BUTTON_ACTIVE] = UI_BLACK;
+    table[NK_COLOR_TOGGLE] = UI_MEDIUM;
+    table[NK_COLOR_TOGGLE_HOVER] = UI_LIGHT;
+    table[NK_COLOR_TOGGLE_CURSOR] = UI_DARK;
+    table[NK_COLOR_SELECT] = UI_DARK;
+    table[NK_COLOR_SELECT_ACTIVE] = UI_BLACK;
+    table[NK_COLOR_SLIDER] = UI_DARK;
+    table[NK_COLOR_SLIDER_CURSOR] = UI_MEDIUM;
+    table[NK_COLOR_SLIDER_CURSOR_HOVER] = UI_LIGHT;
+    table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = UI_VERY_LIGHT;
+    table[NK_COLOR_PROPERTY] = UI_DARK;
+    table[NK_COLOR_EDIT] = UI_DARK;
+    table[NK_COLOR_EDIT_CURSOR] = UI_LIGHT;
+    table[NK_COLOR_COMBO] = UI_DARK;
+    table[NK_COLOR_CHART] = UI_MEDIUM;
+    table[NK_COLOR_CHART_COLOR] = UI_DARK;
+    table[NK_COLOR_CHART_COLOR_HIGHLIGHT] = UI_WHITE;
+    table[NK_COLOR_SCROLLBAR] = UI_DARK;
+    table[NK_COLOR_SCROLLBAR_CURSOR] = UI_MEDIUM;
+    table[NK_COLOR_SCROLLBAR_CURSOR_HOVER] = UI_LIGHT;
+    table[NK_COLOR_SCROLLBAR_CURSOR_ACTIVE] = UI_VERY_LIGHT;
+    table[NK_COLOR_TAB_HEADER] = UI_DARK;
+
+    nk_style_from_table(&ui, table);
 }
 
 
