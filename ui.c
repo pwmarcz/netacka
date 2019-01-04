@@ -55,7 +55,7 @@ void ui_init() {
 
     struct nk_color table[NK_COLOR_COUNT];
 
-    table[NK_COLOR_TEXT] = UI_WHITE;
+    table[NK_COLOR_TEXT] = UI_VERY_LIGHT;
     table[NK_COLOR_WINDOW] = UI_BLACK;
     table[NK_COLOR_HEADER] = UI_DARK;
     table[NK_COLOR_BORDER] = UI_LIGHT;

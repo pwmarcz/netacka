@@ -1401,6 +1401,22 @@ char *_res_getter(int index, int *list_size)
     return str;
 }
 
+void get_res_label(void *data, int index, const char **label) {
+    static char str[40];
+    if (index == 0)
+        sprintf(str, "%4d x %4d (from config file)", def_res_x, def_res_y);
+    else
+        sprintf(str, "%4d x %4d", res_list[index - 1][0],
+                res_list[index - 1][1]);
+    *label = str;
+}
+
+const char *game_mode_names[] = {
+    "Normal game",
+    "One-finger game",
+    "TRON-style game",
+};
+
 const struct {
     int modenum;
     char *name;
@@ -1419,6 +1435,7 @@ char *_mode_getter(int index, int *list_size)
 }
 
 char server_addr[31], str_score_limit[4], str_fps[3], port[6];
+int res_num;
 
 #define POS_SERVER_LIST     0
 #define POS_TRY_SERVER      1
@@ -1785,28 +1802,83 @@ int start()
 
     int done = 0;
     while (!(done || key[KEY_ESC] || escape)) {
-        nk_begin(&ui, "client", nk_rect(0, 0, 318, 479), NK_WINDOW_BORDER);
+        nk_begin(&ui, "Connect to server", nk_rect(0, 0, 318, 479), NK_WINDOW_TITLE|NK_WINDOW_BORDER);
         {
-            // servers
-            // reload server list
-            // try selected server
-            // server_addr, try this server
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 30, 1);
+            if (nk_button_label(&ui, "Reload server list")) {
+                // ...
+            }
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 250, 1);
+            nk_group_begin_titled(&ui, "servers", "Servers", NK_WINDOW_TITLE|NK_WINDOW_BORDER);
+            {
+                for (int i = 0; i < 2; i++) {
+                    nk_layout_row_dynamic(&ui, 15, 1);
+                    nk_label_colored(&ui, "127.0.0.1 - Netacka v2.0", NK_TEXT_LEFT, UI_VERY_LIGHT);
+                    nk_layout_row_dynamic(&ui, 15, 2);
+                    nk_label_colored(&ui, "0/10 players", NK_TEXT_LEFT, UI_LIGHT);
+                    if (nk_button_label(&ui, "Connect")) {
+                        // ...
+                    }
+                    nk_layout_row_dynamic(&ui, 10, 1);
+                }
+            }
+            nk_group_end(&ui);
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 15, 2);
+            nk_label(&ui, "Server:", NK_TEXT_LEFT);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_addr, 30, nk_filter_default);
+            nk_label(&ui, "Password:", NK_TEXT_LEFT);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_passwd, 6, nk_filter_default);
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 30, 1);
+            if (nk_button_label(&ui, "Connect")) {
+                // ...
+            }
         }
         nk_end(&ui);
-        nk_begin(&ui, "server", nk_rect(320, 0, 318, 479), NK_WINDOW_BORDER);
+        nk_begin(&ui, "Start server", nk_rect(320, 0, 318, 479), NK_WINDOW_TITLE|NK_WINDOW_BORDER);
         {
-            // score limit
-            // fps (game speed)
-            // resolution
-            // server name
-            // server port
-            // mode (normal, one finger, tron)
-            // only one game
-            // save log & screenshots
-            // password
-            // wait for key (space)
-            // torus mode
-            // start server
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 15, 2);
+            nk_label(&ui, "Server name:", NK_TEXT_LEFT);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_name, 15, nk_filter_default);
+            nk_label(&ui, "Server port:", NK_TEXT_LEFT);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, port, 5, nk_filter_decimal);
+            nk_label(&ui, "Password:", NK_TEXT_LEFT);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_passwd, 6, nk_filter_decimal);
+
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 15, 1);
+            nk_checkbox_label(&ui, "Only one game", &one_game);
+            nk_checkbox_label(&ui, "Save log & screenshots", &save_log);
+            nk_checkbox_label(&ui, "Wait for key (Space)", &wait_for_key);
+
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 15, 2);
+            nk_label(&ui, "Score limit:", NK_TEXT_LEFT);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, str_score_limit, 3, nk_filter_decimal);
+            nk_label(&ui, "FPS (game speed):", NK_TEXT_LEFT);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, str_fps, 2, nk_filter_decimal);
+
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 20, 1);
+            nk_combobox(&ui, game_mode_names, 3, &game_mode, 15, nk_vec2(250, 70));
+            nk_layout_row_dynamic(&ui, 15, 1);
+            nk_checkbox_label(&ui, "Torus Mode", &torus);
+
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 15, 1);
+            nk_label(&ui, "Resolution:", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(&ui, 20, 1);
+            nk_combobox_callback(&ui, get_res_label, NULL, &res_num, N_RES+1, 15, nk_vec2(300, 120));
+
+            nk_layout_row_dynamic(&ui, 10, 1);
+            nk_layout_row_dynamic(&ui, 30, 1);
+            if (nk_button_label(&ui, "Start Server")) {
+                // ...
+            }
         }
         nk_end(&ui);
 
