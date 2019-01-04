@@ -43,8 +43,10 @@ draw_image(BITMAP *bmp, nk_handle img, float x, float y, float w, float h, float
 }
 
 struct nk_context ui;
+struct nk_style_button ui_style_button_important;
 
 static struct nk_user_font ui_font;
+
 
 void ui_init() {
     ui_font.height = 8;
@@ -59,7 +61,7 @@ void ui_init() {
     table[NK_COLOR_WINDOW] = UI_BLACK;
     table[NK_COLOR_HEADER] = UI_DARK;
     table[NK_COLOR_BORDER] = UI_LIGHT;
-    table[NK_COLOR_BUTTON] = UI_MEDIUM;
+    table[NK_COLOR_BUTTON] = UI_BLACK;
     table[NK_COLOR_BUTTON_HOVER] = UI_DARK;
     table[NK_COLOR_BUTTON_ACTIVE] = UI_BLACK;
     table[NK_COLOR_TOGGLE] = UI_MEDIUM;
@@ -85,8 +87,12 @@ void ui_init() {
     table[NK_COLOR_TAB_HEADER] = UI_DARK;
 
     nk_style_from_table(&ui, table);
-}
 
+    ui_style_button_important = ui.style.button;
+    ui_style_button_important.normal = nk_style_item_color(UI_MEDIUM);
+    ui_style_button_important.text_normal = UI_WHITE;
+    ui_style_button_important.text_hover = UI_WHITE;
+}
 
 void ui_demo() {
     enum {EASY, HARD};

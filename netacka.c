@@ -269,7 +269,7 @@ int get_client_players()
                 }
                 nk_layout_row_dynamic(&ui, 20, 1);
                 nk_layout_row_dynamic(&ui, 30, 1);
-                if (nk_button_label(&ui, "Proceed")) {
+                if (nk_button_label_styled(&ui, &ui_style_button_important, "Proceed")) {
                     success = 1;
                     done = 1;
                 }
@@ -1529,16 +1529,9 @@ inline void unselect_button(DIALOG * d, int n)
     d[n].flags |= D_DIRTY;
 }
 
-int start_old()
+void load_settings()
 {
-    DIALOG_PLAYER *dialog_player;
-    NET_CHANNEL *chan = net_openchannel(net_driver, 0),
-        *chan2 = net_openchannel(net_driver, 0);
-    int done = 0, i = 0;
     int fps;
-    int restart_server_list = 1;
-
-    clear_keybuf();
 
     def_res_x = get_config_int("server", "screen_w", 800);
     def_res_y = get_config_int("server", "screen_h", 600);
@@ -1554,19 +1547,37 @@ int start_old()
             get_config_string("client", "server", "127.0.0.1:6789"), 30);
     strncpy(port, get_config_string("server", "port", "6789"), 5);
     strncpy(server_name,
-            get_config_string("server", "name", "Netacka ver " VER_STRING),
+            get_config_string("server", "name", "Netacka v" VER_STRING),
             15);
 
-    if (get_config_int("server", "one_game", 0))
-        the_list[POS_ONEGAME].flags |= D_SELECTED;
-    if (get_config_int("server", "save_log", 0))
-        the_list[POS_SAVELOG].flags |= D_SELECTED;
-    if (get_config_int("server", "wait_for_key", 0))
-        the_list[POS_WAITFORKEY].flags |= D_SELECTED;
-
+    one_game = get_config_int("server", "one_game", 0);
+    save_log = get_config_int("server", "save_log", 0);
+    wait_for_key = get_config_int("server", "wait_for_key", 0);
     hide_bot_numbers = get_config_int(0, "hide_bot_numbers", 0);
     gray_bg = get_config_int(0, "gray_bg", 0);
     instant_start = get_config_int("server", "instant_start", 0);
+}
+
+
+int start_old()
+{
+    DIALOG_PLAYER *dialog_player;
+    NET_CHANNEL *chan = net_openchannel(net_driver, 0),
+        *chan2 = net_openchannel(net_driver, 0);
+    int done = 0, i = 0;
+    int fps;
+    int restart_server_list = 1;
+
+    clear_keybuf();
+    load_settings();
+
+    if (one_game)
+        the_list[POS_ONEGAME].flags |= D_SELECTED;
+    if (save_log)
+        the_list[POS_SAVELOG].flags |= D_SELECTED;
+    if (wait_for_key)
+        the_list[POS_WAITFORKEY].flags |= D_SELECTED;
+
     clear_bitmap(screen);
     hline(screen, 0, 310, 639, gui_fg_color);
     set_dialog_color(the_list, gui_fg_color, gui_bg_color);
@@ -1800,6 +1811,8 @@ int start()
     BITMAP *buf = create_bitmap(screen_w, screen_h);
     show_os_cursor(1);
 
+    load_settings();
+
     int done = 0;
     while (!(done || key[KEY_ESC] || escape)) {
         nk_begin(&ui, "Connect to server", nk_rect(0, 0, 318, 479), NK_WINDOW_TITLE|NK_WINDOW_BORDER);
@@ -1818,7 +1831,7 @@ int start()
                     nk_label_colored(&ui, "127.0.0.1 - Netacka v2.0", NK_TEXT_LEFT, UI_VERY_LIGHT);
                     nk_layout_row_dynamic(&ui, 15, 2);
                     nk_label_colored(&ui, "0/10 players", NK_TEXT_LEFT, UI_LIGHT);
-                    if (nk_button_label(&ui, "Connect")) {
+                    if (nk_button_label_styled(&ui, &ui_style_button_important, "Connect")) {
                         // ...
                     }
                     nk_layout_row_dynamic(&ui, 10, 1);
@@ -1826,7 +1839,7 @@ int start()
             }
             nk_group_end(&ui);
             nk_layout_row_dynamic(&ui, 10, 1);
-            nk_layout_row_dynamic(&ui, 15, 2);
+            nk_layout_row_dynamic(&ui, 20, 2);
             nk_label(&ui, "Server:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_addr, 30, nk_filter_default);
             nk_label(&ui, "Password:", NK_TEXT_LEFT);
@@ -1841,7 +1854,7 @@ int start()
         nk_begin(&ui, "Start server", nk_rect(320, 0, 318, 479), NK_WINDOW_TITLE|NK_WINDOW_BORDER);
         {
             nk_layout_row_dynamic(&ui, 10, 1);
-            nk_layout_row_dynamic(&ui, 15, 2);
+            nk_layout_row_dynamic(&ui, 20, 2);
             nk_label(&ui, "Server name:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_name, 15, nk_filter_default);
             nk_label(&ui, "Server port:", NK_TEXT_LEFT);
@@ -1850,13 +1863,13 @@ int start()
             nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_passwd, 6, nk_filter_decimal);
 
             nk_layout_row_dynamic(&ui, 10, 1);
-            nk_layout_row_dynamic(&ui, 15, 1);
+            nk_layout_row_dynamic(&ui, 20, 1);
             nk_checkbox_label(&ui, "Only one game", &one_game);
             nk_checkbox_label(&ui, "Save log & screenshots", &save_log);
             nk_checkbox_label(&ui, "Wait for key (Space)", &wait_for_key);
 
             nk_layout_row_dynamic(&ui, 10, 1);
-            nk_layout_row_dynamic(&ui, 15, 2);
+            nk_layout_row_dynamic(&ui, 20, 2);
             nk_label(&ui, "Score limit:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, str_score_limit, 3, nk_filter_decimal);
             nk_label(&ui, "FPS (game speed):", NK_TEXT_LEFT);
@@ -1865,18 +1878,18 @@ int start()
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 20, 1);
             nk_combobox(&ui, game_mode_names, 3, &game_mode, 15, nk_vec2(250, 70));
-            nk_layout_row_dynamic(&ui, 15, 1);
+            nk_layout_row_dynamic(&ui, 20, 1);
             nk_checkbox_label(&ui, "Torus Mode", &torus);
 
             nk_layout_row_dynamic(&ui, 10, 1);
-            nk_layout_row_dynamic(&ui, 15, 1);
+            nk_layout_row_dynamic(&ui, 20, 1);
             nk_label(&ui, "Resolution:", NK_TEXT_LEFT);
             nk_layout_row_dynamic(&ui, 20, 1);
             nk_combobox_callback(&ui, get_res_label, NULL, &res_num, N_RES+1, 15, nk_vec2(300, 120));
 
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 30, 1);
-            if (nk_button_label(&ui, "Start Server")) {
+            if (nk_button_label_styled(&ui, &ui_style_button_important, "Start Server")) {
                 // ...
             }
         }

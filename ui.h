@@ -6,6 +6,7 @@
 #include "nuklear.h"
 
 extern struct nk_context ui;
+extern struct nk_style_button ui_style_button_important;
 
 extern const struct nk_color UI_BLACK;
 extern const struct nk_color UI_DARK;
