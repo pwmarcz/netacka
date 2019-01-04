@@ -29,14 +29,6 @@ font_get_width(nk_handle handle, float height, const char *text, int len) {
 }
 
 static void
-draw_text(BITMAP *bmp, float x, float y, float w, float h,
-    struct nk_color c, struct nk_color bg, const nk_char *string, nk_size len)
-{
-    rectfill(bmp, x, y, x+w, y+h, color(bg));
-    textout_ex(bmp, font, string, x, y, color(c), -1);
-}
-
-static void
 draw_image(BITMAP *bmp, nk_handle img, float x, float y, float w, float h, float r)
 {
     // ...
@@ -160,7 +152,7 @@ void ui_draw(BITMAP *bmp) {
             }
             case NK_COMMAND_TEXT: {
                 const struct nk_command_text *t = (const struct nk_command_text*) cmd;
-                draw_text(bmp, t->x, t->y, t->w, t->h, t->foreground, t->background, t->string, t->length);
+                textout_ex(bmp, font, t->string, t->x, t->y, color(t->foreground), -1);
             } break;
             case NK_COMMAND_IMAGE: {
                 const struct nk_command_image *i = (const struct nk_command_image*) cmd;
