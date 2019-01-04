@@ -1809,6 +1809,10 @@ int is_player_active(int i) {
 int start()
 {
     BITMAP *buf = create_bitmap(screen_w, screen_h);
+    int reload_server_list = 1;
+    NET_CHANNEL *chan = net_openchannel(net_driver, 0),
+        *chan2 = net_openchannel(net_driver, 0);
+
     show_os_cursor(1);
 
     load_settings();
@@ -1820,21 +1824,38 @@ int start()
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 30, 1);
             if (nk_button_label(&ui, "Reload server list")) {
-                // ...
+                reload_server_list = 1;
             }
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 250, 1);
             nk_group_begin_titled(&ui, "servers", "Servers", NK_WINDOW_TITLE|NK_WINDOW_BORDER);
             {
-                for (int i = 0; i < 2; i++) {
+                if (n_servers == 0) {
                     nk_layout_row_dynamic(&ui, 15, 1);
-                    nk_label_colored(&ui, "127.0.0.1 - Netacka v2.0", NK_TEXT_LEFT, UI_VERY_LIGHT);
-                    nk_layout_row_dynamic(&ui, 15, 2);
-                    nk_label_colored(&ui, "0/10 players", NK_TEXT_LEFT, UI_LIGHT);
-                    if (nk_button_label_styled(&ui, &ui_style_button_important, "Connect")) {
-                        // ...
+                    nk_label(&ui, "...", NK_TEXT_LEFT);
+                } else {
+                    for (int i = 0; i < n_servers; i++) {
+                        if (!servers[i].active) {
+                            continue;
+                        }
+
+                        if (servers[i].n_players == -1) {
+                            nk_layout_row_dynamic(&ui, 15, 1);
+                            nk_labelf_colored(&ui, NK_TEXT_LEFT, UI_LIGHT,
+                                              "%s [not responding]", servers[i].addr);
+                        } else {
+                            nk_layout_row_dynamic(&ui, 15, 1);
+                            nk_labelf_colored(&ui, NK_TEXT_LEFT, UI_VERY_LIGHT,
+                                              "%s %s", servers[i].addr, servers[i].name);
+                            nk_layout_row_dynamic(&ui, 15, 2);
+                            nk_labelf_colored(&ui, NK_TEXT_LEFT, UI_LIGHT,
+                                              "%d/%d players", servers[i].n_players, MAX_PLAYERS);
+                            if (nk_button_label_styled(&ui, &ui_style_button_important, "Connect")) {
+                                // ...
+                            }
+                        }
+                        nk_layout_row_dynamic(&ui, 10, 1);
                     }
-                    nk_layout_row_dynamic(&ui, 10, 1);
                 }
             }
             nk_group_end(&ui);
@@ -1900,9 +1921,53 @@ int start()
         clear_bitmap(buf);
         ui_draw(buf);
         blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
+
+        if (reload_server_list) {
+            n_servers = 0;
+
+            for (int i = 0; i < SERVER_LIST_SIZE; i++) {
+                servers[i].active = 0;
+                servers[i].n_players = -1;
+            }
+
+            net_assigntarget(chan2, "255.255.255.255:6789");
+            send_byte(chan2, clKNOCKKNOCK);
+
+            // Also send to localhost, for testing.
+            net_assigntarget(chan2, "127.0.0.1:6789");
+            send_byte(chan2, clKNOCKKNOCK);
+
+            reload_server_list = 0;
+        }
+        while (net_query(chan2)) {
+            char data[20];
+            char from[50];
+
+            net_receive(chan2, data, 20, from);
+            int i;
+            for (i = 0; i < n_servers; i++) {
+                if (servers[i].active)
+                    if (!strcmp(from, servers[i].addr))
+                        break;
+            }
+            if (*data == seMYINFO) {
+                if (i == n_servers && n_servers < SERVER_LIST_SIZE) {
+                    n_servers++;
+                    strcpy(servers[i].addr, from);
+                    servers[i].active = 1;
+                }
+                if (i != n_servers) {
+                    servers[i].n_players = data[1];
+                    strcpy(servers[i].name, &data[2]);
+                }
+            }
+        }
     }
 
     show_mouse(NULL);
     destroy_bitmap(buf);
+    clear_bitmap(screen);
+    net_closechannel(chan);
+    net_closechannel(chan2);
     return 0;
 }
