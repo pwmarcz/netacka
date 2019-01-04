@@ -198,7 +198,6 @@ int get_client_players()
     int i;
     int playing[CLIENT_PLAYERS];
     char names[CLIENT_PLAYERS][11];
-    int n = 0;
 
     int confirmed = 0;
     int done = 0;
