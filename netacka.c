@@ -213,6 +213,10 @@ int get_client_players()
         names[i][0] = '\0';
     }
     while (!(done || key[KEY_ESC] || escape)) {
+        if (confirmed) {
+            ui_handle_input();
+        }
+
         nk_begin(&ui, "welcome", nk_rect(60, 220, 500, 220), 0);
         {
             nk_layout_row_dynamic(&ui, 10, 1);
@@ -294,9 +298,6 @@ int get_client_players()
         }
 
         rest(1);
-        if (confirmed) {
-            ui_handle_input();
-        }
         clear_bitmap(buf);
         ui_draw(buf);
         blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
@@ -1819,6 +1820,8 @@ int start()
 
     int done = 0;
     while (!(done || key[KEY_ESC] || escape)) {
+        ui_handle_input();
+
         nk_begin(&ui, "Connect to server", nk_rect(0, 0, 318, 479), NK_WINDOW_TITLE|NK_WINDOW_BORDER);
         {
             nk_layout_row_dynamic(&ui, 10, 1);
@@ -1917,7 +1920,6 @@ int start()
         nk_end(&ui);
 
         rest(1);
-        ui_handle_input();
         clear_bitmap(buf);
         ui_draw(buf);
         blit(buf, screen, 0, 0, 0, 0, screen_w, screen_h);
