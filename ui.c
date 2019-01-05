@@ -162,7 +162,7 @@ void ui_draw(BITMAP *bmp) {
         }
     }
     nk_clear(&ui);
-    set_clip_rect(bmp, 0, 0, -1, -1);
+    set_clip_rect(bmp, 0, 0, bmp->w, bmp->h);
 }
 
 void ui_shutdown() {
