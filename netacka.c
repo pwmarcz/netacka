@@ -1822,9 +1822,11 @@ int start()
     while (!(done || key[KEY_ESC] || escape)) {
         ui_handle_input();
 
-        nk_begin(&ui, "Connect to server", nk_rect(0, 0, 318, 479), NK_WINDOW_TITLE|NK_WINDOW_BORDER);
+        nk_begin(&ui, "settings", nk_rect(0, 0, 640, 480), 0);
+        nk_layout_row_dynamic(&ui, 465, 2);
+
+        nk_group_begin(&ui, "Connect to server", NK_WINDOW_TITLE|NK_WINDOW_BORDER);
         {
-            nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 30, 1);
             if (nk_button_label(&ui, "Reload server list")) {
                 reload_server_list = 1;
@@ -1874,10 +1876,9 @@ int start()
                 // ...
             }
         }
-        nk_end(&ui);
-        nk_begin(&ui, "Start server", nk_rect(320, 0, 318, 479), NK_WINDOW_TITLE|NK_WINDOW_BORDER);
+        nk_group_end(&ui);
+        nk_group_begin(&ui, "Start server", NK_WINDOW_TITLE|NK_WINDOW_BORDER);
         {
-            nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 20, 2);
             nk_label(&ui, "Server name:", NK_TEXT_LEFT);
             nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_name, 15, nk_filter_default);
@@ -1917,6 +1918,8 @@ int start()
                 // ...
             }
         }
+        nk_group_end(&ui);
+
         nk_end(&ui);
 
         rest(1);
