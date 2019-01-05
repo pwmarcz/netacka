@@ -1813,8 +1813,9 @@ int start()
     int reload_server_list = 1;
     NET_CHANNEL *chan = net_openchannel(net_driver, 0),
         *chan2 = net_openchannel(net_driver, 0);
-    int connect_index = -1;
-    int connect_custom = 0;
+    int should_connect_index = -1;
+    int should_connect_custom = 0;
+    int should_start_server = 0;
 
     const char *error = NULL;
 
@@ -1860,7 +1861,7 @@ int start()
                             nk_labelf_colored(&ui, NK_TEXT_LEFT, UI_LIGHT,
                                               "%d/%d players", servers[i].n_players, MAX_PLAYERS);
                             if (nk_button_label_styled(&ui, &ui_style_button_important, "Connect")) {
-                                connect_index = i;
+                                should_connect_index = i;
                             }
                         }
                         nk_layout_row_dynamic(&ui, 10, 1);
@@ -1877,7 +1878,7 @@ int start()
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 30, 1);
             if (nk_button_label(&ui, "Connect")) {
-                connect_custom = 1;
+                should_connect_custom = 1;
             }
         }
         nk_group_end(&ui);
@@ -1919,8 +1920,7 @@ int start()
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 30, 1);
             if (nk_button_label_styled(&ui, &ui_style_button_important, "Start Server")) {
-                // ...
-                error = "Not implemented";
+                should_start_server = 1;
             }
         }
         nk_group_end(&ui);
@@ -1941,8 +1941,6 @@ int start()
         }
 
         nk_end(&ui);
-
-
 
         rest(1);
         clear_bitmap(buf);
@@ -1967,9 +1965,9 @@ int start()
             reload_server_list = 0;
         }
 
-        if (connect_index != -1) {
-            int i = connect_index;
-            connect_index = -1;
+        if (should_connect_index != -1) {
+            int i = should_connect_index;
+            should_connect_index = -1;
             if (servers[i].active) {
                 error = try_to_connect(servers[i].addr, FPS * 2);
                 if (!error) {
@@ -1979,12 +1977,36 @@ int start()
             }
         }
 
-        if (connect_custom) {
-            connect_custom = 0;
+        if (should_connect_custom) {
+            should_connect_custom = 0;
             error = try_to_connect(server_addr, FPS * 2);
             if (!error) {
                 result = 1;
                 break;
+            }
+        }
+
+        if (should_start_server) {
+            should_start_server = 0;
+            if (res_num == 0) {
+                screen_w = def_res_x;
+                screen_h = def_res_y;
+            } else {
+                screen_w = res_list[res_num - 1][0];
+                screen_h = res_list[res_num - 1][1];
+            }
+            score_limit = atoi(str_score_limit);
+            if (score_limit < 0 || score_limit > 999)
+                score_limit = 0;
+            FPS = atoi(str_fps);
+            if (FPS < 1 || FPS > MAX_FPS)
+                FPS = 30;
+            if (start_server(port)) {
+                result = -1;
+                break;
+            } else {
+                error = "Couldn't start server";
+                FPS = 20;
             }
         }
 
