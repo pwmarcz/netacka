@@ -244,7 +244,7 @@ int get_client_players()
 
                     if (playing[i] && confirmed) {
                         nk_layout_row_push(&ui, 100);
-                        nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, names[i], 10, nk_filter_default);
+                        nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, names[i], 11, nk_filter_default);
                     }
                 }
                 nk_layout_row_end(&ui);
@@ -1871,9 +1871,9 @@ int start()
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 20, 2);
             nk_label(&ui, "Server:", NK_TEXT_LEFT);
-            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_addr, 30, nk_filter_default);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_addr, 31, nk_filter_default);
             nk_label(&ui, "Password:", NK_TEXT_LEFT);
-            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_passwd, 6, nk_filter_default);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_passwd, 7, nk_filter_default);
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 30, 1);
             if (nk_button_label(&ui, "Connect")) {
@@ -1885,11 +1885,11 @@ int start()
         {
             nk_layout_row_dynamic(&ui, 20, 2);
             nk_label(&ui, "Server name:", NK_TEXT_LEFT);
-            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_name, 15, nk_filter_default);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_name, 16, nk_filter_default);
             nk_label(&ui, "Server port:", NK_TEXT_LEFT);
-            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, port, 5, nk_filter_decimal);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, port, 6, nk_filter_decimal);
             nk_label(&ui, "Password:", NK_TEXT_LEFT);
-            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_passwd, 6, nk_filter_decimal);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, server_passwd, 7, nk_filter_decimal);
 
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 20, 1);
@@ -1900,9 +1900,9 @@ int start()
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 20, 2);
             nk_label(&ui, "Score limit:", NK_TEXT_LEFT);
-            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, str_score_limit, 3, nk_filter_decimal);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, str_score_limit, 4, nk_filter_decimal);
             nk_label(&ui, "FPS (game speed):", NK_TEXT_LEFT);
-            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, str_fps, 2, nk_filter_decimal);
+            nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, str_fps, 3, nk_filter_decimal);
 
             nk_layout_row_dynamic(&ui, 10, 1);
             nk_layout_row_dynamic(&ui, 20, 1);
