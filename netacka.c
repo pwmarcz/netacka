@@ -1814,6 +1814,8 @@ int start()
     NET_CHANNEL *chan = net_openchannel(net_driver, 0),
         *chan2 = net_openchannel(net_driver, 0);
 
+    const char *error = NULL;
+
     show_os_cursor(1);
 
     load_settings();
@@ -1823,7 +1825,7 @@ int start()
         ui_handle_input();
 
         nk_begin(&ui, "settings", nk_rect(0, 0, 640, 480), 0);
-        nk_layout_row_dynamic(&ui, 465, 2);
+        nk_layout_row_dynamic(&ui, 460, 2);
 
         nk_group_begin(&ui, "Connect to server", NK_WINDOW_TITLE|NK_WINDOW_BORDER);
         {
@@ -1874,6 +1876,7 @@ int start()
             nk_layout_row_dynamic(&ui, 30, 1);
             if (nk_button_label(&ui, "Connect")) {
                 // ...
+                error = "Not implemented";
             }
         }
         nk_group_end(&ui);
@@ -1916,11 +1919,29 @@ int start()
             nk_layout_row_dynamic(&ui, 30, 1);
             if (nk_button_label_styled(&ui, &ui_style_button_important, "Start Server")) {
                 // ...
+                error = "Not implemented";
             }
         }
         nk_group_end(&ui);
 
+        if (error) {
+            if (nk_popup_begin(&ui, NK_POPUP_DYNAMIC, "Error", NK_WINDOW_TITLE|NK_WINDOW_BORDER,
+                               nk_rect(200, 180, 240, 100))) {
+                nk_layout_row_dynamic(&ui, 20, 1);
+                nk_label(&ui, error, NK_TEXT_LEFT);
+                if (nk_button_label(&ui, "OK")) {
+                    error = NULL;
+                    nk_popup_close(&ui);
+                }
+                nk_popup_end(&ui);
+            } else {
+                error = NULL;
+            }
+        }
+
         nk_end(&ui);
+
+
 
         rest(1);
         clear_bitmap(buf);
