@@ -215,19 +215,29 @@ int get_client_players()
     while (!(done || key[KEY_ESC] || escape)) {
         if (confirmed) {
             ui_handle_input();
-        }
+        } else {
+            for (i = 0; i < CLIENT_PLAYERS; i++) {
+                if (check_keys(i) == 1 && !playing[i]) {
+                    playing[i] = 1;
+                }
+                if (check_keys(i) == -1) {
+                    playing[i] = 0;
+                }
+            }
 
-        nk_begin(&ui, "welcome", nk_rect(60, 220, 500, 220), 0);
-        {
-            nk_layout_row_dynamic(&ui, 10, 1);
-            for (i = 0; welcome[i]; i++) {
-                nk_label_colored(&ui, welcome[i], NK_TEXT_LEFT, UI_LIGHT);
+            if (key[KEY_SPACE]) {
+                while (key[KEY_SPACE])
+                    rest(1);
+                clear_keybuf();
+                confirmed = 1;
             }
         }
-        nk_end(&ui);
+
+        nk_begin(&ui, "begin", nk_rect(0, 0, 640, 480), 0);
+        nk_layout_row_dynamic(&ui, 200, 2);
 
         // Players
-        nk_begin(&ui, "players", nk_rect(5, 10, 320, 200), 0);
+        nk_group_begin(&ui, "players", 0);
         {
             for (i = 0; i < CLIENT_PLAYERS; i++) {
                 nk_layout_row_begin(&ui, NK_LAYOUT_STATIC, 25, 3);
@@ -243,17 +253,17 @@ int get_client_players()
                     nk_label(&ui, client_keys[i].str, NK_TEXT_LEFT);
 
                     if (playing[i] && confirmed) {
-                        nk_layout_row_push(&ui, 100);
+                        nk_layout_row_push(&ui, 80);
                         nk_edit_string_zero_terminated(&ui, NK_EDIT_SIMPLE, names[i], 11, nk_filter_default);
                     }
                 }
                 nk_layout_row_end(&ui);
             }
         }
-        nk_end(&ui);
+        nk_group_end(&ui);
 
         if (confirmed) {
-            nk_begin(&ui, "help", nk_rect(340, 10, 300, 200), 0);
+            nk_group_begin(&ui, "help", 0);
             {
                 // TODO colors
                 nk_layout_row_dynamic(&ui, 10, 1);
@@ -278,24 +288,27 @@ int get_client_players()
                     done = 1;
                 }
             }
-            nk_end(&ui);
-        } else {
-            for (i = 0; i < CLIENT_PLAYERS; i++) {
-                if (check_keys(i) == 1 && !playing[i]) {
-                    playing[i] = 1;
-                }
-                if (check_keys(i) == -1) {
-                    playing[i] = 0;
-                }
-            }
-
-            if (key[KEY_SPACE]) {
-                while (key[KEY_SPACE])
-                    rest(1);
-                clear_keybuf();
-                confirmed = 1;
-            }
+            nk_group_end(&ui);
         }
+
+        nk_layout_row_begin(&ui, NK_STATIC, 220, 2);
+        {
+            nk_layout_row_push(&ui, 50);
+            nk_spacing(&ui, 1);
+
+            nk_layout_row_push(&ui, 500);
+            nk_group_begin(&ui, "welcome", 0);
+            {
+                nk_layout_row_dynamic(&ui, 10, 1);
+                for (i = 0; welcome[i]; i++) {
+                    nk_label_colored(&ui, welcome[i], NK_TEXT_LEFT, UI_LIGHT);
+                }
+            }
+            nk_group_end(&ui);
+        }
+        nk_layout_row_end(&ui);
+
+        nk_end(&ui);
 
         rest(1);
         clear_bitmap(buf);
